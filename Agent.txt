@@ -1,0 +1,351 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { View, Text, StyleSheet, TouchableOpacity, Linking, ScrollView } from "react-native";
+import { useState, useEffect } from "react";
+import AgentPageHeader from "../../../components/AgentComponents/AgentPageHeader";
+import { Ionicons } from "@expo/vector-icons";
+
+const Index = () => {
+  const { category } = useLocalSearchParams();
+  const router = useRouter();
+
+  const handleEmailPress = () => {
+    Linking.openURL('mailto:hostelhubbofficial@gmail.com');
+  };
+
+  const handleWhatsAppPress = () => {
+    Linking.openURL('https://wa.me/245746198');
+  };
+
+  const handleCall = () => {
+    Linking.openURL('tel:0542353326');
+  };
+
+  const handleWhatsAppChannel = () => {
+    Linking.openURL('https://www.whatsapp.com/channel/0029VavI8Yv5fM5e7ydw7i1W');
+  };
+
+  return (
+    <View style={styles.container}>
+      <AgentPageHeader />
+      
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.contentContainer}>
+          {/* Hero Section */}
+          <View style={styles.heroSection}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="home" size={50} color="#610b0c" />
+            </View>
+            
+            <Text style={styles.welcomeText}>Welcome to HostelHubb</Text>
+            <Text style={styles.mainMessage}>
+              We are here to serve you find the best accommodation and storage reservations.
+            </Text>
+            <Text style={styles.subMessage}>
+              Your comfort is our priority. Get in touch with us through any of the channels below.
+            </Text>
+          </View>
+
+          {/* Contact Methods */}
+          <View style={styles.contactSection}>
+            <Text style={styles.sectionTitle}>Get In Touch</Text>
+            
+            <View style={styles.contactGrid}>
+                            <TouchableOpacity
+                style={[styles.contactCard, styles.channelCard]}
+                onPress={handleWhatsAppChannel}
+              >
+                <View style={styles.cardIconContainer}>
+                  <Ionicons name="notifications" size={28} color="#FF6B35" />
+                </View>
+                <Text style={styles.cardTitle}>Join Channel</Text>
+                <Text style={styles.cardSubtitle}>Stay updated</Text>
+                <Text style={styles.cardDetail}>WhatsApp Channel</Text>
+              </TouchableOpacity>
+              {/* Email */}
+
+              {/* WhatsApp Direct */}
+              <TouchableOpacity
+                style={[styles.contactCard, styles.whatsappCard]}
+                onPress={handleWhatsAppPress}
+              >
+                <View style={styles.cardIconContainer}>
+                  <Ionicons name="logo-whatsapp" size={28} color="#25D366" />
+                </View>
+                <Text style={styles.cardTitle}>WhatsApp</Text>
+                <Text style={styles.cardSubtitle}>Chat with us directly</Text>
+                <Text style={styles.cardDetail}>Customer Care</Text>
+              </TouchableOpacity>
+
+              {/* Phone Call */}
+              <TouchableOpacity
+                style={[styles.contactCard, styles.phoneCard]}
+                onPress={handleCall}
+              >
+                <View style={styles.cardIconContainer}>
+                  <Ionicons name="call" size={28} color="#007AFF" />
+                </View>
+                <Text style={styles.cardTitle}>Call Us</Text>
+                <Text style={styles.cardSubtitle}>Speak to Us</Text>
+                <Text style={styles.cardDetail}>0542353326</Text>
+              </TouchableOpacity>
+
+              {/* WhatsApp Channel */}
+                            <TouchableOpacity
+                style={[styles.contactCard, styles.emailCard]}
+                onPress={handleEmailPress}
+              >
+                <View style={styles.cardIconContainer}>
+                  <Ionicons name="mail" size={28} color="#610b0c" />
+                </View>
+                <Text style={styles.cardTitle}>Email Us</Text>
+                <Text style={styles.cardSubtitle}>Send us a message</Text>
+                <Text style={styles.cardDetail}>hostelhubbofficial@gmail.com</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* CTA Section */}
+          <View style={styles.ctaSection}>
+            <View style={styles.ctaCard}>
+              <Ionicons name="star" size={32} color="#FFD700" />
+              <Text style={styles.ctaTitle}>Premium Service</Text>
+              <Text style={styles.ctaSubtitle}>
+                Experience the best accommodation booking service and storage reservation with personalized support
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FAFBFC",
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+  heroSection: {
+    alignItems: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    marginVertical: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#FFF5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 2,
+    borderColor: "#610b0c",
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#610b0c",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  mainMessage: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  subMessage: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+    maxWidth: 280,
+  },
+  contactSection: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    textAlign: "center",
+    marginBottom: 25,
+  },
+  contactGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  contactCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    alignItems: "center",
+    width: "48%",
+    minHeight: 140,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  emailCard: {
+    borderTopColor: "#610b0c",
+    borderTopWidth: 3,
+  },
+  whatsappCard: {
+    borderTopColor: "#25D366",
+    borderTopWidth: 3,
+  },
+  phoneCard: {
+    borderTopColor: "#007AFF",
+    borderTopWidth: 3,
+  },
+  channelCard: {
+    borderTopColor: "#FF6B35",
+    borderTopWidth: 3,
+  },
+  cardIconContainer: {
+    width: 50,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: "#666",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  cardDetail: {
+    fontSize: 11,
+    color: "#888",
+    fontWeight: "500",
+    textAlign: "center",
+  },
+  ctaSection: {
+    alignItems: "center",
+  },
+  ctaCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 25,
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  ctaTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#333",
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  ctaSubtitle: {
+    fontSize: 15,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 22,
+    maxWidth: 280,
+  },
+});
+
+export default Index;
+// import { useLocalSearchParams, useRouter } from "expo-router";
+// import { View, FlatList, StyleSheet } from "react-native";
+// import AgentCard from "../../../components/AgentComponents/AgentCard";
+// import { useState, useEffect, useContext } from "react";
+// import AgentPageHeader from "../../../components/AgentComponents/AgentPageHeader";
+// import NotificationBanner from "../../../components/AgentComponents/NotificationBanner";
+// import EmptyState from "../../../components/AgentComponents/EmptyState";
+// import { AgentContext } from "../../../context/AgentContext";
+
+// const Index = () => {
+//   const { category } = useLocalSearchParams();
+//   const router = useRouter();
+
+//   const { agents, loadingAgents } = useContext(AgentContext);
+//   const [filteredAgents, setFilteredAgents] = useState([]);
+
+//   useEffect(() => {
+//     if (category) {
+//       const filtered = agents.filter(agent => agent.category === category);
+//       setFilteredAgents(filtered);
+//     } else {
+//       setFilteredAgents(agents);
+//     }
+//   }, [category, agents]);
+
+//   const handleCardPress = (id) => {
+//     router.push({ pathname: "AgentDetailScreen", params: { agentId: id } });
+//   };
+
+//   return (
+//     <View style={styles.container}>
+//       <AgentPageHeader />
+//       <NotificationBanner />
+//       {filteredAgents.length > 0 ? (
+//         <FlatList
+//           data={filteredAgents}
+//           renderItem={({ item }) => (
+//             <AgentCard agent={item} onPress={() => handleCardPress(item.id)} />
+//           )}
+//           keyExtractor={(item) => item.id.toString()}
+//           contentContainerStyle={styles.listContent}
+//           showsVerticalScrollIndicator={false}
+//           numColumns={2}
+//           columnWrapperStyle={styles.row}
+//         />
+//       ) : (
+//         <EmptyState />
+//       )}
+//     </View>
+//   );
+// };
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: "#F9FAFB",
+//   },
+//   listContent: {
+//     paddingBottom: 100,
+//   },
+// });
+
+// export default Index;

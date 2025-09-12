@@ -1,0 +1,124 @@
+{
+  "expo": {
+    "name": "Hostelhubb",
+    "slug": "hostelhubb",
+    "version": "2.0.4",
+    "scheme": "hostelhubb",
+    "deepLinking": true,
+    "platforms": ["ios", "web", "android"],
+    "orientation": "portrait",
+    "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#b20000"
+    },
+    "ios": {
+      "config": {
+        "googleMapsApiKey": "AIzaSyAbLuhuszsrZAUNH31HH3pc1T9P7rl9UHM"
+      },
+      "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "buildNumber": "26",
+      "version": "2.0.4",
+      "pushNotifications": {
+        "backgroundMode": true
+      },
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
+        "NSPhotoLibraryUsageDescription": "Hostelhubb needs access to your photo library to allow you to upload images of your receipt",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "pushNotifications": {
+        "backgroundMode": true
+      },
+      "targetSdkVersion": 35,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAbLuhuszsrZAUNH31HH3pc1T9P7rl9UHM"
+        }
+      },
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.Hostelhubb.Hostelhubb",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 25,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/hostel"
+            },
+            {
+              "scheme": "hostelhubb",
+              "host": "*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "08c63846-777e-4efa-b66c-cd905718a34c"
+      },
+      "router": {
+        "origin": false,
+        "links": [
+          {
+            "prefix": "hostelhubb://",
+            "screens": {
+              "Details": {
+                "path": "Details/:id"
+              }
+            }
+          },
+          {
+            "prefix": "https://hostelhubb.com",
+            "screens": {
+              "Details": {
+                "path": "hostel/:id"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/08c63846-777e-4efa-b66c-cd905718a34c",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 1000
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 10.2.2",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "channel": "production"
+      },
+      "ios": {
+        "distribution": "store",
+        "channel": "production"
+      }
+    },
+    "apk": {
+      "android": {
+        "buildType": "apk",
+        "channel": "production"
+      }
+    },
+    "development": {
+      "android": {
+        "buildType": "apk",
+        "channel": "development",
+        "developmentClient": false
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "soluservant@gmail.com",
+        "ascAppId": "6738483533",
+        "appleTeamId": "53C6A5RA8W"
+      }
+    }
+  }
+}
