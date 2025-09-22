@@ -6,31 +6,25 @@ const _layout = () => {
   return (
     <Stack>
       <Stack.Screen 
-        name="(guesthouses)" 
+        name="(transport)" 
         options={{ 
-          title: 'Guest Houses', 
-          headerBackVisible: false 
-        }} 
-      />
-      <Stack.Screen 
-        name="(hotels)" 
-        options={{ 
-          title: 'Hotels', 
+          title: 'Transport', 
           headerBackVisible: false 
         }} 
       />
       <Stack.Screen 
         name="(hostels)" 
         options={{ 
-          title: 'Hostels', 
+          title: 'Acoommodation', 
           headerBackVisible: false 
         }} 
       />
       <Stack.Screen 
-        name="(homstels)" 
+        name="(shop)" 
         options={{ 
-          title: 'Homestel', 
-          headerBackVisible: false 
+          title: 'Shop', 
+          headerBackVisible: false ,
+          headerShown: false
         }} 
       />
     </Stack>

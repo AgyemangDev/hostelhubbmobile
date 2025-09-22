@@ -88,7 +88,7 @@ guaranteeSection: {
   borderRadius: 12,
   marginTop: 20,
   marginBottom: 20,
-  marginHorizontal: 0,
+    width: '100%',
   borderWidth: 1,
   borderColor: '#e9ecef',
 },

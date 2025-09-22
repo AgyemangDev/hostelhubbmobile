@@ -7,6 +7,7 @@ import { useHostels } from '../../../context/HostelsContext';
 
 import AllHostels from './AllHostels';
 import PopularHostel from './PopularHostel';
+import Homestel from './Homestel';
 import LastMinute from './LastMinute';
 import RecentlyViewed from './RecentlyViewed';
 import TopStays from './TopStays';
@@ -16,6 +17,7 @@ import TopTabBar from '../../../components/CategoriesComponents/TopTabBar';
 const TABS = [
   { key: 'all', label: 'All Hostels' },
   { key: 'justadded', label: 'Just Added' },
+  { key: 'homestel', label: 'Homestels' },
   { key: 'popular', label: 'Popular' },
   { key: 'lastminute', label: 'Last Minute' },
   { key: 'recent', label: 'Recently Viewed' },
@@ -26,10 +28,6 @@ export default function HostelScreen() {
     const { hostels, loading } = useHostels();
   const [activeTab, setActiveTab] = useState(tab || 'all');
 
-const filteredHostels = hostels.filter(
-  (item) =>
-    !item.category || item.category?.toLowerCase() === 'hostel'
-);
   useEffect(() => {
     if (tab && TABS.find((t) => t.key === tab)) {
       setActiveTab(tab);
@@ -39,17 +37,19 @@ const filteredHostels = hostels.filter(
   const renderTabContent = () => {
     switch (activeTab) {
       case 'popular':
-        return <PopularHostel hostels={filteredHostels} />;
+        return <PopularHostel hostels={hostels} />;
       case 'justadded':
-        return <NewHostels hostels={filteredHostels} />;
+        return <NewHostels hostels={hostels} />;
       case 'lastminute':
-        return <LastMinute hostels={filteredHostels} />;
+        return <LastMinute hostels={hostels} />;
+      case 'homestel':
+        return <Homestel hostels={hostels} />;
       case 'recent':
-        return <RecentlyViewed hostels={filteredHostels} />;
+        return <RecentlyViewed hostels={hostels} />;
       case 'top':
-        return <TopStays hostels={filteredHostels} />;
+        return <TopStays hostels={hostels} />;
       default:
-        return <AllHostels hostels={filteredHostels} />;
+        return <AllHostels hostels={hostels} />;
     }
   };
 

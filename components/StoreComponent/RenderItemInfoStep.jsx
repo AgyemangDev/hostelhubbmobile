@@ -75,9 +75,9 @@ const toggleItemCategory = (category) => {
       <ScrollView style={styles.contentContainer}>
         <View style={styles.card}>
           <Text style={styles.header}>Select Items</Text>
-<Text style={styles.subText}>Choose the items you want to include</Text>
+<Text style={styles.subText}>Choose the items you want to store</Text>
 <Text style={styles.deliveryNote}>
-  😊 We’ll deliver your items to your next hostel at no extra cost!
+  😊 Delivery to your next accommodation
 </Text>
           <CategoryList 
             categories={Object.keys(itemPricing)}
@@ -147,7 +147,6 @@ const styles = StyleSheet.create({
   deliveryNote: {
   fontSize: 14,
   color: "green",
-  marginBottom: 20,
   fontWeight: "500",
 },
 infoBox: {

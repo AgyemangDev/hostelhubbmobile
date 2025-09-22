@@ -51,10 +51,7 @@ const TopTabBar = ({ tabs, activeTab, onTabPress }) => {
       'top': 'trending-up',
       'nearby': 'map-marker',
       'lastminute': 'clock',
-      'recent': 'eye',
-      'beach': 'beach',
-      'mountain': 'mountain',
-      'city': 'city',
+      'homestel': 'home',
     };
     return icons[tabKey] || 'tag';
   };

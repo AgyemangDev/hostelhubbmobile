@@ -12,6 +12,7 @@ const ReservationDetailsStep = ({ formData, setFormData, nextStep, prevStep }) =
   const pickupStartDate = "2025-08-27"; // Mid August
   const pickupEndDate = "2025-09-12";   // September 14th
   
+  
   const handleNext = () => {
     let missingFields = [];
 

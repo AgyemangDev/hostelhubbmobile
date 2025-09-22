@@ -1,25 +1,14 @@
-// components/ReviewPromptWrapper.jsx
-import React from "react";
-import ReviewModal from "../components/Modal/ReviewModal";
+// Global/ReviewPromptWrapper.jsx
 import { useReviewPrompt } from "../hooks/useReviewPrompt";
 
 const ReviewPromptWrapper = () => {
-  const {
-    shouldShowModal,
-    setShouldShowModal,
-    triggerAfterAction,
-    markAsRated,
-  } = useReviewPrompt();
+  const { triggerAfterAction } = useReviewPrompt();
 
+  // Expose global trigger function
   global.triggerReviewPrompt = triggerAfterAction;
 
-  return (
-    <ReviewModal
-      visible={shouldShowModal}
-      onClose={() => setShouldShowModal(false)}
-      markAsRated={markAsRated}
-    />
-  );
+  // No UI needed, just hook into lifecycle
+  return null;
 };
 
 export default ReviewPromptWrapper;

@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
-import { useNavigation,useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 
 
 const screenWidth = Dimensions.get("window").width;
@@ -14,24 +14,23 @@ const categories = [
     route: "(hostels)",
   },
   {
-    name: "Homestels",
-    image: require("../../assets/images/homstel.png"),
-    route: "(homstels)",
+    name: "Shop",
+    image: require("../../assets/images/shop.png"),
+    route: "(shop)",
   },
   {
-    name: "Hotels",
-    image: require("../../assets/images/hotel.png"),
-    route: "(hotels)",
+    name: "Transport",
+    image: require("../../assets/images/transport.png"),
+    route: "(transport)",
   },
   {
-    name: "Guest Houses",
-    image: require("../../assets/images/guesthouse.png"),
-    route: "(guesthouses)",
+    name: "Storage",
+    image: require("../../assets/images/storage.png"),
+    route: "(StorageForm)",
   },
 ];
 
 const CategoryNavigationCards = () => {
-  const navigation = useNavigation();
   const router = useRouter();
 
   return (

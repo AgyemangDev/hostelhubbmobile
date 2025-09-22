@@ -1,4 +1,4 @@
-// context/FeedsContext.js - MODIFIED TO PASS HOSTEL DOCUMENTS AS-IS
+// context/FeedsContext.js - MODIFIED TO REMOVE REPETITIVE CHECKING
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
@@ -21,7 +21,7 @@ const CACHE_KEY = 'hostel_feeds_cache_v1';
 const BATCH_SIZE = 10;
 const MAX_CACHE_ITEMS = 50; // Maximum hostel documents to cache
 const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
-const REAL_TIME_CHECK_INTERVAL = 30000; // 30 seconds
+// REMOVED: REAL_TIME_CHECK_INTERVAL - no more repetitive checking
 
 export const FeedsProvider = ({ children }) => {
   const [hostelDocuments, setHostelDocuments] = useState([]);
@@ -37,7 +37,6 @@ export const FeedsProvider = ({ children }) => {
   const realtimeUnsubscribe = useRef(null);
   const newestCachedTimestamp = useRef(null);
   const pendingNewItems = useRef([]);
-  const isCheckingForUpdates = useRef(false);
   const lastFullRefreshTime = useRef(0);
 
   useEffect(() => {
@@ -49,7 +48,7 @@ export const FeedsProvider = ({ children }) => {
     };
   }, []);
 
-  // Real-time listener for new hostel documents
+  // Real-time listener for new hostel documents - this is passive and efficient
   const setupRealtimeListener = useCallback(() => {
     if (realtimeUnsubscribe.current) {
       realtimeUnsubscribe.current();
@@ -166,7 +165,7 @@ export const FeedsProvider = ({ children }) => {
         
         console.log(`📱 Loaded ${cachedHostels.length} hostels from cache (${Math.round(cacheAge / (1000 * 60))} min old)`);
         
-        // Set up real-time listener after loading cache
+        // Set up real-time listener after loading cache (one-time setup)
         setTimeout(() => setupRealtimeListener(), 1000);
         
         // Check if we need to fetch more to reach initial batch
@@ -421,58 +420,8 @@ export const FeedsProvider = ({ children }) => {
     }
   }, [hostelDocuments, fetchedIds, hasMoreData]);
 
-  // Check for new hostel documents
-  const checkForNewItems = useCallback(async () => {
-    if (isCheckingForUpdates.current || !newestCachedTimestamp.current) {
-      return false;
-    }
-
-    isCheckingForUpdates.current = true;
-
-    try {
-      console.log('🔍 Checking for new hostel documents...');
-      
-      const feedsCollection = collection(db, 'feeds');
-      
-      const checkQuery = query(
-        feedsCollection,
-        where('createdAt', '>', newestCachedTimestamp.current),
-        orderBy('createdAt', 'desc'),
-        limit(5) // Small limit for checking
-      );
-
-      const snapshot = await getDocs(checkQuery);
-      console.log(`📊 Manual check Firebase read: ${snapshot.docs.length} hostel documents`);
-
-      if (snapshot.empty) {
-        console.log('✅ No new hostel documents found');
-        return false;
-      }
-
-      const newItems = [];
-      snapshot.forEach((doc) => {
-        const hostelData = { id: doc.id, ...doc.data() };
-        if (!fetchedIds.has(hostelData.id)) {
-          newItems.push(hostelData);
-        }
-      });
-
-      if (newItems.length > 0) {
-        console.log(`🔔 Found ${newItems.length} new hostels via manual check`);
-        pendingNewItems.current = [...newItems, ...pendingNewItems.current];
-        setNewItemsAvailable(prev => prev + newItems.length);
-        return true;
-      }
-
-      return false;
-
-    } catch (error) {
-      console.error('❌ Error checking for new items:', error);
-      return false;
-    } finally {
-      isCheckingForUpdates.current = false;
-    }
-  }, [fetchedIds]);
+  // REMOVED: checkForNewItems function - no more manual checking needed
+  // The real-time listener handles new items automatically
 
   // Refresh hostels with 24-hour logic
   const refreshHostels = async () => {
@@ -538,8 +487,8 @@ export const FeedsProvider = ({ children }) => {
     // Actions
     fetchMoreFeeds: fetchMoreHostels, // Keep same name for compatibility
     refreshFeeds: refreshHostels,     // Keep same name for compatibility
-    checkForNewItems,
     integratePendingItems
+    // REMOVED: checkForNewItems - no longer available
   };
 
   return (
@@ -558,397 +507,3 @@ export const useFeeds = () => {
 };
 
 export default FeedsContext;
-// // context/FeedsContext.js - OPTIMIZED VERSION
-// import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { collection, query, limit, getDocs, orderBy, startAfter, where, Timestamp } from 'firebase/firestore';
-// import { db } from '../app/firebase/FirebaseConfig';
-
-// const FeedsContext = createContext();
-
-// // Constants
-// const CACHE_KEY = 'feeds_cache';
-// const BATCH_SIZE = 10;
-// const PRELOAD_THRESHOLD = 8;
-// const MAX_CACHE_ITEMS = 100; // Maximum items to cache
-// const CACHE_VERSION = 'v3'; // Increment when changing cache structure
-
-// export const FeedsProvider = ({ children }) => {
-//   const [feeds, setFeeds] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [hasMoreData, setHasMoreData] = useState(true);
-//   const [currentIndex, setCurrentIndex] = useState(0);
-//   const [lastDoc, setLastDoc] = useState(null);
-//   const [fetchedIds, setFetchedIds] = useState(new Set());
-//   const [isInitialized, setIsInitialized] = useState(false);
-//   const [cacheComplete, setCacheComplete] = useState(false); // Flag when we have max items
-
-//   // Load cache on app start
-//   useEffect(() => {
-//     loadCachedFeeds();
-//   }, []);
-
-//   // Auto-fetch more when approaching end - WITH CACHE LIMIT CHECK
-//   useEffect(() => {
-//     if (
-//       isInitialized && 
-//       currentIndex >= feeds.length - (BATCH_SIZE - PRELOAD_THRESHOLD) && 
-//       hasMoreData && 
-//       !loading &&
-//       !cacheComplete && // CRITICAL: Don't fetch if cache is complete
-//       feeds.length < MAX_CACHE_ITEMS // CRITICAL: Don't fetch if we hit the limit
-//     ) {
-//       console.log(`🎯 Auto-fetching more feeds. Current: ${feeds.length}/${MAX_CACHE_ITEMS}`);
-//       fetchMoreFeeds();
-//     }
-//   }, [currentIndex, feeds.length, hasMoreData, loading, isInitialized, cacheComplete]);
-
-//   // Load cached feeds from AsyncStorage
-//   const loadCachedFeeds = async () => {
-//     try {
-//       setLoading(true);
-//       const cachedData = await AsyncStorage.getItem(`${CACHE_KEY}_${CACHE_VERSION}`);
-      
-//       if (cachedData) {
-//         const { 
-//           feeds: cachedFeeds, 
-//           fetchedIds: cachedIds, 
-//           hasMore, 
-//           cacheComplete: wasCacheComplete,
-//           lastFetchTimestamp 
-//         } = JSON.parse(cachedData);
-        
-//         setFeeds(cachedFeeds);
-//         setFetchedIds(new Set(cachedIds));
-//         setCacheComplete(wasCacheComplete || cachedFeeds.length >= MAX_CACHE_ITEMS);
-        
-//         // Determine if we still have more data based on cache state
-//         const shouldHaveMore = !wasCacheComplete && cachedFeeds.length < MAX_CACHE_ITEMS;
-//         setHasMoreData(shouldHaveMore);
-        
-//         console.log(`📱 Loaded ${cachedFeeds.length} feeds from cache`);
-//         console.log(`📊 Cache status: ${cachedFeeds.length}/${MAX_CACHE_ITEMS} items`);
-//         console.log(`✅ Cache complete: ${wasCacheComplete || cachedFeeds.length >= MAX_CACHE_ITEMS}`);
-        
-//         // Only fetch more if cache is not complete and we have less than desired amount
-//         if (!wasCacheComplete && cachedFeeds.length < Math.min(BATCH_SIZE * 2, MAX_CACHE_ITEMS)) {
-//           console.log('🔄 Cache incomplete, fetching initial batch...');
-//           await fetchInitialFeeds(cachedFeeds, new Set(cachedIds));
-//         }
-//       } else {
-//         console.log('📭 No cache found, fetching initial data...');
-//         await fetchInitialFeeds();
-//       }
-      
-//       setIsInitialized(true);
-//     } catch (error) {
-//       console.error('❌ Error loading cached feeds:', error);
-//       await fetchInitialFeeds();
-//       setIsInitialized(true);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Save feeds to cache with version and completion status
-//   const saveFeedsToCache = async (feedsData, fetchedIdsSet, hasMore, isComplete) => {
-//     try {
-//       const cacheData = {
-//         feeds: feedsData,
-//         fetchedIds: Array.from(fetchedIdsSet),
-//         hasMore,
-//         cacheComplete: isComplete,
-//         lastFetchTimestamp: Date.now(),
-//         version: CACHE_VERSION
-//       };
-      
-//       await AsyncStorage.setItem(`${CACHE_KEY}_${CACHE_VERSION}`, JSON.stringify(cacheData));
-//       console.log(`💾 Saved ${feedsData.length} feeds to cache (complete: ${isComplete})`);
-//     } catch (error) {
-//       console.error('❌ Error saving feeds to cache:', error);
-//     }
-//   };
-
-//   // Check if we should stop fetching
-//   const shouldStopFetching = (currentCount) => {
-//     return currentCount >= MAX_CACHE_ITEMS;
-//   };
-
-//   // Fetch initial feeds with limit enforcement
-//   const fetchInitialFeeds = async (existingFeeds = [], existingIds = new Set()) => {
-//     // Don't fetch if we already have the maximum
-//     if (existingFeeds.length >= MAX_CACHE_ITEMS) {
-//       console.log(`✋ Already have maximum items (${existingFeeds.length}/${MAX_CACHE_ITEMS}), skipping fetch`);
-//       setCacheComplete(true);
-//       setHasMoreData(false);
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-//       console.log(`🚀 Fetching initial feeds (current: ${existingFeeds.length}/${MAX_CACHE_ITEMS})`);
-      
-//       // Calculate how many we can still fetch
-//       const remainingSlots = MAX_CACHE_ITEMS - existingFeeds.length;
-//       const fetchLimit = Math.min(BATCH_SIZE, remainingSlots);
-      
-//       const feedsCollection = collection(db, 'feeds');
-//       const q = query(
-//         feedsCollection,
-//         orderBy('createdAt', 'desc'),
-//         limit(fetchLimit)
-//       );
-
-//       const snapshot = await getDocs(q);
-      
-//       if (snapshot.empty) {
-//         console.log('📭 No feeds available in database');
-//         setHasMoreData(false);
-//         setCacheComplete(true);
-//         return;
-//       }
-
-//       const newFeeds = [];
-//       snapshot.forEach((doc) => {
-//         const feedData = { id: doc.id, ...doc.data() };
-        
-//         // Only add if not already fetched and we haven't hit the limit
-//         if (!existingIds.has(doc.id) && (existingFeeds.length + newFeeds.length) < MAX_CACHE_ITEMS) {
-//           newFeeds.push(feedData);
-//           existingIds.add(doc.id);
-//         }
-//       });
-
-//       const updatedFeeds = [...existingFeeds, ...newFeeds];
-//       const lastDocument = snapshot.docs[snapshot.docs.length - 1];
-      
-//       // Check if we've reached our cache limit or if there are no more items
-//       const reachedLimit = updatedFeeds.length >= MAX_CACHE_ITEMS;
-//       const noMoreItems = newFeeds.length < fetchLimit;
-//       const isComplete = reachedLimit || noMoreItems;
-      
-//       setFeeds(updatedFeeds);
-//       setFetchedIds(new Set(existingIds));
-//       setLastDoc(lastDocument);
-//       setHasMoreData(!isComplete);
-//       setCacheComplete(isComplete);
-      
-//       await saveFeedsToCache(updatedFeeds, existingIds, !isComplete, isComplete);
-      
-//       console.log(`✅ Fetched ${newFeeds.length} new feeds, total: ${updatedFeeds.length}/${MAX_CACHE_ITEMS}`);
-//       console.log(`🏁 Cache complete: ${isComplete}`);
-      
-//     } catch (error) {
-//       console.error('❌ Error fetching initial feeds:', error);
-//       setHasMoreData(false);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // CRITICAL: Smart fetch more feeds - PREVENTS UNNECESSARY FETCHES
-//   const fetchMoreFeeds = useCallback(async () => {
-//     // CRITICAL CHECKS to prevent unnecessary fetches
-//     if (loading) {
-//       console.log('⏳ Already loading, skipping fetch');
-//       return;
-//     }
-
-//     if (cacheComplete) {
-//       console.log('🛑 Cache is complete, no more fetches needed');
-//       return;
-//     }
-
-//     if (feeds.length >= MAX_CACHE_ITEMS) {
-//       console.log(`🛑 Maximum cache items reached (${feeds.length}/${MAX_CACHE_ITEMS}), stopping fetches`);
-//       setCacheComplete(true);
-//       setHasMoreData(false);
-//       await saveFeedsToCache(feeds, fetchedIds, false, true);
-//       return;
-//     }
-
-//     if (!hasMoreData) {
-//       console.log('🛑 No more data available');
-//       return;
-//     }
-
-//     if (!lastDoc) {
-//       console.log('🛑 No lastDoc available for pagination');
-//       return;
-//     }
-
-//     try {
-//       setLoading(true);
-      
-//       // Calculate how many more we can fetch
-//       const remainingSlots = MAX_CACHE_ITEMS - feeds.length;
-//       const fetchLimit = Math.min(BATCH_SIZE, remainingSlots);
-      
-//       console.log(`🔄 Fetching more feeds: ${feeds.length}/${MAX_CACHE_ITEMS} (fetching ${fetchLimit})`);
-      
-//       const feedsCollection = collection(db, 'feeds');
-//       const q = query(
-//         feedsCollection,
-//         orderBy('createdAt', 'desc'),
-//         startAfter(lastDoc),
-//         limit(fetchLimit)
-//       );
-
-//       const snapshot = await getDocs(q);
-      
-//       if (snapshot.empty) {
-//         console.log('📭 No more feeds available in database');
-//         setHasMoreData(false);
-//         setCacheComplete(true);
-//         await saveFeedsToCache(feeds, fetchedIds, false, true);
-//         return;
-//       }
-
-//       const newFeeds = [];
-//       snapshot.forEach((doc) => {
-//         const feedData = { id: doc.id, ...doc.data() };
-        
-//         // Only add if not already fetched and we haven't hit the limit
-//         if (!fetchedIds.has(doc.id) && (feeds.length + newFeeds.length) < MAX_CACHE_ITEMS) {
-//           newFeeds.push(feedData);
-//         }
-//       });
-
-//       if (newFeeds.length === 0) {
-//         console.log('🔄 All fetched items were already in cache or limit reached');
-//         setCacheComplete(true);
-//         setHasMoreData(false);
-//         await saveFeedsToCache(feeds, fetchedIds, false, true);
-//         return;
-//       }
-
-//       const updatedFeeds = [...feeds, ...newFeeds];
-//       const updatedFetchedIds = new Set([...fetchedIds, ...newFeeds.map(feed => feed.id)]);
-//       const lastDocument = snapshot.docs[snapshot.docs.length - 1];
-      
-//       // Check if we've reached our limit or if there are no more items
-//       const reachedLimit = updatedFeeds.length >= MAX_CACHE_ITEMS;
-//       const noMoreItems = newFeeds.length < fetchLimit;
-//       const isComplete = reachedLimit || noMoreItems;
-      
-//       setFeeds(updatedFeeds);
-//       setFetchedIds(updatedFetchedIds);
-//       setLastDoc(lastDocument);
-//       setHasMoreData(!isComplete);
-//       setCacheComplete(isComplete);
-      
-//       await saveFeedsToCache(updatedFeeds, updatedFetchedIds, !isComplete, isComplete);
-      
-//       console.log(`✅ Fetched ${newFeeds.length} new feeds, total: ${updatedFeeds.length}/${MAX_CACHE_ITEMS}`);
-//       console.log(`🏁 Cache complete: ${isComplete}`);
-      
-//       if (isComplete) {
-//         console.log('🎉 All available feeds have been cached (reached limit or no more items)!');
-//       }
-      
-//     } catch (error) {
-//       console.error('❌ Error fetching more feeds:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, [loading, hasMoreData, lastDoc, feeds, fetchedIds, cacheComplete]);
-
-//   // Refresh feeds (clear cache and fetch fresh) - RESPECTS LIMITS
-//   const refreshFeeds = async () => {
-//     try {
-//       console.log('🔄 Refreshing feeds...');
-//       setLoading(true);
-      
-//       // Clear current state
-//       setFeeds([]);
-//       setFetchedIds(new Set());
-//       setLastDoc(null);
-//       setHasMoreData(true);
-//       setCacheComplete(false);
-//       setCurrentIndex(0);
-      
-//       // Clear cache
-//       await AsyncStorage.removeItem(`${CACHE_KEY}_${CACHE_VERSION}`);
-      
-//       // Fetch fresh data
-//       await fetchInitialFeeds();
-      
-//       console.log('✅ Refresh complete');
-//     } catch (error) {
-//       console.error('❌ Error refreshing feeds:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   // Update current video index for preloading
-//   const updateCurrentIndex = (index) => {
-//     setCurrentIndex(index);
-//   };
-
-//   // Get feeds stats
-//   const getStats = () => ({
-//     totalFeeds: feeds.length,
-//     fetchedIds: fetchedIds.size,
-//     maxCacheItems: MAX_CACHE_ITEMS,
-//     hasMoreData,
-//     loading,
-//     currentIndex,
-//     cacheComplete,
-//     cachePercentage: Math.round((feeds.length / MAX_CACHE_ITEMS) * 100),
-//     remainingSlots: Math.max(0, MAX_CACHE_ITEMS - feeds.length)
-//   });
-
-//   // Clear cache (for debugging or user request)
-//   const clearCache = async () => {
-//     try {
-//       await AsyncStorage.removeItem(`${CACHE_KEY}_${CACHE_VERSION}`);
-//       setFeeds([]);
-//       setFetchedIds(new Set());
-//       setLastDoc(null);
-//       setHasMoreData(true);
-//       setCacheComplete(false);
-//       setCurrentIndex(0);
-//       console.log('🧹 Cache cleared');
-//     } catch (error) {
-//       console.error('❌ Error clearing cache:', error);
-//     }
-//   };
-
-//   const contextValue = {
-//     // Data
-//     feeds,
-//     loading,
-//     hasMoreData,
-//     currentIndex,
-//     isInitialized,
-//     cacheComplete,
-    
-//     // Actions
-//     fetchMoreFeeds,
-//     refreshFeeds,
-//     updateCurrentIndex,
-//     clearCache,
-    
-//     // Utils
-//     getStats,
-//     maxCacheItems: MAX_CACHE_ITEMS
-//   };
-
-//   return (
-//     <FeedsContext.Provider value={contextValue}>
-//       {children}
-//     </FeedsContext.Provider>
-//   );
-// };
-
-// // Custom hook to use feeds context
-// export const useFeeds = () => {
-//   const context = useContext(FeedsContext);
-//   if (!context) {
-//     throw new Error('useFeeds must be used within a FeedsProvider');
-//   }
-//   return context;
-// };
-
-// export default FeedsContext;

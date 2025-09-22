@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  Alert,
   Dimensions,
   ImageBackground,
   StatusBar,
@@ -18,6 +19,17 @@ const { width } = Dimensions.get("window");
 export default function index() {
   const router = useRouter();
 
+  const handleReservePress = () => {
+    // Navigate to StoreForm
+    router.push("StoreForm");
+
+    // Or show alert (comment out the other line above)
+    // Alert.alert(
+    //   "Booking Closed",
+    //   "Booking has been closed for this semester. Thank you for trusting Hostelhubb Storage Facility.",
+    //   [{ text: "OK" }]
+    // );
+  }
   return (
     <>
       <StatusBar barStyle="light-content" />
@@ -36,7 +48,7 @@ export default function index() {
                 Secure Space for Your Valuables
               </Text>
               <Text style={styles.heroDescription}>
-Secure your belongings with confidence — 100% insured, and delivered right to your next hostel free of charge.
+Secure your belongings with confidence — 100% insured, free pickup and delivery right to your next hostel.
               </Text>
             </View>
           </View>
@@ -65,7 +77,7 @@ Secure your belongings with confidence — 100% insured, and delivered right to 
         <View style={styles.ctaSection}>
           <View style={styles.ctaButtonsContainer}>
             <TouchableOpacity
-              onPress={() => router.push("StoreForm")}
+             onPress={handleReservePress}
               style={styles.primaryButton}
             >
               <Text style={styles.primaryButtonText}>Reserve Storage Now</Text>
@@ -81,8 +93,12 @@ Secure your belongings with confidence — 100% insured, and delivered right to 
                 <Text style={styles.guaranteeText}>100% Security & Insurance Guarantee</Text>
               </View>
               <View style={styles.guaranteeItem}>
+                <Text style={styles.guaranteeEmoji}>📦</Text>
+                <Text style={styles.guaranteeText}>Free Pickup From Your Hostel</Text>
+              </View>
+              <View style={styles.guaranteeItem}>
                 <Text style={styles.guaranteeEmoji}>🚚</Text>
-                <Text style={styles.guaranteeText}>Free Delivery to Next Hostel</Text>
+                <Text style={styles.guaranteeText}>Delivery to Your Next Hostel</Text>
               </View>
               <View style={styles.guaranteeItem}>
                 <Text style={styles.guaranteeEmoji}>💰</Text>
@@ -145,7 +161,7 @@ Secure your belongings with confidence — 100% insured, and delivered right to 
         <View style={styles.footer}>
                     <View style={styles.ctaButtonsContainer}>
             <TouchableOpacity
-              onPress={() => router.push("StoreForm")}
+             onPress={handleReservePress}
               style={styles.primaryButton}
             >
               <Text style={styles.primaryButtonText}>Reserve Storage Now</Text>

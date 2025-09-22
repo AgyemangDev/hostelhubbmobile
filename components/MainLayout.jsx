@@ -90,13 +90,6 @@ export default function MainLayout() {
         }}
       />
       <Stack.Screen
-        name="StorageForm"
-        options={{
-          title: "Storage Form",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name="StorageEdit"
         options={{
           title: "Edit Storage Details",

@@ -62,6 +62,8 @@ const PaymentsMadeToHostels = () => {
               ? `Payment to ${hostelName}`
               : method === "HostelHubb Payment"
               ? "Hostelhubb Subscription"
+              : method === "Storage Payment" 
+              ? "Storage Payment"
               : method === "Wallet Deposit"
               ? "Deposit to Wallet"
               : method === "Withdrawal"

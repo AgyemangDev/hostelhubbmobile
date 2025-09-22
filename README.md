@@ -11,3 +11,4 @@
 # Meeting with James last Sunday talking about no you no blaiming anyone for not participating actively
 
 # nobody feels like we are sacrificing and committed to anything. Everyone has a schedule and it's not about you sacrificing. We are going to strategize things (Different departments)
+

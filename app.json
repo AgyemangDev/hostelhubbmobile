@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "2.0.4",
+    "version": "2.0.3",
     "scheme": "hostelhubb",
     "deepLinking": true,
     "platforms": ["ios", "web", "android"],

@@ -7,24 +7,41 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { useNavigation, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 
 const { width } = Dimensions.get("window");
 
-const StorageBanner = ({ facility, onPress }) => {
+const StorageBanner = ({ facility }) => {
   const router = useRouter();
 
-  const handleStorageFacilityPress = () => {
-    router.push({
-      pathname: "(StorageForm)",
-    });
+  // Determine button text & route based on facility type
+  const getButtonInfo = () => {
+    switch (facility.type) {
+      case "storage":
+        return { text: "Store Now", route: "(StorageForm)" };
+      case "transport":
+        return { text: "Travel Now", route: "(transport)" };
+      case "shop":
+        return { text: "Shop Now", route: "(shop)" };
+      case "accommodation":
+        return { text: "Reserve Now", route: "(hostels)" };
+      default:
+        return { text: "Reserve Now", route: "(StorageForm)" };
+    }
+  };
+
+  const { text: buttonText, route: buttonRoute } = getButtonInfo();
+
+  const handlePress = () => {
+    router.push({ pathname: buttonRoute });
   };
 
   return (
     <Pressable
       style={({ pressed }) => [styles.container, pressed && styles.pressed]}
-      onPress={handleStorageFacilityPress}
+      onPress={handlePress}
       android_ripple={{ color: "rgba(0, 0, 0, 0.05)" }}
     >
       <Image
@@ -33,37 +50,45 @@ const StorageBanner = ({ facility, onPress }) => {
         resizeMode="cover"
       />
 
-      <View style={styles.contentContainer}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.name} numberOfLines={1}>
-            {facility.name}
-          </Text>
-          <Text style={styles.price}>{facility.price}</Text>
-        </View>
+      {/* Overlay content with blur background */}
+      <View style={styles.overlayContainer}>
+        <BlurView 
+          intensity={10} 
+          style={styles.blurContainer}
+          tint="dark"
+        >
+          <View style={styles.contentContainer}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.name} numberOfLines={1}>
+                {facility.name}
+              </Text>
+              <Text style={styles.price}>{facility.price}</Text>
+            </View>
 
-        <Text style={styles.description} numberOfLines={3}>
-          {facility.description}
-        </Text>
+            <Text style={styles.description} numberOfLines={3}>
+              {facility.description}
+            </Text>
 
-        <View style={styles.detailsContainer}>
-          <View style={styles.detailItem}>
-            <Feather name="map-pin" size={16} color="#444" />
-            <Text style={styles.detailText}>{facility.location}</Text>
+            <View style={styles.detailsContainer}>
+              <View style={styles.detailItem}>
+                <Feather name="map-pin" size={14} color="#fff" />
+                <Text style={styles.detailText}>{facility.location}</Text>
+              </View>
+
+              <Pressable style={styles.reserveButton} onPress={handlePress}>
+                <Text style={styles.reserveButtonText}>{buttonText}</Text>
+                <Feather name="arrow-right" size={14} color="#fff" />
+              </Pressable>
+            </View>
           </View>
-
-<View style={styles.footer}>
-  <Pressable style={styles.reserveButton} onPress={handleStorageFacilityPress}>
-    <Text style={styles.reserveButtonText}>Reserve Now</Text>
-    <Feather name="arrow-right" size={16} color="#fff" />
-  </Pressable>
-</View>
-        </View>
+        </BlurView>
       </View>
     </Pressable>
   );
 };
 
 export default StorageBanner;
+
 const styles = StyleSheet.create({
   container: {
     width: width - 32,
@@ -72,6 +97,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     marginHorizontal: 16,
     overflow: "hidden",
+    height: 200, // Fixed height for compact look
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -90,101 +116,79 @@ const styles = StyleSheet.create({
   },
   image: {
     width: "100%",
-    height: 160,
+    height: "100%",
     backgroundColor: "#f0f0f0",
+    position: "absolute",
+  },
+  overlayContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 110, // Overlay height
+  },
+  blurContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Fallback for Android
   },
   contentContainer: {
-    padding: 2,
-        paddingHorizontal:'4',
+    flex: 1,
+    padding: 12,
+    justifyContent: "space-between",
   },
   headerContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
-    color: "#222",
+    color: "#fff",
     flex: 1,
     marginRight: 10,
   },
   price: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#610b0c",
+    color: "#fff",
   },
   description: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 10,
-    lineHeight: 20,
+    fontSize: 12,
+    color: "#f0f0f0",
+    marginBottom: 6,
+    lineHeight: 16,
   },
   detailsContainer: {
     flexDirection: "row",
-    marginBottom: 14,
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom:30
   },
   detailItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 18,
+    flex: 1,
   },
   detailText: {
-    fontSize: 13,
-    color: "#444",
-    marginLeft: 5,
+    fontSize: 11,
+    color: "#f0f0f0",
+    marginLeft: 4,
   },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  featuresContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  },
-  featureTag: {
-    backgroundColor: "#f5e9ea",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginRight: 6,
-    marginBottom: 4,
-  },
-  featureText: {
-    fontSize: 12,
-    color: "#610b0c",
-  },
-  moreFeatures: {
-    fontSize: 12,
-    color: "#888",
-  },
-  viewMoreContainer: {
-    flexDirection: "row",
-  },
-    reserveButton: {
+  reserveButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#7c1b1dff", // Deep red tone
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginTop: 8,
+    backgroundColor: "rgba(124, 27, 29, 0.9)",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
   },
   reserveButtonText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
-    marginRight: 6,
-  },
-  viewMoreText: {
-    fontSize: 14,
-    color: "#610b0c",
     marginRight: 4,
-    fontWeight: "600",
   },
 });

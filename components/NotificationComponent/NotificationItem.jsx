@@ -47,10 +47,7 @@ const NotificationItem = ({ item, onPress }) => {
       underlayColor="#E5E7EB"
     >
       <View style={styles.content}>
-        <View style={styles.iconWrap}>
-          <NotificationIcon type={item.type} status={item.status} />
-          {!item.read && <View style={styles.dot} />}
-        </View>
+        
 
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{item.title}</Text>
