@@ -27,7 +27,7 @@ const ProductDetails = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <ProductImages images={[product.mainImage, ...(product.gallery || [])]} />
+        <ProductImages images={product.gallery} />
         <ProductInfo product={product} />
         <ProductReviews reviews={product.reviews} />
       </ScrollView>

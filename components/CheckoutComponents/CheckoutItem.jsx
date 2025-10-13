@@ -102,9 +102,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
+    width: 100, // increased from 60
+    height: 100, // increased from 60
+    borderRadius: 10, // slightly bigger rounding
     backgroundColor: '#f8f9fa',
   },
   productInfo: {
@@ -112,11 +112,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   productName: {
-    fontSize: 15,
+    fontSize: 16, // slightly larger
     fontWeight: '600',
     color: '#1a1a1a',
-    lineHeight: 20,
-    marginBottom: 2,
+    lineHeight: 22,
+    marginBottom: 4,
   },
   productPrice: {
     fontSize: 16,
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    borderRadius: 20,
+    borderRadius: 22,
     padding: 2,
   },
   quantityButton: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
   },
   quantityDisplay: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 4,
   },
   quantityText: {
@@ -173,3 +173,4 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
+

@@ -1,5 +1,11 @@
 import React from "react";
-import { StyleSheet, TextInput, View, TouchableOpacity, Platform } from "react-native";
+import {
+  StyleSheet,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import COLORS from "../../constants/Colors";
 
@@ -14,35 +20,34 @@ const FormInput = ({
   togglePasswordVisibility,
   disabled = false,
 }) => {
-  if (isPasswordInput) {
-    return (
-      <View style={[styles.passwordContainer, disabled && styles.inputDisabled]}>
-        <TextInput
-          style={styles.passwordInput}
-          placeholder={placeholder}
-          secureTextEntry={!isPasswordVisible}
-          placeholderTextColor="#aaa"
-          value={value}
-          onChangeText={onChangeText}
-          editable={!disabled}
+  return isPasswordInput ? (
+    <View style={[styles.passwordContainer, disabled && styles.inputDisabled]}>
+      <TextInput
+        style={styles.passwordInput}
+        placeholder={placeholder}
+        placeholderTextColor="#888"
+        secureTextEntry={!isPasswordVisible}
+        value={value}
+        onChangeText={onChangeText}
+        editable={!disabled}
+      />
+      <TouchableOpacity
+        onPress={togglePasswordVisibility}
+        style={styles.iconWrapper}
+      >
+        <Entypo
+          name={isPasswordVisible ? "eye" : "eye-with-line"}
+          size={24}
+          color="#555"
         />
-        <TouchableOpacity onPress={togglePasswordVisibility} style={styles.iconWrapper}>
-          <Entypo
-            name={isPasswordVisible ? "eye" : "eye-with-line"}
-            size={22}
-            color="#555"
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  return (
+      </TouchableOpacity>
+    </View>
+  ) : (
     <TextInput
       style={[styles.input, disabled && styles.inputDisabled]}
       placeholder={placeholder}
       keyboardType={keyboardType}
-      placeholderTextColor="#aaa"
+      placeholderTextColor="#888"
       value={value}
       onChangeText={onChangeText}
       editable={!disabled}
@@ -53,51 +58,47 @@ const FormInput = ({
 
 const styles = StyleSheet.create({
   input: {
-    backgroundColor: "#fafafa",
-    borderRadius: 16,
-    height: 52,
-    paddingHorizontal: 16,
-    borderColor: COLORS.background,
-    borderWidth: 1,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    height: 54,
+    paddingHorizontal: 18,
     marginBottom: 16,
     width: "100%",
     fontSize: 16,
     color: "#333",
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 1,
+        elevation: 3,
       },
     }),
-  },
-  inputDisabled: {
-    backgroundColor: "#f0f0f0",
-    color: "#999",
   },
   passwordContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fafafa",
-    borderRadius: 16,
-    borderColor: COLORS.background,
+    backgroundColor: "#fff",
+    borderRadius: 20,
     borderWidth: 1,
-    paddingHorizontal: 12,
+    borderColor: "#e0e0e0",
+    paddingHorizontal: 14,
     marginBottom: 16,
-    height: 52,
+    height: 54,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
       },
       android: {
-        elevation: 1,
+        elevation: 3,
       },
     }),
   },
@@ -107,8 +108,13 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   iconWrapper: {
-    paddingLeft: 10,
+    paddingLeft: 12,
     paddingVertical: 6,
+  },
+  inputDisabled: {
+    backgroundColor: "#f2f2f2",
+    color: "#aaa",
+    borderColor: "#ddd",
   },
 });
 

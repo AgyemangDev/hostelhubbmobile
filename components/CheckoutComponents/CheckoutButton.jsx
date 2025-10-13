@@ -1,21 +1,17 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { useCart } from '../../context/CartContext';
-import COLORS from "../../constants/Colors";
+import COLORS from '../../constants/Colors';
 
-const CheckoutButton = ({ onPress }) => {
-  const { cartItems } = useCart();
-
-  // Calculate total cost
-  const total = cartItems.reduce((sum, item) => {
-    const qty = item.quantity || 1;
-    return sum + item.price * qty;
-  }, 0);
+const CheckoutButton = ({ onPress, text }) => {
+  // Helper function to format numbers with commas and 2 decimals
+  const formatCurrency = (num) => {
+    return Number(num).toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.text}>
-        Proceed to Checkout (GHC {total.toFixed(2)})
+        {text ? text : `Proceed to Checkout (GHC ${formatCurrency(0)})`}
       </Text>
     </TouchableOpacity>
   );
@@ -26,10 +22,15 @@ export default CheckoutButton;
 const styles = StyleSheet.create({
   button: {
     margin: 16,
-    padding: 14,
+    padding: 16,
     backgroundColor: COLORS.background,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
   },
   text: {
     color: '#fff',

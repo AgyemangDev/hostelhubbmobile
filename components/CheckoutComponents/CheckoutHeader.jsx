@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../../context/CartContext';
+import { useNavigation } from '@react-navigation/native'; // <-- Add this import
 
 const CheckoutHeader = () => {
+  const navigation = useNavigation(); // <-- Hook for navigation
   const { clearCart } = useCart();
 
   const handleClearCart = () => {
@@ -19,8 +21,11 @@ const CheckoutHeader = () => {
 
   return (
     <View style={styles.headerContainer}>
-      {/* Optional Back Button */}
-      <TouchableOpacity style={styles.backButton}>
+      {/* Back Button */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={() => navigation.goBack()} // <-- Back navigation
+      >
         <Ionicons name="arrow-back" size={24} color="#111" />
       </TouchableOpacity>
 
@@ -32,6 +37,7 @@ const CheckoutHeader = () => {
     </View>
   );
 };
+
 
 export default CheckoutHeader;
 
