@@ -10,6 +10,7 @@ import FormDropdown from '../../../components/InputFields/FormDropDown';
 import CheckoutButton from '../../../components/CheckoutComponents/CheckoutButton';
 import { Ionicons } from '@expo/vector-icons';
 import { UserContext } from '../../../context/UserContext';
+import OverlayLoader from '../../../components/Animation/OverlayLoader';
 import axios from 'axios';
 
 const PaymentScreen = () => {
@@ -129,10 +130,6 @@ const PaymentScreen = () => {
             <FormDropdown label="Delivery School" value={deliverySchool} onValueChange={setDeliverySchool} items={schools} />
           </View>
 
-          <View style={styles.balanceCard}>
-            <Text style={styles.balanceText}>Available Balance: GHC {userBalance.toFixed(2)}</Text>
-          </View>
-
           <View style={styles.deliveryNoteContainer}>
             <Text style={styles.deliveryNote}>Delivery will be charged by CPS on delivery</Text>
           </View>
@@ -153,6 +150,7 @@ const PaymentScreen = () => {
             </View>
           )}
         </View>
+        <OverlayLoader visible={loading} message="Payment is processing, please wait..." />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -190,5 +188,5 @@ const styles = StyleSheet.create({
   deliveryNote: { fontSize: 14, color: '#666', fontStyle: 'italic' },
   balanceCard: { marginBottom: 10, alignItems: 'center' },
   balanceText: { fontSize: 16, color: '#333', fontWeight: '600' },
-  bottomButton: { position: 'absolute', bottom: 20, left: 20, right: 20 },
+  bottomButton: { position: 'absolute', bottom: -10, left: 0, right: 0 },
 });

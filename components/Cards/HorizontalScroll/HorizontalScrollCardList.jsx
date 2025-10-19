@@ -21,6 +21,10 @@ const HorizontalScrollCardList = ({ hostels }) => {
       : [];
   }, [hostels]);
 
+  const recentlyAddedHostels = useMemo(() => {
+  return hostels ? hostels.filter(h => h.views < 500).slice(0, 10) : [];
+}, [hostels]);
+
   return (
     <View style={styles.container}>
       {/* Popular Hostels Section */}
@@ -116,36 +120,33 @@ const HorizontalScrollCardList = ({ hostels }) => {
   </TouchableOpacity>
 </View>
 
-{hostels?.filter((h) => h.views < 500)?.length > 0 ? (
-  <FlatList
-    data={[...hostels.filter((h) => h.views < 500)].sort(() => 0.5 - Math.random()).slice(0, 10)}
-    keyExtractor={(item) => item.id}
-    horizontal
-    showsHorizontalScrollIndicator={false}
-    contentContainerStyle={styles.listContent}
-    renderItem={({ item, index }) => (
-      <HorizontalScrollCard
-        hostelId={item.id}
-        hostelName={item.hostelName}
-        isFirstItem={index === 0}
-        ImageUrl={{ uri: item.frontImage }}
-        institution={item.institution}
-        views={item.views}
-        location={item.location}
-        availability={item.hostelAvailability}
-        isLastItem={index === 9}
-        onCardPress={() =>
-          router.push({
-            pathname: "/(Details)/[id]",
-            params: { hostelId: item.id },
-          })
-        }
-      />
-    )}
-  />
-) : (
-  <EmptyHostelShimmer />
-)}
+<FlatList
+  data={recentlyAddedHostels}
+  keyExtractor={(item) => item.id}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={styles.listContent}
+  renderItem={({ item, index }) => (
+    <HorizontalScrollCard
+      hostelId={item.id}
+      hostelName={item.hostelName}
+      isFirstItem={index === 0}
+      ImageUrl={{ uri: item.frontImage }}
+      institution={item.institution}
+      views={item.views}
+      location={item.location}
+      availability={item.hostelAvailability}
+      isLastItem={index === recentlyAddedHostels.length - 1}
+      onCardPress={() =>
+        router.push({
+          pathname: "/(Details)/[id]",
+          params: { hostelId: item.id },
+        })
+      }
+    />
+  )}
+/>
+
     </View>
   );
 };

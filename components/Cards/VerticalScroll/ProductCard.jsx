@@ -1,4 +1,4 @@
-// components/ProductCard.jsx
+// src/components/ProductCard.jsx
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCart } from '../../../context/CartContext';
@@ -12,11 +12,9 @@ const ProductCard = ({ product }) => {
   const router = useRouter();
   const { addToCart } = useCart();
 
-  // Calculate dynamic dimensions
   const dynamicWidth = (screenWidth - 32) / 2;
   const imageHeight = dynamicWidth * 0.9;
 
-  // Navigate to product details
   const handlePress = () => {
     router.push({
       pathname: '/ProductDetails',
@@ -25,7 +23,12 @@ const ProductCard = ({ product }) => {
   };
 
   const handleAddToCart = () => {
-    addToCart({ ...product, quantity: 1 });
+    // If product has color or size, route to details page instead
+    if ((product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0)) {
+      handlePress();
+    } else {
+      addToCart({ ...product, quantity: 1 });
+    }
   };
 
   return (
@@ -57,7 +60,7 @@ const ProductCard = ({ product }) => {
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={1}>{product.name}</Text>
 
-        {/* Price + Add button in one row */}
+        {/* Price + Add button */}
         <View style={styles.priceAddRow}>
           {product.originalPrice && product.originalPrice > product.price ? (
             <>
@@ -70,7 +73,11 @@ const ProductCard = ({ product }) => {
 
           <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart}>
             <Ionicons name="cart-outline" size={16} color="#fff" />
-            <Text style={styles.addText}>Add</Text>
+            <Text style={styles.addText}>
+              {(product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0) 
+                ? 'Select' 
+                : 'Add'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -79,6 +86,9 @@ const ProductCard = ({ product }) => {
 };
 
 export default ProductCard;
+
+// styles remain the same as your previous code
+
 
 const styles = StyleSheet.create({
   card: {

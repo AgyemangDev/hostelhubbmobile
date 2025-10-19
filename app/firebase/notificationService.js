@@ -7,6 +7,10 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { onAuthStateChanged } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = 'expo_push_token';
+const STORAGE_USER_KEY = 'stored_user_id';
 
 const notificationService = {
   // This will store the token when it's generated
@@ -20,31 +24,97 @@ const notificationService = {
       if (user) {
         console.log('👤 User logged in, checking if token needs to be stored:', user.uid);
         
-        // If we already have the token cached, store it now that user is logged in
-        if (notificationService._expoPushToken) {
-          await notificationService.storeTokenInFirestore(notificationService._expoPushToken, user.uid);
+        // Check if we have a stored token and if it matches current user
+        const storedToken = await notificationService.getStoredToken();
+        const storedUserId = await notificationService.getStoredUserId();
+        
+        if (storedToken && storedUserId === user.uid) {
+          console.log('✅ Token already stored for this user in AsyncStorage');
+          // Token exists and user matches, just update Firestore if needed
+          await notificationService.storeTokenInFirestore(storedToken, user.uid);
         } else {
-          // If no token yet, try to get it and store it
-          console.log('🔄 No token cached, attempting to register again now that user is logged in');
-          notificationService.registerForPushNotifications();
+          console.log('🔄 New user or no token stored, attempting to register');
+          // If we already have the token cached, store it now that user is logged in
+          if (notificationService._expoPushToken) {
+            await notificationService.storeTokenInFirestore(notificationService._expoPushToken, user.uid);
+            await notificationService.saveTokenToAsyncStorage(notificationService._expoPushToken, user.uid);
+          } else {
+            // If no token yet, try to get it and store it
+            console.log('🔄 No token cached, attempting to register again now that user is logged in');
+            await notificationService.registerForPushNotifications();
+          }
         }
       } else {
-        console.log('👤 User logged out, token will be stored on next login');
+        console.log('👤 User logged out');
       }
     });
+  },
+  
+  // Save token to AsyncStorage
+  saveTokenToAsyncStorage: async (token, userId) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, token);
+      await AsyncStorage.setItem(STORAGE_USER_KEY, userId);
+      console.log('💾 Token saved to AsyncStorage');
+    } catch (error) {
+      console.error('❌ Error saving token to AsyncStorage:', error);
+    }
+  },
+  
+  // Get stored token from AsyncStorage
+  getStoredToken: async () => {
+    try {
+      const token = await AsyncStorage.getItem(STORAGE_KEY);
+      return token;
+    } catch (error) {
+      console.error('❌ Error retrieving token from AsyncStorage:', error);
+      return null;
+    }
+  },
+  
+  // Get stored userId from AsyncStorage
+  getStoredUserId: async () => {
+    try {
+      const userId = await AsyncStorage.getItem(STORAGE_USER_KEY);
+      return userId;
+    } catch (error) {
+      console.error('❌ Error retrieving userId from AsyncStorage:', error);
+      return null;
+    }
+  },
+  
+  // Clear stored token
+  clearStoredToken: async () => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      await AsyncStorage.removeItem(STORAGE_USER_KEY);
+      console.log('🗑️ Stored token cleared from AsyncStorage');
+    } catch (error) {
+      console.error('❌ Error clearing token from AsyncStorage:', error);
+    }
   },
   
   // Store token in Firestore (separate function for reuse)
   storeTokenInFirestore: async (tokenData, userId) => {
     try {
+      // ✅ Early return if userId or tokenData is missing
+      if (!userId) {
+        console.warn('⚠️ Cannot store token: userId is undefined');
+        return false;
+      }
+      if (!tokenData) {
+        console.warn('⚠️ Cannot store token: tokenData is null or undefined');
+        return false;
+      }
+
       console.log('💾 Storing token in Firestore for user:', userId);
       console.log('💾 Token data:', tokenData);
-      
+
       const userRef = doc(db, 'Student_Users', userId);
       const userDoc = await getDoc(userRef);
-     
+
       // Only update if token is different or doesn't exist
-      if (!userDoc.exists() || userDoc.data().expoPushToken !== tokenData) {
+      if (!userDoc.exists() || userDoc.data()?.expoPushToken !== tokenData) {
         await setDoc(userRef, { expoPushToken: tokenData }, { merge: true });
         console.log('✅ Push token stored/updated in Firestore for user:', userId);
         return true;
@@ -57,6 +127,7 @@ const notificationService = {
       return false;
     }
   },
+
   
   registerForPushNotifications: async () => {
     let token;
@@ -126,6 +197,7 @@ const notificationService = {
       if (user) {
         console.log('👤 User is logged in, storing token for user:', user.uid);
         await notificationService.storeTokenInFirestore(token.data, user.uid);
+        await notificationService.saveTokenToAsyncStorage(token.data, user.uid);
       } else {
         console.log('❌ User not logged in, token is cached and will be stored when user logs in');
       }
@@ -234,6 +306,7 @@ const notificationService = {
       const user = auth.currentUser;
       if (user) {
         await notificationService.storeTokenInFirestore(token.data, user.uid);
+        await notificationService.saveTokenToAsyncStorage(token.data, user.uid);
       } else {
         console.log('❌ User not logged in, updated token will be stored when user logs in');
       }

@@ -36,11 +36,21 @@ const CheckoutItem = ({ item }) => {
         <Text style={styles.productName} numberOfLines={2}>
           {item.name}
         </Text>
+
+        {/* Display selected color & size on the same line */}
+        {(item.selectedColor || item.selectedSize) && (
+          <Text style={styles.selectionText}>
+            {item.selectedColor ? `Color: ${item.selectedColor}` : ''}
+            {item.selectedColor && item.selectedSize ? ' | ' : ''}
+            {item.selectedSize ? `Size: ${item.selectedSize}` : ''}
+          </Text>
+        )}
+
         <Text style={styles.productPrice}>
-          GHC {item.price}.00
+          GHC {item.price.toFixed(2)}
         </Text>
-        
-        {/* Quantity and Total in same row */}
+
+        {/* Quantity and Total Row */}
         <View style={styles.bottomRow}>
           <View style={styles.quantityContainer}>
             <TouchableOpacity 
@@ -65,7 +75,7 @@ const CheckoutItem = ({ item }) => {
           </View>
 
           <View style={styles.priceAndRemove}>
-            <Text style={styles.totalPrice}>${totalPrice}</Text>
+            <Text style={styles.totalPrice}>GHC {totalPrice}</Text>
             <TouchableOpacity 
               onPress={handleRemove} 
               style={styles.removeButton}
@@ -102,9 +112,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   image: {
-    width: 100, // increased from 60
-    height: 100, // increased from 60
-    borderRadius: 10, // slightly bigger rounding
+    width: 100,
+    height: 100,
+    borderRadius: 10,
     backgroundColor: '#f8f9fa',
   },
   productInfo: {
@@ -112,11 +122,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   productName: {
-    fontSize: 16, // slightly larger
+    fontSize: 16,
     fontWeight: '600',
     color: '#1a1a1a',
     lineHeight: 22,
     marginBottom: 4,
+  },
+  selectionText: {
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 6,
   },
   productPrice: {
     fontSize: 16,
@@ -173,4 +188,3 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 });
-

@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, Text } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, StyleSheet, Text, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useCart } from '../../../context/CartContext';
 import ProductImages from '../../../components/ProductComponent/ProductImages';
@@ -13,7 +13,32 @@ const ProductDetails = () => {
   const { addToCart } = useCart();
   const product = params.product ? JSON.parse(params.product) : null;
 
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedSize, setSelectedSize] = useState('');
+
   if (!product) return <Text>No product found</Text>;
+
+  const handleAddToCart = () => {
+    // If product has colors/sizes, ensure user has selected
+    if (product.colors && product.colors.length > 0 && !selectedColor) {
+      Alert.alert('Select Color', 'Please select a color before adding to cart.');
+      return;
+    }
+
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      Alert.alert('Select Size', 'Please select a size before adding to cart.');
+      return;
+    }
+
+    // Add selected options to product object
+    const productWithOptions = {
+      ...product,
+      selectedColor,
+      selectedSize,
+    };
+
+    addToCart(productWithOptions);
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -28,11 +53,17 @@ const ProductDetails = () => {
         showsVerticalScrollIndicator={false}
       >
         <ProductImages images={product.gallery} />
-        <ProductInfo product={product} />
+        <ProductInfo
+          product={product}
+          selectedColor={selectedColor}
+          setSelectedColor={setSelectedColor}
+          selectedSize={selectedSize}
+          setSelectedSize={setSelectedSize}
+        />
         <ProductReviews reviews={product.reviews} />
       </ScrollView>
       
-      <AddToCartButton onPress={() => addToCart(product)} />
+      <AddToCartButton onPress={handleAddToCart} />
     </View>
   );
 };
@@ -43,21 +74,21 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    position: 'relative', // Enable absolute positioning for children
+    position: 'relative',
   },
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
   scrollContent: {
-    paddingBottom: 120, // Space for AddToCartButton
-    paddingTop: 10, // Some top padding to avoid overlap with cart
+    paddingBottom: 120,
+    paddingTop: 10,
   },
   cartWrapper: {
     position: 'absolute',
-    top: 50, // Position from top (adjust based on your status bar)
-    right: 20, // Position from right edge
-    zIndex: 1000, // Ensure it's above all other content
-    elevation: 1000, // For Android shadow layering
+    top: 50,
+    right: 20,
+    zIndex: 1000,
+    elevation: 1000,
   },
 });
