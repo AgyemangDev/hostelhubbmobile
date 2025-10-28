@@ -6,14 +6,12 @@ import COLORS from '../../constants/Colors';
 const WithdrawalInput = ({ withdrawalAmount, setWithdrawalAmount, isWithdrawalButtonActive, onWithdrawalInitiate }) => {
   
   const handleInitiateWithdrawal = () => {
-Alert.alert(
-  "Withdrawal Unavailable",
-  "Withdrawals are currently not allowed through the app. Please contact customer support for assistance."
-);    // if (isWithdrawalButtonActive()) {
-    //   onWithdrawalInitiate();
-    // } else {
-    //   Alert.alert("Error", "Please fill all provided information");
-    // }
+
+   if (isWithdrawalButtonActive()) {
+      onWithdrawalInitiate();
+    } else {
+      Alert.alert("Error", "Please fill all provided information");
+    }
   };
 
   return (

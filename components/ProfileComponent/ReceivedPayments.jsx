@@ -43,48 +43,48 @@ const PaymentsMadeToHostels = () => {
     )}`;
   };
 
-  const renderTransactionItem = (item) => {
-    const { method, amount, createdAt, status, hostelName } = item;
-    const amountColor =
-      method === "Hostel Payment"
-        ? "#8B4513"
-        : method === "Wallet Deposit"
-        ? "green"
-        : method === "Withdrawal"
-        ? "red"
-        : "black";
+const renderTransactionItem = (item) => {
+  const { method, amount, createdAt, status, hostelName } = item;
 
-    return (
-      <View key={`${item.amount}-${item.createdAt?.seconds || "null"}`} style={styles.transactionCard}>
-        <View style={styles.transactionDetails}>
-          <Text style={styles.transactionTitle}>
-{(method === "Hostel Payment" || method === "Video Booking Payment")
-              ? `Payment to ${hostelName}`
-              : method === "HostelHubb Payment"
-              ? "Hostelhubb Subscription"
-              : method === "Storage Payment" 
-              ? "Storage Payment"
-              : method === "Wallet Deposit"
-              ? "Deposit to Wallet"
-              : method === "Withdrawal"
-              ? "Withdrawal from Wallet"
-              : "Referral Bonus"}
-          </Text>
-          {createdAt?.seconds && <Text style={styles.transactionDate}>{formatDate(createdAt)}</Text>}
-        </View>
-        <View style={styles.transactionInfo}>
-          <Text style={[styles.transactionAmount, { color: amountColor }]}>
-            ₵{amount.toLocaleString()}
-          </Text>
-          {method === "Withdrawal" && (
-            <Text style={styles.transactionStatus}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Text>
-          )}
-        </View>
+  // Color based on status
+  const amountColor = status === "pending" ? "red" : "green";
+
+  return (
+    <View
+      key={`${item.amount}-${item.createdAt?.seconds || "null"}`}
+      style={styles.transactionCard}
+    >
+      <View style={styles.transactionDetails}>
+        <Text style={styles.transactionTitle}>
+          {(method === "Hostel Payment" || method === "Video Booking Payment")
+            ? `Payment to ${hostelName}`
+            : method === "HostelHubb Payment"
+            ? "Hostelhubb Subscription"
+            : method === "Storage Payment"
+            ? "Storage Payment"
+            : method === "Wallet Deposit"
+            ? "Deposit to Wallet"
+            : method === "Withdrawal"
+            ? "Withdrawal from Wallet"
+            : "Referral Bonus"}
+        </Text>
+        {createdAt?.seconds && (
+          <Text style={styles.transactionDate}>{formatDate(createdAt)}</Text>
+        )}
       </View>
-    );
-  };
+      <View style={styles.transactionInfo}>
+        <Text style={[styles.transactionAmount, { color: amountColor }]}>
+          ₵{amount.toLocaleString()}
+        </Text>
+        <Text style={[styles.transactionStatus, { color: amountColor }]}>
+          ({status.charAt(0).toUpperCase() + status.slice(1)})
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+
 
   return (
     <View style={styles.container}>
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   transactionStatus: {
     fontSize: 12,
     marginTop: 5,
-    color: "gray", // Status for withdrawal only
+    color: "gray", 
   },
   listContent: {
     paddingBottom: 20,
