@@ -14,7 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from "../../constants/Colors";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { auth } from "../firebase/FirebaseConfig";
 
 const ClientLogIn = () => {
@@ -68,39 +68,69 @@ const ClientLogIn = () => {
     return emailRegex.test(email);
   };
 
-  const handleLogIn = async () => {
-    if (!email || !password) {
-      Alert.alert("Credentials Needed", "Please fill all the fields");
-      return;
-    }
+const handleLogIn = async () => {
+  if (!email || !password) {
+    Alert.alert("Credentials Needed", "Please fill all the fields");
+    return;
+  }
 
-    if (!validateEmail(email)) {
-      Alert.alert("Error", "Please enter a valid email address");
-      return;
-    }
+  if (!validateEmail(email)) {
+    Alert.alert("Error", "Please enter a valid email address");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      
-      // Save or clear credentials based on remember me checkbox
-      if (rememberMe) {
-        await saveCredentials(email, password);
-      } else {
-        await clearSavedCredentials();
-      }
-      
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "(tabs)" }],
-      });
-    } catch (error) {
-      Alert.alert("Error", "Invalid email or password");
-    } finally {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (!user.emailVerified) {
+      // User’s email is not verified
+      Alert.alert(
+        "Email Verification Required",
+        "Your email address has not been verified. Please check your inbox (and Spam folder) for the verification email.",
+        [
+          {
+            text: "Resend Verification Email",
+            onPress: async () => {
+              try {
+                await sendEmailVerification(user);
+                Alert.alert(
+                  "Verification Email Sent",
+                  "A new verification email has been sent to your inbox. Please check your email and verify before logging in."
+                );
+              } catch (resendError) {
+                console.error("Resend error:", resendError);
+                Alert.alert("Error", "Failed to resend verification email.");
+              }
+            },
+          },
+          { text: "OK" },
+        ]
+      );
       setLoading(false);
+      return; // Stop navigation
     }
-  };
+
+    // ✅ If verified, proceed to home
+    if (rememberMe) {
+      await saveCredentials(email, password);
+    } else {
+      await clearSavedCredentials();
+    }
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "(tabs)" }],
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    Alert.alert("Error", "Invalid email or password");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const toggleRememberMe = () => {
     setRememberMe(!rememberMe);

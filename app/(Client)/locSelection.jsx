@@ -3,8 +3,7 @@ import {View,Text,StyleSheet,TouchableOpacity,FlatList,Image,} from "react-nativ
 import { institutions } from "../../assets/data/data";
 import COLORS from "../../constants/Colors";
 import { useNavigation } from "expo-router";
-import { UserContext } from "../../context/UserContext";
-import { auth,db } from "../firebase/FirebaseConfig";
+
 
 const UniversitySelection = () => {
   const [selectedUniversities, setSelectedUniversities] = useState([]);

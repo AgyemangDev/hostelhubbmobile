@@ -131,7 +131,7 @@ const Profile = () => {
 
             <Text style={styles.time}>{formattedTimestamp}</Text>
             <LogoutButton />
-            <DeleteAccountButton />
+            {/* <DeleteAccountButton /> */}
           </View>
         </View>
       </ScrollView>

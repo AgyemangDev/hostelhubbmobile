@@ -21,15 +21,20 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (isReady && !isLoading) {
-      if (user) {
+useEffect(() => {
+  if (isReady && !isLoading) {
+    if (user) {
+      if (user.emailVerified) {
         router.replace("/(tabs)/(index)");
       } else {
-        router.replace("/WelcomeScreen");
+        router.replace("/EmailVerificationScreen"); // screen prompting verification
       }
+    } else {
+      router.replace("/FirstWelcomeScreen");
     }
-  }, [isReady, isLoading, user]);
+  }
+}, [isReady, isLoading, user]);
+
 
   // Always show splash while waiting
   return (

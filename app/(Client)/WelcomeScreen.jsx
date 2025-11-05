@@ -96,12 +96,11 @@ const OnboardingScreen = () => {
             { translateY: slideAnim }
           ]
         }}>
-          <Text style={styles.title}>Find Your Perfect Hostel</Text>
-          <Text style={styles.description}>
-            Are you a student looking for a comfortable and convenient place to
-            stay? Discover the best hostels near your campus with all the
-            amenities you need.
-          </Text>
+<Text style={styles.title}>Simplify Student Life with Hostelhubb</Text>
+<Text style={styles.description}>
+  Discover hostels, store your items, shop essentials, and travel between cities
+  — all in one easy platform built for students.
+</Text>
         </Animated.View>
       </View>
       

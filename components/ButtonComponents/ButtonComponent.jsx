@@ -2,10 +2,29 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import COLORS from '../../constants/Colors';
 
-const Button = ({ buttonText, onPressFunction }) => {
+const Button = ({ buttonText, onPressFunction, customStyle }) => {
+  const isCustom = customStyle ? true : false;
+
   return (
-    <TouchableOpacity style={styles.buttonContainer} onPress={onPressFunction}>
-      <Text style={styles.buttonText}>{buttonText}</Text>
+    <TouchableOpacity
+      style={[
+        styles.buttonContainer,
+        isCustom && {
+          backgroundColor: '#fff',
+          borderColor: COLORS.background,
+        },
+        customStyle,
+      ]}
+      onPress={onPressFunction}
+    >
+      <Text
+        style={[
+          styles.buttonText,
+          isCustom && { color: COLORS.background },
+        ]}
+      >
+        {buttonText}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -13,7 +32,7 @@ const Button = ({ buttonText, onPressFunction }) => {
 const styles = StyleSheet.create({
   buttonContainer: {
     height: 50,
-    width: 250,
+    width: 300,
     alignItems: 'center',
     justifyContent: 'center', 
     borderRadius: 10,
@@ -24,7 +43,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 20,
-    color: "#fff",
+    color: '#fff',
     fontWeight: '500',
   },
 });

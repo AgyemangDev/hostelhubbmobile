@@ -16,6 +16,12 @@ const ClientLayout = () => {
           headerShown: false,
         }}
       />
+       <Stack.Screen
+        name="EmailVerificationScreen"
+        options={{
+          headerShown: false,
+        }}
+      />
       <Stack.Screen
         name="ClientLogIn"
         options={{
@@ -24,6 +30,12 @@ const ClientLayout = () => {
       />
       <Stack.Screen
         name="ClientSignUp"
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="FirstWelcomeScreen"
         options={{
           headerShown: false,
         }}

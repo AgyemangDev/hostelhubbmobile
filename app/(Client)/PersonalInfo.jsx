@@ -11,6 +11,7 @@ import Button from "../../components/ButtonComponents/ButtonComponent"
 import CustomInput from "../../components/CustomInput";
 import { useRoute } from "@react-navigation/native";
 import { findReferredUser } from "../../utils/referralFetcherUtils";
+import { sendEmailVerification } from "firebase/auth";
 
 const ClientSignUp = () => {
   const [firstName, setFirstName] = useState("");
@@ -49,81 +50,90 @@ const ClientSignUp = () => {
   };
   
 
-  const handleSignUp = async () => {
-    if (!firstName || !surname || !phoneNumber || !selectedGender) {
-      Alert.alert("Error", "All fields are required");
-      return;
-    }
-    if (!user) {
-      Alert.alert("Error", "No user is currently logged in");
-      return;
-    }
+const handleSignUp = async () => {
+  if (!firstName || !surname || !phoneNumber || !selectedGender) {
+    Alert.alert("Error", "All fields are required");
+    return;
+  }
+  if (!user) {
+    Alert.alert("Error", "No user is currently logged in");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const defaultReferredById = "9NDBkpDcM3ThpPXCaL5MvLg0Dtt2"; // Default referral ID
-      let referredById = defaultReferredById;
+  setLoading(true);
+  try {
+    const defaultReferredById = "9NDBkpDcM3ThpPXCaL5MvLg0Dtt2"; // Default referral ID
+    let referredById = defaultReferredById;
 
-      if (referredBy) {
-        // Call the optimized Firestore query
-        const referredUser = await findReferredUser(referredBy);
-
-        if (referredUser) {
-          referredById = referredUser.id;
-          console.log(referredById);
-
-          const referredDocRef = doc(db, "Student_Users", referredUser.id);
-          await setDoc(
-            referredDocRef,
-            { totalReferal: (referredUser.totalReferal || 0) + 1 },
-            { merge: true }
-          );
-        } else {
-          Alert.alert("Error", "Invalid agent or referral code");
-          setLoading(false);
-          return;
-        }
+    if (referredBy) {
+      const referredUser = await findReferredUser(referredBy);
+      if (referredUser) {
+        referredById = referredUser.id;
+        const referredDocRef = doc(db, "Student_Users", referredUser.id);
+        await setDoc(
+          referredDocRef,
+          { totalReferal: (referredUser.totalReferal || 0) + 1 },
+          { merge: true }
+        );
       } else {
-        // Handle default referral user logic
-        const defaultDocRef = doc(db, "Student_Users", defaultReferredById);
-        const defaultUser = await getDoc(defaultDocRef);
-        if (defaultUser.exists()) {
-          await setDoc(
-            defaultDocRef,
-            { totalReferal: (defaultUser.data().totalReferal || 0) + 1 },
-            { merge: true }
-          );
-        }
+        Alert.alert("Error", "Invalid agent or referral code");
+        setLoading(false);
+        return;
       }
-
-      const referralCode = generateReferralCode();
-
-      const personalInfoDocRef = doc(db, "Student_Users", user.uid);
-      const userData = {
-        firstName,
-        surname,
-        phoneNumber,
-        gender: selectedGender,
-        referralCode,
-        referredBy: referredById,
-        institution: selectedUniversities,
-      };
-
-      await setDoc(personalInfoDocRef, userData, { merge: true });
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "(tabs)" }],
-      });
-
-      Alert.alert("Success", "Account created successfully");
-    } catch (error) {
-      console.error("Sign-up error:", error);
-      Alert.alert("Error", "Failed to complete sign-up");
-    } finally {
-      setLoading(false);
+    } else {
+      const defaultDocRef = doc(db, "Student_Users", defaultReferredById);
+      const defaultUser = await getDoc(defaultDocRef);
+      if (defaultUser.exists()) {
+        await setDoc(
+          defaultDocRef,
+          { totalReferal: (defaultUser.data().totalReferal || 0) + 1 },
+          { merge: true }
+        );
+      }
     }
-  };
+
+    const referralCode = generateReferralCode();
+
+    const personalInfoDocRef = doc(db, "Student_Users", user.uid);
+    const userData = {
+      firstName,
+      surname,
+      phoneNumber,
+      gender: selectedGender,
+      referralCode,
+      referredBy: referredById,
+      institution: selectedUniversities,
+    };
+
+    await setDoc(personalInfoDocRef, userData, { merge: true });
+
+    // ✅ Send verification email
+    await sendEmailVerification(auth.currentUser);
+
+    // ✅ Inform the user
+    Alert.alert(
+      "Verify Your Email",
+      "A confirmation email has been sent to your email address. Please verify your account before logging in. If you don’t see it, check your Spam or Junk folder.",
+      [
+        {
+          text: "OK",
+          onPress: () => {
+            // ✅ Route to login instead of tabs
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "ClientLogIn" }],
+            });
+          },
+        },
+      ]
+    );
+  } catch (error) {
+    console.error("Sign-up error:", error);
+    Alert.alert("Error", "Failed to complete sign-up");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <KeyboardAvoidingView
