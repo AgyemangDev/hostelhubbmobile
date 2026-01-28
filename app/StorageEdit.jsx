@@ -1,88 +1,108 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { UserContext } from '../context/UserContext';
+
 import BookingHeader from '../components/Headers/BookingHeader';
-import EditPersonalInfoSection from '../components/StoreComponent/EditPersonalInfoSection';
 import DatesSection from '../components/StoreComponent/DatesSection';
 import LocationsSection from '../components/StoreComponent/LocationsSection';
 import ItemsSection from '../components/StoreComponent/ItemsSection';
-import SummarySection from '../components/StoreComponent/SummarySection';
+import DeliveryStatusSection from '../components/StoreComponent/DeliveryStatusSection';
 
 const StorageEdit = () => {
+  const router = useRouter();
+  const { userInfo, setUserInfo } = useContext(UserContext); // ✅ useContext here
+
   const { booking } = useLocalSearchParams();
   const parsedBooking = booking ? JSON.parse(booking) : null;
-  
+
   const [bookingData, setBookingData] = useState(parsedBooking);
+
+  const handleStatusUpdate = (newStatus) => {
+    setBookingData(prev => ({
+      ...prev,
+      status: newStatus,
+    }));
+  };
 
   const handleLocationUpdate = (newDeliveryLocation) => {
     setBookingData(prev => ({
       ...prev,
-      deliveryLocation: newDeliveryLocation
+      deliveryLocation: newDeliveryLocation,
     }));
-    // Here you would typically make an API call to update the backend
+
     console.log('Updated delivery location:', newDeliveryLocation);
   };
 
   if (!bookingData) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Booking data not found.</Text>
-        <Text style={styles.errorSubtext}>
-          Please check your booking reference and try again.
-        </Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Booking data not found.</Text>
+          <Text style={styles.errorSubtext}>
+            Please check your booking reference and try again.
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <BookingHeader bookingReference={bookingData.bookingReference} />
-      
-      <EditPersonalInfoSection 
-        personalInfo={{
-          firstName: bookingData.firstName,
-          lastName: bookingData.lastName,
-          email: bookingData.email,
-          phone: bookingData.phone
-        }}
-      />
-      
-      <DatesSection 
-        dates={{
-          bookingDate: bookingData.bookingDate,
-          pickupDate: bookingData.pickupDate,
-          deliveryDate: bookingData.deliveryDate
-        }}
-      />
-      
-      <LocationsSection 
-        locations={{
-          pickupLocation: bookingData.pickupLocation,
-          deliveryLocation: bookingData.deliveryLocation,
-        }}
-        deliveryDate={bookingData.deliveryDate}
-        onUpdateLocation={handleLocationUpdate}
-        bookingReference={bookingData.bookingReference}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        <BookingHeader
+          bookingReference={bookingData.bookingReference}
+          summary={{
+            status: bookingData.status,
+            totalPrice: bookingData.totalPrice,
+          }}
+        />
 
-      />
-      
-      <ItemsSection items={bookingData.items} />
-      
-      <SummarySection 
-        summary={{
-          status: bookingData.status,
-          totalPrice: bookingData.totalPrice
-        }}
-      />
-    </ScrollView>
+        <DatesSection
+          dates={{
+            bookingDate: bookingData.bookingDate,
+            pickupDate: bookingData.pickupDate,
+            deliveryDate: bookingData.deliveryDate,
+          }}
+        />
+
+        <LocationsSection
+          locations={{
+            pickupLocation: bookingData.pickupLocation,
+            deliveryLocation: bookingData.deliveryLocation,
+          }}
+          deliveryDate={bookingData.deliveryDate}
+          onUpdateLocation={handleLocationUpdate}
+          bookingReference={bookingData.bookingReference}
+        />
+
+        <ItemsSection items={bookingData.items} />
+
+        <DeliveryStatusSection
+          status={bookingData.status}
+          bookingReference={bookingData.bookingReference}
+          onStatusUpdate={handleStatusUpdate}
+          userInfo={userInfo}
+          setUserInfo={setUserInfo}
+          router={router}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f5f7fa",
+  },
   container: {
     padding: 16,
-    backgroundColor: "#f5f7fa",
-    minHeight: '100%',
+    paddingBottom: 32,
   },
   errorContainer: {
     flex: 1,

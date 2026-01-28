@@ -1,84 +1,65 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { formatDate } from '../../utils/dateUtils';
-
-const { width } = Dimensions.get('window');
-const GAP = 8; // gap between cards
-const CARD_WIDTH = (width - 14*2 - GAP) / 2; // section padding 14 each side + gap
 
 const DatesSection = ({ dates }) => {
   const { bookingDate, pickupDate, deliveryDate } = dates;
 
   const dateItems = [
-    { label: "Booking Date", value: formatDate(bookingDate) },
-    { label: "Pickup Date", value: formatDate(pickupDate) },
-    { label: "Delivery Date", value: formatDate(deliveryDate) },
+    { label: "Booked", value: formatDate(bookingDate), icon: "calendar" },
+    { label: "Pickup", value: formatDate(pickupDate), icon: "arrow-up-circle" },
+    { label: "Delivery", value: formatDate(deliveryDate), icon: "arrow-down-circle" },
   ];
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Important Dates</Text>
-      <View style={styles.cardsContainer}>
-        {dateItems.map((item, index) => (
-          <View key={index} style={styles.dateCard}>
+      {dateItems.map((item, index) => (
+        <View key={index} style={styles.dateRow}>
+          <View style={styles.labelContainer}>
+            <Ionicons name={item.icon} size={16} color="#6B7280" />
             <Text style={styles.label}>{item.label}</Text>
-            <Text style={styles.value}>{item.value}</Text>
           </View>
-        ))}
-        {/* Fill the second card of last row if items are odd */}
-        {dateItems.length % 2 !== 0 && <View style={[styles.dateCard, { opacity: 0 }]} />}
-      </View>
+          <Text style={styles.value}>{item.value}</Text>
+        </View>
+      ))}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   section: {
-    marginBottom: 20,
     backgroundColor: "#fff",
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
     elevation: 2,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 12,
-    color: "#1a1a1a",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    paddingBottom: 6,
-  },
-  cardsContainer: {
+  dateRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
   },
-  dateCard: {
-    width: CARD_WIDTH -20,
-    backgroundColor: "#f8f9fa",
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderLeftWidth: 3,
-    borderLeftColor: "#007AFF",
-    marginBottom: GAP,
+  labelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   label: {
-    fontSize: 11,
-    color: "#666",
-    textTransform: "uppercase",
-    fontWeight: "600",
-    letterSpacing: 0.5,
-    marginBottom: 4,
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
   },
   value: {
     fontSize: 14,
-    color: "#1a1a1a",
+    color: "#1F2937",
     fontWeight: "600",
   },
 });

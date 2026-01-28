@@ -4,6 +4,7 @@ import ShopHeader from '../../../components/Headers/ShopHeader';
 import ProductCard from '../../../components/Cards/VerticalScroll/ProductCard';
 import { useProducts } from '../../../context/ProductContext';
 import CartHeader from '../../../components/ProductComponent/CartHeader';
+import DataBannerCard from '../../../components/Cards/DataBannerCard';
 
 const Index = () => {
   const { products } = useProducts();
@@ -27,7 +28,7 @@ const Index = () => {
     <SafeAreaView style={styles.safeContainer}>
       <View style={styles.container}>
         <ShopHeader onSearch={setSearchQuery} onFilter={setCategoryFilter} />
-
+        <DataBannerCard />
         <FlatList
           data={filteredProducts}
           renderItem={renderItem}

@@ -1,5 +1,5 @@
 # Hostelhubb
-# eas update --channel production
+# eas update --branch production --message "2.0.3 OTA update"
 # android  new 25 2.0.3
 # ios  new 26 2.0.4
 # eas build --platform ios --profile production --non-interactive --auto-submit

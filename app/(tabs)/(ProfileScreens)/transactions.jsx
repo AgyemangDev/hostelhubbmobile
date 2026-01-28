@@ -7,66 +7,44 @@ import WithdrawalScreen from "../../../components/ProfileComponent/WithdrawalScr
 const TransactionsPage = () => {
   const [selectedTab, setSelectedTab] = useState("Balance Info");
 
+  const tabs = [
+    { id: "Balance Info", label: "Balance" },
+    // { id: "Withdraw Money", label: "Withdraw" },
+    { id: "Received Payments", label: "Transactions" }
+  ];
+
   return (
     <View style={styles.container}>
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <Pressable
-          style={styles.tabButton}
-          onPress={() => setSelectedTab("Balance Info")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              selectedTab === "Balance Info" && styles.activeTabText,
-            ]}
-          >
-            Balance Info
-          </Text>
-          {selectedTab === "Balance Info" && <View style={styles.underline} />}
-        </Pressable>
-
-        <Pressable
-          style={styles.tabButton}
-          onPress={() => setSelectedTab("Withdraw Money")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              selectedTab === "Withdraw Money" && styles.activeTabText,
-            ]}
-          >
-            Withdraw Money
-          </Text>
-          {selectedTab === "Withdraw Money" && (
-            <View style={styles.underline} />
-          )}
-        </Pressable>
-
-        <Pressable
-          style={styles.tabButton}
-          onPress={() => setSelectedTab("Received Payments")}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              selectedTab === "Received Payments" && styles.activeTabText,
-            ]}
-          >
-            Transactions
-          </Text>
-          {selectedTab === "Received Payments" && (
-            <View style={styles.underline} />
-          )}
-        </Pressable>
+      {/* Modern Tabs */}
+      <View style={styles.tabsWrapper}>
+        <View style={styles.tabsContainer}>
+          {tabs.map((tab) => (
+            <Pressable
+              key={tab.id}
+              style={[
+                styles.tabButton,
+                selectedTab === tab.id && styles.activeTabButton
+              ]}
+              onPress={() => setSelectedTab(tab.id)}
+            >
+              <Text
+                style={[
+                  styles.tabText,
+                  selectedTab === tab.id && styles.activeTabText
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
-    
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         scrollEnabled={true}
-        showsVerticalScrollIndicator={false} // Hide vertical scrollbar
-        showsHorizontalScrollIndicator={false} 
+        showsVerticalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
       >
         {selectedTab === "Balance Info" && <BalanceInfo />}
         {selectedTab === "Received Payments" && <ReceivedPayments />}
@@ -83,28 +61,47 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  tabsWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
   tabsContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 20,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 12,
+    padding: 4,
   },
   tabButton: {
+    flex: 1,
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 8,
+    transition: "all 0.2s ease",
+  },
+  activeTabButton: {
+    backgroundColor: "#610b0c",
+    shadowColor: "#610b0c",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabText: {
-    fontSize: 16,
-    color: "#555",
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#666",
   },
   activeTabText: {
-    color: "#610b0c",
-    fontWeight: 500,
-  },
-  underline: {
-    height: 2,
-    backgroundColor: "#610b0c",
-    marginTop: 5,
-    width: "100%",
+    color: "#fff",
+    fontWeight: "600",
   },
   scrollContainer: {
     paddingBottom: 20,

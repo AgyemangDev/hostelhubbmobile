@@ -10,7 +10,7 @@ const HorizontalScrollCardList = ({ hostels }) => {
 
   const filteredHostels = useMemo(() => {
     const popular = hostels?.filter(
-      (hostel) => hostel.views > 2000 && hostel.hostelAvailability === true
+      (hostel) => hostel.views > 2000
     );
     return popular ? [...popular].sort(() => 0.5 - Math.random()) : [];
   }, [hostels]);

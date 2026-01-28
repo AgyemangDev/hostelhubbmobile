@@ -44,7 +44,7 @@ const AccountBalanceInfo = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Deposit Money</Text>
+      <Text style={styles.title}>Deposit once, use Everywhere</Text>
 
       {/* Display Balance */}
       <View style={styles.balanceContainer}>
@@ -91,10 +91,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
+    padding: 20,
+    color: "#504b4b",
     textAlign: "center",
   },
   balanceContainer: {

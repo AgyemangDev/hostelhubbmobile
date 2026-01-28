@@ -1,7 +1,30 @@
 import React from "react";
 import { Stack } from "expo-router";
+import { TouchableOpacity } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const ProfileLayout = () => {
+  const router = useRouter();
+
+  const CustomBackButton = () => (
+    <TouchableOpacity
+      onPress={() => router.back()}
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
+        alignItems: "center",
+        justifyContent: "center",
+        marginLeft: 8,
+        marginBottom:3
+      }}
+    >
+      <FontAwesome name="arrow-left" size={20} color="#fff" />
+    </TouchableOpacity>
+  );
+
   return (
     <Stack
       screenOptions={{
@@ -10,10 +33,15 @@ const ProfileLayout = () => {
         },
         headerTintColor: "#fff",
         headerTitleStyle: {
-          fontWeight: "bold",
+          fontWeight: "600",
+          fontSize: 18,
           color: "#fff",
         },
-        headerBackTitleVisible: false, // Globally hides the back title
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+        headerLeft: () => <CustomBackButton />,
+        headerTitleAlign: "center",
+        animation: "slide_from_right",
       }}
     >
       <Stack.Screen
@@ -40,7 +68,7 @@ const ProfileLayout = () => {
         name="reportAConcern"
         options={{
           headerShown: true,
-          title: "Report Your Concern",
+          title: "Report Concern",
         }}
       />
       <Stack.Screen
@@ -61,14 +89,14 @@ const ProfileLayout = () => {
         name="referralInfo"
         options={{
           headerShown: true,
-          title: "HostelHubb Referral Program",
+          title: "Referral Program",
         }}
       />
-       <Stack.Screen
+      <Stack.Screen
         name="contactHostel"
         options={{
           headerShown: true,
-          title: "Contact Us",
+          title: "About Us",
         }}
       />
     </Stack>

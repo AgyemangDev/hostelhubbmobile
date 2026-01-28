@@ -8,16 +8,18 @@ import {
   ScrollView,
 } from "react-native";
 import { UserContext } from "../../../context/UserContext";
-import { MaterialIcons } from "@expo/vector-icons";
-import COLORS from "../../../constants/Colors";
 import { useNavigation } from "expo-router";
 import LogoutButton from "../../../components/LogoutButton";
 import DeleteAccountButton from "../../../components/DeleteButton";
 import styles from "../../../assets/Styles/ProfileStyles";
+import { ExternalLink } from "@/components/ExternalLink";
+import ProfileLinkItem from "../../../components/ProfileComponent/ProfileLinkItem";
 
 const Profile = () => {
   const { userInfo } = useContext(UserContext);
   const navigation = useNavigation();
+
+
 
   const formattedTimestamp = userInfo?.Timestamp
     ? typeof userInfo.Timestamp === "object" && userInfo.Timestamp.toDate
@@ -62,14 +64,14 @@ const Profile = () => {
             <View style={styles.adContainer}>
               <View style={styles.adContent}>
                 <Image
-                  source={require("../../../assets/images/studentsignin_up.gif")}
+                  source={require("../../../assets/images/Shopping.gif")}
                   style={styles.adImage}
                   resizeMode="cover"
                 />
                 <View style={styles.adTextContainer}>
                   <Text style={styles.adTitle}>HostelHubb Your Stay</Text>
                   <Text style={styles.adDescription}>
-                Hostel,accommodation and storage reservations made easy, right on your campus.
+                Accommodation, storage reservations,transport and student life made easy, right on your campus.
                   </Text>
                 </View>
               </View>
@@ -77,58 +79,26 @@ const Profile = () => {
           </View>
 
           <View style={styles.linksContainer}>
-            {/* Links Section */}
-            {[
-              {
-                icon: "account-circle",
-                label: "Personal Info",
-                route: "personalInfo",
-              },
-              { icon: "money", label: "Transactions & Subscriptions", route: "transactions" },
-                {
-                icon: "work",
-                label: "How Hostelhubb Works",
-                route: "howHostelHubbWorks",
-              },
-
-              {
-                icon: "diversity-1",
-                label: "Our Referral Program",
-                route: "referralInfo",
-              },
-              {
-                icon: "report",
-                label: "Report A Concern",
-                route: "reportAConcern",
-              },
-
-              {
-                icon: "contact-support",
-                label: "Contact Us",
-                route: "contactHostel",
-              },
-            ].map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.linkItem}
-                onPress={() => navigation.navigate(item.route)}
-              >
-                <View style={styles.linkDetails}>
-                  <MaterialIcons
-                    name={item.icon}
-                    size={24}
-                    color={COLORS.background}
-                  />
-                  <Text style={styles.linkLabel}>{item.label}</Text>
-                </View>
-                <MaterialIcons
-                  name="chevron-right"
-                  size={24}
-                  color={COLORS.background}
-                />
-              </TouchableOpacity>
-            ))}
-
+ {[
+  { icon: "account-circle", label: "Personal Info", route: "personalInfo" },
+  { icon: "money", label: "Deposits & Transaction", route: "transactions" },
+  { icon: "work", label: "How Hostelhubb Works", route: "howHostelHubbWorks" },
+  { icon: "diversity-1", label: "Our Referral Program", route: "referralInfo" },
+  { icon: "report", label: "Report A Concern", route: "reportAConcern" },
+  {
+    icon: "contact-support",
+    label: "About Us",
+    link: "https://hostelhubb.com",
+  },
+].map((item, index) => (
+  <ProfileLinkItem
+    key={index}
+    {...item}
+    style={styles.linkItem}
+    onNavigate={navigation.navigate}
+  />
+))}
+  
             <Text style={styles.time}>{formattedTimestamp}</Text>
             <LogoutButton />
             {/* <DeleteAccountButton /> */}

@@ -12,6 +12,7 @@ import WithdrawalTermsConditions from "./WithdrawalTermsConditions";
 
 const WithdrawalScreen = () => {
   const { userInfo } = useContext(UserContext);
+  const userEmail = userInfo?.email;
   const userId = userInfo?.id;
   const userBalance = userInfo?.balance || 0.0;
 
@@ -96,6 +97,7 @@ const WithdrawalScreen = () => {
         userId: userId, // Assuming adminId is the same as userId
         transactionType: selectedMethod,
         status: "pending",
+        userEmail: userEmail,
         createdAt: serverTimestamp(),
       });
   

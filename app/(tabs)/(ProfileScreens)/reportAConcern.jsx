@@ -49,7 +49,7 @@ const ReportAConcern = () => {
       <Text style={styles.title}>Report A Concern</Text>
       <Text style={styles.instruction}>
         Please provide detailed information about the concern or problem you are
-        facing with using this application. We promise to reach out to you within the shortest possible
+        facing with using Hostelhubb Software. We promise to reach out to you within the shortest possible
         time. If concern is personal to your hostel, visit your booked hostel and report to manager.
       </Text>
       <TextInput
