@@ -14,6 +14,7 @@ const ClientLayout = () => {
         name="WelcomeScreen"
         options={{
           headerShown: false,
+          gestureEnabled: false, // This should disable swipe back
         }}
       />
        <Stack.Screen
@@ -50,14 +51,14 @@ const ClientLayout = () => {
         name="PersonalInfo"
         options={{
           headerShown: false,
-          gestureEnabled: false, // This should disable swipe back
+          gestureEnabled: true, // This should disable swipe back
         }}
       />
       <Stack.Screen
         name="locSelection"
         options={{
           headerShown: false,
-          gestureEnabled: false, // This should disable swipe back
+          gestureEnabled: true, // This should disable swipe back
         }}
       />
     </Stack>

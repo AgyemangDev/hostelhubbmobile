@@ -1,139 +1,120 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import {
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Alert,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import COLORS from "../../constants/Colors";
-import CustomDropdown from "../../components/CustomDropdown";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { validatePersonalInfoForm } from "../../utils/ValidationUtils/personalInfoValidation";
+import { supabase } from "../firebase/supabaseCofig";
+
+import COLORS from "../../constants/Colors";
 import { auth, db } from "../firebase/FirebaseConfig";
-import Button from "../../components/ButtonComponents/ButtonComponent"
-import CustomInput from "../../components/CustomInput";
-import { useRoute } from "@react-navigation/native";
+import PersonalInfoForm from "../../components/Forms/PersonalInfoForm";
 import { findReferredUser } from "../../utils/referralFetcherUtils";
-import { sendEmailVerification } from "firebase/auth";
 
 const ClientSignUp = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { email, password, selectedUniversity } = route.params;
+  console.log( selectedUniversity,email,password);
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const [firstName, setFirstName] = useState("");
   const [surname, setSurname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [referredBy, setReferredBy] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
-  const [isGenderVisible, setIsGenderVisible] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { selectedUniversities } = route.params;
+  const [isGenderVisible, setIsGenderVisible] = useState(false);
 
-  // Monitor auth state
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      }
-    });
-    return () => unsubscribe();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return unsubscribe;
   }, []);
 
-  const toggleGenderVisibility = () => {
-    setIsGenderVisible((prev) => !prev); // Toggle visibility
-  };
-
   const generateReferralCode = () => {
-    const firstLetter = firstName.charAt(0).toUpperCase(); // First letter of firstName (Uppercase)
-    const randomLetter = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // Random lowercase letter
-    const randomNumber = Math.floor(10 + Math.random() * 90); // Random 2-digit number
-    const secondLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // Random uppercase letter
-    
-    return `${firstLetter}${randomLetter}${randomNumber}${secondLetter}`;
+    return `${firstName[0]?.toUpperCase()}${String.fromCharCode(
+      97 + Math.random() * 26
+    )}${Math.floor(10 + Math.random() * 90)}${String.fromCharCode(
+      65 + Math.random() * 26
+    )}`;
   };
-  
 
-const handleSignUp = async () => {
-  if (!firstName || !surname || !phoneNumber || !selectedGender) {
-    Alert.alert("Error", "All fields are required");
-    return;
-  }
-  if (!user) {
-    Alert.alert("Error", "No user is currently logged in");
-    return;
-  }
+  const handleSignUp = async () => {
+    const error = validatePersonalInfoForm({
+  firstName,
+  surname,
+  phoneNumber,
+  gender: selectedGender,
+});
 
-  setLoading(true);
-  try {
-    const defaultReferredById = "9NDBkpDcM3ThpPXCaL5MvLg0Dtt2"; // Default referral ID
-    let referredById = defaultReferredById;
+if (error) {
+  Alert.alert("Error", error);
+  return;
+}
+    setLoading(true);
 
-    if (referredBy) {
-      const referredUser = await findReferredUser(referredBy);
-      if (referredUser) {
+    try {
+      const defaultReferrerId = "9NDBkpDcM3ThpPXCaL5MvLg0Dtt2";
+      let referredById = defaultReferrerId;
+
+      if (referredBy) {
+        const referredUser = await findReferredUser(referredBy);
+        if (!referredUser) {
+          Alert.alert("Error", "Invalid referral code");
+          setLoading(false);
+          return;
+        }
+
         referredById = referredUser.id;
-        const referredDocRef = doc(db, "Student_Users", referredUser.id);
         await setDoc(
-          referredDocRef,
+          doc(db, "Student_Users", referredUser.id),
           { totalReferal: (referredUser.totalReferal || 0) + 1 },
           { merge: true }
         );
-      } else {
-        Alert.alert("Error", "Invalid agent or referral code");
-        setLoading(false);
-        return;
       }
-    } else {
-      const defaultDocRef = doc(db, "Student_Users", defaultReferredById);
-      const defaultUser = await getDoc(defaultDocRef);
-      if (defaultUser.exists()) {
-        await setDoc(
-          defaultDocRef,
-          { totalReferal: (defaultUser.data().totalReferal || 0) + 1 },
-          { merge: true }
-        );
-      }
-    }
 
-    const referralCode = generateReferralCode();
+      const userData = {
+        firstName,
+        surname,
+        phoneNumber,
+        gender: selectedGender,
+        referralCode: generateReferralCode(),
+        referredBy: referredById,
+        institution: selectedUniversities,
+      };
 
-    const personalInfoDocRef = doc(db, "Student_Users", user.uid);
-    const userData = {
-      firstName,
-      surname,
-      phoneNumber,
-      gender: selectedGender,
-      referralCode,
-      referredBy: referredById,
-      institution: selectedUniversities,
-    };
+      await setDoc(doc(db, "Student_Users", user.uid), userData, { merge: true });
+      await sendEmailVerification(auth.currentUser);
 
-    await setDoc(personalInfoDocRef, userData, { merge: true });
-
-    // ✅ Send verification email
-    await sendEmailVerification(auth.currentUser);
-
-    // ✅ Inform the user
-    Alert.alert(
-      "Verify Your Email",
-      "A confirmation email has been sent to your email address. Please verify your account before logging in. If you don’t see it, check your Spam or Junk folder.",
-      [
-        {
-          text: "OK",
-          onPress: () => {
-            // ✅ Route to login instead of tabs
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "ClientLogIn" }],
-            });
+      Alert.alert(
+        "Verify Your Email",
+        "A verification email has been sent.",
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "ClientLogIn" }],
+              }),
           },
-        },
-      ]
-    );
-  } catch (error) {
-    console.error("Sign-up error:", error);
-    Alert.alert("Error", "Failed to complete sign-up");
-  } finally {
-    setLoading(false);
-  }
-};
+        ]
+      );
+    } catch (err) {
+      Alert.alert("Error", "Failed to complete sign-up");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -142,57 +123,29 @@ const handleSignUp = async () => {
     >
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollView}>
-        <Image
-        source={require("../../assets/images/personal_data.gif")}
-        style={styles.image}
-      />
-          <View style={styles.containerInput}>
-            <Text style={styles.title}>Personal Information</Text>
-            <CustomInput
-              placeholder="First Name"
-              value={firstName}
-              onChangeText={setFirstName}
-              editable={!loading}
-            />
-            <CustomInput
-              placeholder="Surname"
-              value={surname}
-              onChangeText={setSurname}
-              editable={!loading}
-            />
-            <CustomInput
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-              editable={!loading}
-            />
-            <CustomInput
-              placeholder="Agent or Referral Code (Optional)"
-              value={referredBy}
-              onChangeText={setReferredBy}
-              editable={!loading}
-            />
+          <Image
+            source={require("../../assets/images/personal_data.gif")}
+            style={styles.image}
+          />
 
-            <CustomDropdown
-              data={["Male", "Female"]}
-              selectedValue={selectedGender}
-              onSelect={setSelectedGender}
-              placeholder="Select Gender"
-              visible={isGenderVisible}
-              onClose={() => setIsGenderVisible(false)}
-              disabled={loading}
-              onPress={toggleGenderVisibility}
-            />
-          </View>
-          {loading ? (
-            <ActivityIndicator size="large" color={COLORS.primary} />
-          ) : (
-            <Button
-              buttonText="Complete Sign Up"
-              onPressFunction={handleSignUp}
-            />
-          )}
+          <PersonalInfoForm
+            firstName={firstName}
+            setFirstName={setFirstName}
+            surname={surname}
+            setSurname={setSurname}
+            phoneNumber={phoneNumber}
+            setPhoneNumber={setPhoneNumber}
+            referredBy={referredBy}
+            setReferredBy={setReferredBy}
+            selectedGender={selectedGender}
+            setSelectedGender={setSelectedGender}
+            isGenderVisible={isGenderVisible}
+            toggleGenderVisibility={() =>
+              setIsGenderVisible((prev) => !prev)
+            }
+            loading={loading}
+            onSubmit={handleSignUp}
+          />
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -200,25 +153,17 @@ const handleSignUp = async () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  scrollView: { flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  containerInput: { width: "80%", alignItems: "center" },
-  title: {
-    color: COLORS.titleColor,
-    fontSize: 30,
-    fontWeight: "bold",
-    paddingVertical: 15,
-    textAlign: "center",
+  container: { flex: 1, backgroundColor: COLORS.white },
+  scrollView: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   image: {
-    height: 300,
-    width: 300,
+    height: 200,
+    width: 200,
     resizeMode: "contain",
-    justifyContent: "center",
-    alignContent: "center",
+    marginBottom: 10,
   },
 });
 

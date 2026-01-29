@@ -9,6 +9,56 @@ export const institutions = [
     label: "KNUST",
     logo: require("../images/knust.png"),
   },
+   {
+    value: "KNUST (Obuasi Campus)",
+    label: "KNUST (Obuasi Campus)",
+    logo: require("../images/knust.png"),
+  },
+  {
+    value: "University of Cape Coast",
+    label: "University of Cape Coast",
+    logo: require("../images/ucc.png"),
+  },
+  {
+    value: "University of Education, Winneba",
+    label: "University of Education, Winneba",
+    logo: require("../images/uew.png"),
+  },
+  {
+    value: "Ashesi University",
+    label: "Ashesi University",
+    logo: require("../images/ashesi.png"),
+  },
+  {
+    value: "University of Developmental Sciences",
+    label: "University of Developmental Sciences",
+    logo: require("../images/uds.png"),
+  },
+  {
+    value: "University of Mines And Technology",
+    label: "University of Mines And Technology",
+    logo: require("../images/umat.png"),
+  },
+  {
+    value: "University of Energy and Natural Resources",
+    label: "University of Energy and Natural Resources",
+    logo: require("../images/uenr.png"),
+  },
+  {
+    value: "Christian Service University",
+    label: "Christian Service University",
+    logo: require("../images/csu.png"),
+  },
+  {
+    value: "University of Health and Allied Sciences",
+    label: "University of Health and Allied Sciences",
+    logo: require("../images/uhas.png"),
+  },
+  {
+    value: "Garden City University",
+    label: "Garden City University",
+    logo: require("../images/Gc.png"),
+  },
   
 ];
 

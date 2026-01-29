@@ -1,11 +1,17 @@
 import React, { useState, useRef } from "react";
-import { View, Text, Image, FlatList, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  FlatList,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import COLORS from "../../constants/Colors";
 import Button from "../../components/ButtonComponents/ButtonComponent";
 
-
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const slides = [
   {
@@ -46,7 +52,6 @@ const FirstWelcomeScreen = () => {
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
       slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
-      setCurrentIndex(currentIndex + 1);
     } else {
       router.push("/WelcomeScreen");
     }
@@ -66,6 +71,9 @@ const FirstWelcomeScreen = () => {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
+        ref={slidesRef}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
         renderItem={({ item }) => (
           <View style={[styles.slide, { width }]}>
             <Image source={item.image} style={styles.image} resizeMode="contain" />
@@ -73,12 +81,9 @@ const FirstWelcomeScreen = () => {
             <Text style={styles.description}>{item.description}</Text>
           </View>
         )}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-        ref={slidesRef}
       />
 
-      {/* Pagination Dots */}
+      {/* Pagination */}
       <View style={styles.dotsContainer}>
         {slides.map((_, i) => (
           <View
@@ -91,7 +96,7 @@ const FirstWelcomeScreen = () => {
         ))}
       </View>
 
-      {/* Button */}
+      {/* Full-width Button with spacing */}
       <View style={styles.buttonWrapper}>
         <Button
           buttonText={currentIndex === slides.length - 1 ? "Sign Up" : "Next"}
@@ -102,21 +107,21 @@ const FirstWelcomeScreen = () => {
   );
 };
 
+export default FirstWelcomeScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: COLORS.white,
   },
   slide: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   image: {
     width: width * 0.8,
-    height: height * 0.4,
+    height: width * 0.8,
   },
   title: {
     fontSize: 24,
@@ -128,31 +133,29 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     textAlign: "center",
-    color: "#555",
+    color: COLORS.textMuted,
     marginTop: 10,
-    paddingHorizontal: 30,
+    paddingHorizontal: 16,
   },
   dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
-    marginTop: 15,
+    marginTop: 16,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ccc",
+    backgroundColor: COLORS.placeholder,
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: COLORS.background,
     width: 20,
+    backgroundColor: COLORS.background,
   },
   buttonWrapper: {
-    marginTop: 30,
-    marginBottom: 20,
+    paddingHorizontal: 24, 
+    marginTop: 24,
+    marginBottom: 32,
   },
 });
-
-export default FirstWelcomeScreen;

@@ -6,11 +6,17 @@ const COLORS = {
   placeholder: "#d87071",
   primary: "#0364A5",
 
-  darkest: "#670708", // Very dark red - for important highlights, critical actions
-  gold: "#f2c94c", // Gold - for premium/special offerings, rating stars
-  teal: "#0c9a98", // Teal - complementary to red, for contrast actions
-  success: "#048547", // Green - for success messages
-  link: "#0364A5", // Link text
+  darkest: "#670708",
+  gold: "#f2c94c",
+  teal: "#0c9a98",
+  success: "#048547",
+  link: "#0364A5",
+
+  white: "#FFFFFF",
+  textDark: "#333333",
+  textMuted: "#555555",
+  shadow: "rgba(0,0,0,0.1)",
+  logoShadow: "rgba(139, 0, 0, 0.2)",
 };
 
 export default COLORS;

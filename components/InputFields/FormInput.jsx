@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
-  StyleSheet,
-  TextInput,
   View,
+  TextInput,
+  Text,
   TouchableOpacity,
-  Platform,
+  Animated,
+  StyleSheet,
 } from "react-native";
 import Entypo from "@expo/vector-icons/Entypo";
 import COLORS from "../../constants/Colors";
 
-const FormInput = ({
+const FloatingLabelInput = ({
   placeholder,
   value,
   onChangeText,
@@ -20,102 +21,99 @@ const FormInput = ({
   togglePasswordVisibility,
   disabled = false,
 }) => {
-  return isPasswordInput ? (
-    <View style={[styles.passwordContainer, disabled && styles.inputDisabled]}>
-      <TextInput
-        style={styles.passwordInput}
-        placeholder={placeholder}
-        placeholderTextColor="#888"
-        secureTextEntry={!isPasswordVisible}
-        value={value}
-        onChangeText={onChangeText}
-        editable={!disabled}
-      />
-      <TouchableOpacity
-        onPress={togglePasswordVisibility}
-        style={styles.iconWrapper}
-      >
-        <Entypo
-          name={isPasswordVisible ? "eye" : "eye-with-line"}
-          size={24}
-          color="#555"
-        />
-      </TouchableOpacity>
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Animated value for label
+  const labelAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  useEffect(() => {
+    Animated.timing(labelAnim, {
+      toValue: isFocused || value ? 1 : 0,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }, [isFocused, value]);
+
+  // Label style interpolation
+  const labelStyle = {
+    position: "absolute",
+    left: 16, // padding from left
+    top: labelAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [18, -8],
+    }),
+    fontSize: labelAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [16, 12],
+    }),
+    color: labelAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [COLORS.placeholder, COLORS.background],
+    }),
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 4, // little gap so label text doesn't stick
+  };
+
+  const inputProps = {
+    value,
+    onChangeText,
+    secureTextEntry: isPasswordInput ? !isPasswordVisible : secureTextEntry,
+    keyboardType,
+    editable: !disabled,
+    onFocus: () => setIsFocused(true),
+    onBlur: () => setIsFocused(false),
+    style: [
+      styles.input,
+      { paddingLeft: 16, paddingRight: isPasswordInput ? 40 : 16 }, // inner spacing
+    ],
+  };
+
+  return (
+    <View style={[styles.container, disabled && styles.disabled]}>
+      <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
+      <TextInput {...inputProps} />
+      {isPasswordInput && (
+        <TouchableOpacity
+          onPress={togglePasswordVisibility}
+          style={styles.iconWrapper}
+        >
+          <Entypo
+            name={isPasswordVisible ? "eye" : "eye-with-line"}
+            size={22}
+            color={COLORS.textMuted}
+          />
+        </TouchableOpacity>
+      )}
     </View>
-  ) : (
-    <TextInput
-      style={[styles.input, disabled && styles.inputDisabled]}
-      placeholder={placeholder}
-      keyboardType={keyboardType}
-      placeholderTextColor="#888"
-      value={value}
-      onChangeText={onChangeText}
-      editable={!disabled}
-      secureTextEntry={secureTextEntry}
-    />
   );
 };
 
+export default FloatingLabelInput;
+
 const styles = StyleSheet.create({
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    height: 54,
-    paddingHorizontal: 18,
-    marginBottom: 16,
+  container: {
     width: "100%",
-    fontSize: 16,
-    color: "#333",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    height: 54,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
-    paddingHorizontal: 14,
+    borderColor: COLORS.background,
     marginBottom: 16,
-    height: 54,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    backgroundColor: COLORS.white,
+    justifyContent: "center",
   },
-  passwordInput: {
-    flex: 1,
+  input: {
     fontSize: 16,
-    color: "#333",
+    color: COLORS.textDark,
+    flex: 1,
+    height: "100%",
   },
   iconWrapper: {
-    paddingLeft: 12,
-    paddingVertical: 6,
+    position: "absolute",
+    right: 12,
+    top: 14,
   },
-  inputDisabled: {
-    backgroundColor: "#f2f2f2",
-    color: "#aaa",
-    borderColor: "#ddd",
+  disabled: {
+    backgroundColor: COLORS.placeholder,
+    opacity: 0.6,
   },
 });
-
-export default FormInput;

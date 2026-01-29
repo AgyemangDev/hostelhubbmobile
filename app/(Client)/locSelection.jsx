@@ -1,155 +1,168 @@
 import React, { useState } from "react";
-import {View,Text,StyleSheet,TouchableOpacity,FlatList,Image,} from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Image,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { institutions } from "../../assets/data/data";
 import COLORS from "../../constants/Colors";
-import { useNavigation } from "expo-router";
-
+import Button from "../../components/ButtonComponents/ButtonComponent";
 
 const UniversitySelection = () => {
-  const [selectedUniversities, setSelectedUniversities] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
   const navigation = useNavigation();
+  const route = useRoute();
+
+  // 👇 data coming from previous screen
+  const { email, password } = route.params;
+
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const filteredInstitutions = institutions.filter(
     (institution) => institution.value !== "all"
   );
 
-  const toggleSelection = (universityValue) => {
-    setErrorMessage(""); 
-
-    setSelectedUniversities((prev) => {
-      if (prev.includes(universityValue)) {
-        return prev.filter((value) => value !== universityValue); // Deselect
-      } else if (prev.length < 1) {
-        return [...prev, universityValue]; // Select if under max limit
-      } else {
-        setErrorMessage("You can only select 1 institution.");
-        return prev;
-      }
-    });
-  };
-
-  // Handle submission
   const handleSubmit = () => {
-    if (selectedUniversities.length < 1) {
-      setErrorMessage("You must select at most 1 university.");
-    } else {
-      navigation.navigate("PersonalInfo", { selectedUniversities });
+    if (!selectedUniversity) {
+      setErrorMessage("Please select a university to continue.");
+      return;
     }
+
+    navigation.navigate("PersonalInfo", {
+      email,
+      password,
+      selectedUniversity: selectedUniversity,
+    });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.header}>University Selection</Text>
       <Text style={styles.instruction}>
-        Please select your institution to proceed. Note you would get majority of your hostel listings based on your selection.
+        Please select your institution to proceed.
       </Text>
-      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+
+      {errorMessage ? (
+        <Text style={styles.errorText}>{errorMessage}</Text>
+      ) : null}
 
       <FlatList
-        data={filteredInstitutions} // Use filtered institutions array
+        data={filteredInstitutions}
         keyExtractor={(item) => item.value}
         showsVerticalScrollIndicator={false}
-        numColumns={2} 
+        numColumns={2}
         columnWrapperStyle={styles.row}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.universityCard,
-              selectedUniversities.includes(item.value) && styles.selectedCard,
-            ]}
-            onPress={() => toggleSelection(item.value)}
-          >
-            <Image source={item.logo} style={styles.universityLogo} />
-            <Text
+        renderItem={({ item }) => {
+          const isSelected = selectedUniversity === item.value;
+
+          return (
+            <TouchableOpacity
               style={[
-                styles.universityName,
-                selectedUniversities.includes(item.value) &&
-                  styles.selectedText,
+                styles.universityCard,
+                isSelected && styles.selectedCard,
               ]}
+              onPress={() => {
+                setErrorMessage("");
+                setSelectedUniversity(item.value);
+              }}
             >
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        )}
+              <Image source={item.logo} style={styles.universityLogo} />
+              <Text
+                style={[
+                  styles.universityName,
+                  isSelected && styles.selectedText,
+                ]}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        }}
       />
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitText}>Submit</Text>
-      </TouchableOpacity>
+      <Button
+        buttonText="Continue"
+        onPressFunction={handleSubmit}
+        customStyle={{ marginTop: 20 }}
+      />
     </View>
   );
 };
 
+export default UniversitySelection;
+
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
-    paddingTop:70
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 20,
+    paddingTop: 60,
   },
+
   header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 26,
+    fontWeight: "700",
     textAlign: "center",
-    color: "#610b0c",
+    color: COLORS.background,
+    marginBottom: 8,
   },
+
   instruction: {
     fontSize: 14,
-    marginBottom: 10,
     textAlign: "center",
-    color: "#333",
+    color: COLORS.textMuted,
+    marginBottom: 12,
+    lineHeight: 20,
   },
+
   errorText: {
     fontSize: 14,
     color: "#d32f2f",
     textAlign: "center",
     marginBottom: 10,
   },
+
   row: {
     justifyContent: "space-between",
   },
+
   universityCard: {
     flex: 1,
     margin: 8,
-    padding: 15,
+    paddingVertical: 18,
+    paddingHorizontal: 10,
     borderRadius: 12,
     backgroundColor: "#f9f9f9",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e0e0e0",
   },
+
   selectedCard: {
     backgroundColor: COLORS.background,
-    borderColor: "#610b0c",
+    borderColor: COLORS.background,
   },
+
   universityLogo: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     resizeMode: "contain",
     marginBottom: 10,
   },
+
   universityName: {
     fontSize: 14,
     textAlign: "center",
-    color: "#000",
+    color: COLORS.textDark,
+    fontWeight: "500",
   },
+
   selectedText: {
-    color: "#fff",
-  },
-  submitButton: {
-    backgroundColor: "#9a0b0d",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  submitText: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
+    color: COLORS.white,
   },
 });
-
-export default UniversitySelection;

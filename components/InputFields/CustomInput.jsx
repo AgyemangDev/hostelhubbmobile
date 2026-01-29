@@ -1,6 +1,6 @@
 import React from 'react';
 import { TextInput, StyleSheet } from 'react-native';
-import COLORS from '../constants/Colors';
+import COLORS from '../../constants/Colors';
 
 const CustomInput = ({ placeholder, value, onChangeText, keyboardType = 'default', placeholderTextColor = '#9a0b0d' }) => {
   return (

@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import COLORS from '../../constants/Colors';
 import { auth } from '../firebase/FirebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from 'expo-router';
+import FormInput from "../../components/InputFields/FormInput";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -31,7 +42,10 @@ const ForgotPassword = () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.content}>
             <Text style={styles.title}>Forgot Password</Text>
             <Text style={styles.subtitle}>
@@ -43,17 +57,13 @@ const ForgotPassword = () => {
               style={styles.image}
             />
 
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-                placeholderTextColor="#999999"
-                autoCapitalize="none"
-              />
-            </View>
+            {/* ✅ Use FormInput instead of TextInput */}
+            <FormInput
+              placeholder="Enter your email"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+            />
 
             <TouchableOpacity style={styles.resetButton} onPress={handleResetPassword}>
               <Text style={styles.buttonText}>Reset</Text>
@@ -65,17 +75,26 @@ const ForgotPassword = () => {
   );
 };
 
+export default ForgotPassword;
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  scrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: COLORS.white },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
   content: { width: '100%', alignItems: 'center' },
   title: { fontSize: 24, fontWeight: 'bold', color: COLORS.button, marginBottom: 8 },
-  subtitle: { fontSize: 16, color: '#666666', textAlign: 'center', marginBottom: 60 },
-  image: { width: '100%', height: 300, resizeMode: 'contain', marginBottom: 24 },
-  inputContainer: { width: '100%', backgroundColor: 'white', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderColor: '#dddddd', borderWidth: 1, marginBottom: 24, height: 60 },
-  input: { flex: 1, fontSize: 16, color: '#333333', height: 50 },
-  resetButton: { backgroundColor: COLORS.background, paddingVertical: 15, width: '100%', borderRadius: 10, alignItems: 'center' },
-  buttonText: { fontSize: 18, color: 'white', fontWeight: 'bold' },
+  subtitle: { fontSize: 16, color: COLORS.textMuted, textAlign: 'center', marginBottom: 40 },
+  image: { width: '100%', height: 250, resizeMode: 'contain', marginBottom: 24 },
+  resetButton: {
+    backgroundColor: COLORS.background,
+    paddingVertical: 14,
+    width: '100%',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonText: { fontSize: 18, color: COLORS.white, fontWeight: 'bold' },
 });
-
-export default ForgotPassword;

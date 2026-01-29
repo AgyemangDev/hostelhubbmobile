@@ -1,96 +1,160 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Modal, FlatList } from 'react-native';
-import COLORS from '../constants/Colors';
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Modal,
+  FlatList,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import COLORS from "../constants/Colors";
 
-const CustomDropdown = ({ 
-  data, 
-  selectedValue, 
-  onSelect, 
-  placeholder, 
-  visible, 
-  onClose,
+const CustomDropdown = ({
+  data,
+  selectedValue,
+  onSelect,
+  placeholder,
+  visible,
   onPress,
 }) => {
   return (
-    <View style={styles.dropdownContainer}>
-      <TouchableOpacity onPress={onPress} style={styles.selectedItem}>
-        <Text style={styles.selectedText}>{selectedValue || placeholder}</Text>
+    <>
+      {/* Trigger */}
+      <TouchableOpacity
+        style={styles.trigger}
+        activeOpacity={0.8}
+        onPress={onPress}
+      >
+        <Text
+          style={[
+            styles.triggerText,
+            !selectedValue && styles.placeholderText,
+          ]}
+        >
+          {selectedValue || placeholder}
+        </Text>
+
+        <Ionicons
+          name="chevron-down"
+          size={20}
+          color={COLORS.background}
+          style={{ transform: [{ rotate: visible ? "180deg" : "0deg" }] }}
+        />
       </TouchableOpacity>
 
-      {visible && (
-        <Modal
-          transparent={true}
-          animationType="slide"
-          visible={visible}
-          onRequestClose={onClose}
+      {/* Bottom Sheet */}
+      <Modal transparent visible={visible} animationType="slide">
+        <TouchableOpacity
+          style={styles.overlay}
+          activeOpacity={1}
+          onPress={onPress}
         >
-          <TouchableOpacity 
-            style={styles.modalOverlay} 
-            onPress={onClose}
-          >
-            <View style={styles.modalContent}>
-              <FlatList
-                data={data}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.item}
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+
+            <FlatList
+              data={data}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => {
+                const selected = item === selectedValue;
+                return (
+                  <TouchableOpacity
+                    style={[
+                      styles.option,
+                      selected && styles.optionSelected,
+                    ]}
                     onPress={() => {
                       onSelect(item);
-                      onClose();
+                      onPress();
                     }}
                   >
-                    <Text style={styles.itemText}>{item}</Text>
+                    <Text
+                      style={[
+                        styles.optionText,
+                        selected && styles.optionTextSelected,
+                      ]}
+                    >
+                      {item}
+                    </Text>
                   </TouchableOpacity>
-                )}
-              />
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      )}
-    </View>
+                );
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 };
 
+export default CustomDropdown;
+
 const styles = StyleSheet.create({
-  dropdownContainer: {
-    width: '100%',
-    marginBottom: 15,
-  },
-  selectedItem: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    height: 50,
-    justifyContent: 'center',
-    paddingHorizontal: 15,
-    borderColor: COLORS.background,
+  trigger: {
+    width: "100%",
+    height: 52,
+    borderRadius: 14,
     borderWidth: 1,
+    borderColor: COLORS.background,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
-  selectedText: {
+
+  triggerText: {
     fontSize: 16,
     color: COLORS.background,
+    fontWeight: "500",
   },
-  modalOverlay: {
+
+  placeholderText: {
+    color: COLORS.textMuted,
+    fontWeight: "400",
+  },
+
+  overlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "flex-end",
   },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    overflow: 'hidden',
+
+  sheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 20,
+    maxHeight: "45%",
   },
-  item: {
-    padding: 15,
-    borderBottomColor: COLORS.background,
-    borderBottomWidth: 1,
+
+  sheetHandle: {
+    width: 40,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: COLORS.background,
+    alignSelf: "center",
+    marginVertical: 10,
   },
-  itemText: {
+
+  option: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+  },
+
+  optionSelected: {
+    backgroundColor: COLORS.white,
+  },
+
+  optionText: {
     fontSize: 16,
+    color: COLORS.textDark,
+  },
+
+  optionTextSelected: {
     color: COLORS.background,
+    fontWeight: "600",
   },
 });
-
-export default CustomDropdown;

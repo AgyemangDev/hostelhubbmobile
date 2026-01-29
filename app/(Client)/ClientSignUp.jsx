@@ -3,10 +3,9 @@ import { StyleSheet, Text, View, Alert, KeyboardAvoidingView, Platform, ScrollVi
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import COLORS from "../../constants/Colors";
-import SignupForm from "../../components/Authentication/SignUpForm";
+import SignupForm from "../../components/Forms/SignUpForm";
 import LoginLink from "../../components/Links/LoginLink";
-import { validateForm } from "../../utils/validateEmailUtil";
-import { signUpUser, getErrorMessage } from "../../services/AuthenticationService";
+import { validateForm } from "../../utils/ValidationUtils/validateEmailUtil";
 
 const ClientSignUp = () => {
   const navigation = useNavigation();
@@ -19,31 +18,20 @@ const ClientSignUp = () => {
   const [loading, setLoading] = useState(false);
   const [inputsDisabled, setInputsDisabled] = useState(false);
 
-  const handleSignUp = async () => {
-    // Validate form inputs
-    const validationError = validateForm(email, password, confirmPassword);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+const handleSignUp = () => {
+  const validationError = validateForm(email, password, confirmPassword);
+  if (validationError) {
+    setError(validationError);
+    return;
+  }
 
-    setLoading(true);
-    setInputsDisabled(true);
+  // Move data to next screen
+  navigation.navigate("locSelection", {
+    email,
+    password,
+  });
+};
 
-    try {
-      await signUpUser(email, password);
-      
-      navigation.navigate("locSelection");
-      Alert.alert(
-        "Verification Sent",
-        "Please check your inbox and verify your account before continuing."
-      );
-    } catch (error) {
-      setError(getErrorMessage(error));
-      setLoading(false);
-      setInputsDisabled(false);
-    }
-  };
 
   const navigateToLogin = () => {
     navigation.navigate("ClientLogIn");
