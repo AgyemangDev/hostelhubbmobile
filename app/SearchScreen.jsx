@@ -1,54 +1,64 @@
-// SearchScreen.js - Updated
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { shuffleArray } from "../utils/arrayUtils";
-import { useHostels } from "../context/HostelsContext";
+import React, { useState, useContext } from "react";
+import { View, StyleSheet } from "react-native";
+import { useAccommodationSearch } from "../hooks/accommodationContext/useAccommodationSearch";
+import { AccommodationContext } from "../context/AccommodationContext";
 import CardListScreen from "../components/Cards/VerticalScroll/CardListScreen";
-import SearchInput from "../components/SearchComponents/SearchInput";
+import SearchBar from "../components/SearchComponents/SearchInput";
 import EmptyState from "../components/BookingsComponent/EmptyState";
+import FilterSheet from "../components/FilterComponents/FilterSheet";
+import FilterButton from "../components/FilterComponents/FilterButton";
 
 const SearchScreen = () => {
-  const { hostels, loading } = useHostels();
+  const { accommodations, loading, loadMore, hasMore } =
+    useContext(AccommodationContext);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [shuffledHostels, setShuffledHostels] = useState([]);
+  const [filterOpen, setFilterOpen] = useState(false);
 
-  // Shuffle the hostels once when hostels data changes
-  useEffect(() => {
-    setShuffledHostels(shuffleArray(hostels));
-  }, [hostels]);
+  const { results: searchResults, loading: searchLoading } =
+    useAccommodationSearch(searchQuery);
 
-  // Filter hostels based on search query
-  const filteredHostels = shuffledHostels.filter((hostel) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      hostel.hostelName.toLowerCase().includes(query) ||
-      hostel.description.toLowerCase().includes(query) ||
-      hostel.location.toLowerCase().includes(query)
-    );
-  });
+  const dataToShow = searchQuery ? searchResults : accommodations;
+  const isLoading = searchQuery ? searchLoading : loading;
 
   return (
     <View style={styles.container}>
-      {/* Input Field */}
-      <View style={styles.searchContainer}>
-        <SearchInput
-          placeholder="Search for hostels..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+      
+      {/* SEARCH + FILTER ROW */}
+      <View style={styles.searchRow}>
+        <View style={styles.searchFlex}>
+          <SearchBar
+            placeholder="Search accommodation..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
+
+        <FilterButton onPress={() => setFilterOpen(true)} />
       </View>
 
-      {/* Conditional Rendering: If no hostels match the search, show EmptyState */}
-      {filteredHostels.length === 0 ? (
-        <EmptyState message="No hostels found matching your search criteria." />
+      <FilterSheet
+        visible={filterOpen}
+        onClose={() => setFilterOpen(false)}
+      />
+
+      {/* RESULTS */}
+      {dataToShow.length === 0 && !isLoading ? (
+        <EmptyState message="No accommodation found matching your search." />
       ) : (
         <View style={styles.listContainer}>
-          <CardListScreen hostels={filteredHostels} loading={loading} />
+          <CardListScreen
+            hostels={dataToShow}
+            loading={isLoading}
+            onEndReached={!searchQuery && hasMore ? loadMore : null}
+          />
         </View>
       )}
     </View>
   );
 };
+
+export default SearchScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -56,15 +66,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     paddingTop: 40,
   },
-  searchContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 8,
+
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 15,
+    marginBottom: 10,
+    gap: 10,
   },
+
+  searchFlex: {
+    flex: 1, // takes remaining width
+  },
+
   listContainer: {
     flex: 1,
-    width: '100%',
-    paddingHorizontal:15
-  }
+    width: "100%",
+    paddingHorizontal: 15,
+  },
 });
-
-export default SearchScreen;

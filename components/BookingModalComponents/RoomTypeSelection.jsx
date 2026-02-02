@@ -133,15 +133,9 @@ const RoomTypeSection = ({ roomTypes, selectedRoomType, selectedPayment, onSelec
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#fff",
     borderRadius: 16,
-    padding: 16,
     marginVertical: 10,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   title: {
     fontSize: 22,

@@ -1,14 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Image,
-  SafeAreaView,
-  Dimensions,
-  Animated,
-  Easing,
-} from "react-native";
+import { StyleSheet, Text, View, Image, SafeAreaView, Dimensions, Animated, Easing} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import COLORS from "../../constants/Colors";
 import Button from "../../components/ButtonComponents/ButtonComponent";
@@ -59,7 +50,7 @@ const OnboardingScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <Animated.Text style={[styles.logo, { opacity: fadeAnim }]}>
-          Hostel Hubb
+          HostelHubb
         </Animated.Text>
 
         <Animated.View
@@ -69,7 +60,7 @@ const OnboardingScreen = () => {
           }}
         >
           <Image
-            source={require("../../assets/images/studentsignin_up.gif")}
+            source={require("../../assets/images/Happystudent.gif")}
             style={styles.image}
           />
         </Animated.View>
@@ -122,20 +113,19 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   image: {
-    width: width * 0.65,
-    height: width * 0.55,
+    width: width * 0.85,
+    height: width * 0.65,
     resizeMode: "contain",
     marginVertical: 20,
   },
   logo: {
-    fontSize: 38,
-    fontWeight: "900",
-    fontStyle: "italic",
+    fontSize: 40,
+    fontWeight: "700",
     color: COLORS.button,
     textShadowColor: COLORS.logoShadow,
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-    marginBottom: 20,
+    marginTop: 10,
   },
   title: {
     fontSize: 24,

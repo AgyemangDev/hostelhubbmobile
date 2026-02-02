@@ -1,23 +1,29 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import React, { useMemo } from 'react';
 import CardListScreen from '../../../components/Cards/VerticalScroll/CardListScreen';
 import { shuffleArray } from '../../../utils/arrayUtils';
 
-const PopularHostel = ({ hostels }) => {
+const PopularHostel = ({ hostels, loading, loadMore, hasMore }) => {
   const shuffledAndSlicedHostels = useMemo(() => {
     const popularHostels = (hostels || []).filter(
-      (hostel) => Number(hostel?.views) > 400
+      (hostel) => Number(hostel?.views) > 3500
     );
-    return shuffleArray(popularHostels).slice(0, 20);
+    return shuffleArray(popularHostels);
   }, [hostels]);
+
+  const handleEndReached = () => {
+    if (!loading && hasMore) loadMore();
+  };
 
   return (
     <View style={{ flex: 1 }}>
-      <CardListScreen hostels={shuffledAndSlicedHostels} />
+      <CardListScreen
+        hostels={shuffledAndSlicedHostels}
+        onEndReached={handleEndReached}
+        loading={loading}
+      />
     </View>
   );
 };
 
 export default PopularHostel;
-
-const styles = StyleSheet.create({});

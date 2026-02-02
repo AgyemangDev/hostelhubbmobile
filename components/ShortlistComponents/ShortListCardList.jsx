@@ -1,23 +1,25 @@
-import React, { useContext } from "react";
+import React, { useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
-import { UserContext } from "../../context/UserContext";
-import { useHostels } from "../../context/HostelsContext";
+import { useFavorites } from "../../context/FavoritesContext";
+import { useFavoriteAccommodations } from "../../hooks/accommodationContext/useFavoriteAccommodations";
 import SkeletonCards from "../SkeletonCard";
-import Header from "./Header";
+import WishlistHeader from "../Headers/WishlistHeader";
 import EmptyState from "./EmptyState";
 import HostelList from "./HostelList";
 
 const ShortListCardList = () => {
   const router = useRouter();
-  const { shortlist, isLoading: userLoading } = useContext(UserContext);
-  const { hostels, loading: hostelsLoading } = useHostels();
+  const { getFavoriteIds, isLoading: favoritesLoading } = useFavorites();
 
-  const filteredHostels = hostels.filter((hostel) =>
-    shortlist?.some((item) => item.hostelId === hostel.id)
-  );
+  // Memoize favoriteIds to prevent constant re-fetching
+  const favoriteIds = useMemo(() => getFavoriteIds(), [getFavoriteIds]);
 
-  if (userLoading || hostelsLoading) {
+  // Fetch only favorite accommodations from Supabase
+  const { accommodations: favoriteHostels, loading: favoriteHostelsLoading, error } =
+    useFavoriteAccommodations(favoriteIds);
+
+  if (favoritesLoading || favoriteHostelsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <SkeletonCards />
@@ -25,11 +27,19 @@ const ShortListCardList = () => {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <EmptyState message={`Error loading favorites: ${error}`} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Header count={filteredHostels.length} />
-      {filteredHostels.length > 0 ? (
-        <HostelList data={filteredHostels} navigation={router} />
+      <WishlistHeader count={favoriteHostels.length} />
+      {favoriteHostels.length > 0 ? (
+        <HostelList data={favoriteHostels} navigation={router} />
       ) : (
         <EmptyState />
       )}
@@ -43,7 +53,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
-    paddingTop: 10,
   },
   loadingContainer: {
     flex: 1,

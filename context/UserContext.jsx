@@ -1,156 +1,183 @@
-import React, { createContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { doc, collection, onSnapshot } from 'firebase/firestore';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { db, auth } from '../app/firebase/FirebaseConfig';
+// context/UserContext.jsx
+import React, { createContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../app/firebase/supabaseConfig';
+import { auth } from '../app/firebase/FirebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export const UserContext = createContext();
 
 const STORAGE_KEYS = {
   userSession: 'userSession',
-  userShortlist: 'userShortlist',
 };
 
 export const UserProvider = ({ children }) => {
-  const [user, authLoading] = useAuthState(auth);
-  const [userInfo, setUserInfo] = useState(null);
-  const [shortlist, setShortlist] = useState([]);
+  const [user, setUser] = useState(null); // Firebase user
+  const [userInfo, setUserInfo] = useState(null); // Supabase user info
   const [dataLoaded, setDataLoaded] = useState(false);
-  
-  // Memoized storage operations
+  const channelRef = useRef(null); // Store the subscription channel
+
+  // Save userInfo to AsyncStorage
   const updateUserCache = useCallback(async (data) => {
     try {
-      const currentData = await AsyncStorage.getItem(STORAGE_KEYS.userSession);
-      const currentParsed = currentData ? JSON.parse(currentData) : null;
-      
-      // Only update if data has changed
-      if (JSON.stringify(currentParsed) !== JSON.stringify(data)) {
-        await AsyncStorage.setItem(STORAGE_KEYS.userSession, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error updating user cache:', error);
+      await AsyncStorage.setItem(STORAGE_KEYS.userSession, JSON.stringify(data));
+      console.log('User cache updated:', data);
+    } catch (err) {
+      console.error('Error updating cache:', err);
     }
   }, []);
 
-  const updateShortlistCache = useCallback(async (data) => {
-    try {
-      const currentData = await AsyncStorage.getItem(STORAGE_KEYS.userShortlist);
-      const currentParsed = currentData ? JSON.parse(currentData) : [];
-      
-      // Only update if data has changed
-      if (JSON.stringify(currentParsed) !== JSON.stringify(data)) {
-        await AsyncStorage.setItem(STORAGE_KEYS.userShortlist, JSON.stringify(data));
-      }
-    } catch (error) {
-      console.error('Error updating shortlist cache:', error);
-    }
-  }, []);
-
-  // Clear user session
   const clearUserSession = useCallback(async () => {
     try {
-      await AsyncStorage.multiRemove([STORAGE_KEYS.userSession, STORAGE_KEYS.userShortlist]);
-    } catch (error) {
-      console.error('Error clearing user session:', error);
+      await AsyncStorage.removeItem(STORAGE_KEYS.userSession);
+      console.log('User session cleared');
+    } catch (err) {
+      console.error('Error clearing session:', err);
     }
   }, []);
 
-  // Load cached data on mount
+  // Load cached user info on app start
   useEffect(() => {
     const loadCachedData = async () => {
       try {
-        const [cachedUser, cachedShortlist] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEYS.userSession),
-          AsyncStorage.getItem(STORAGE_KEYS.userShortlist),
-        ]);
-        
-        if (cachedUser) setUserInfo(JSON.parse(cachedUser));
-        if (cachedShortlist) setShortlist(JSON.parse(cachedShortlist));
-      } catch (error) {
-        console.error('Error loading cached data:', error);
+        const cached = await AsyncStorage.getItem(STORAGE_KEYS.userSession);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setUserInfo(parsed);
+          console.log('Loaded cached user info:', parsed);
+        }
+      } catch (err) {
+        console.error('Error loading cached user:', err);
       } finally {
         setDataLoaded(true);
       }
     };
-
     loadCachedData();
   }, []);
 
-  // Real-time fetch for user info
-  const fetchUserInfo = useCallback((uid) => {
-    const docRef = doc(db, 'Student_Users', uid);
-    return onSnapshot(
-      docRef,
-      async (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUserInfo(data);
-          await updateUserCache(data);
-        } else {
-          console.warn('No user document found.');
-          setUserInfo(null);
-        }
-      },
-      (error) => {
-        console.error('Error fetching user data:', error);
-      }
-    );
-  }, [updateUserCache]);
-
-  // Real-time fetch for shortlist
-  const fetchShortlist = useCallback((uid) => {
-    const shortlistRef = collection(db, 'Student_Users', uid, 'shortlist');
-    return onSnapshot(
-      shortlistRef,
-      async (snapshot) => {
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setShortlist(data);
-        await updateShortlistCache(data);
-      },
-      (error) => {
-        console.error('Error fetching shortlist:', error);
-      }
-    );
-  }, [updateShortlistCache]);
-
-  // Set up live listeners when user is detected
-  useEffect(() => {
-    let unsubscribeUserInfo;
-    let unsubscribeShortlist;
-
-    if (user) {
-      unsubscribeUserInfo = fetchUserInfo(user.uid);
-      unsubscribeShortlist = fetchShortlist(user.uid);
-    } else {
-      clearUserSession();
-      setUserInfo(null);
-      setShortlist([]);
+  // Setup Supabase Realtime subscription
+  const setupRealtimeSubscription = useCallback((userId) => {
+    // Clean up any existing subscription
+    if (channelRef.current) {
+      console.log('Removing existing subscription');
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
 
-    return () => {
-      if (unsubscribeUserInfo) unsubscribeUserInfo();
-      if (unsubscribeShortlist) unsubscribeShortlist();
-    };
-  }, [user, fetchUserInfo, fetchShortlist, clearUserSession]);
+    console.log('Setting up realtime subscription for user:', userId);
 
-  // Memoized context value to prevent unnecessary re-renders
+    // Create a new channel for this specific user
+    const channel = supabase
+      .channel(`student_user_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to all events: INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'Student_Users',
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Realtime update received:', payload);
+
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            const updatedData = payload.new;
+            console.log('User data updated in real-time:', updatedData);
+            setUserInfo(updatedData);
+            updateUserCache(updatedData);
+          } else if (payload.eventType === 'DELETE') {
+            console.log('User record deleted');
+            setUserInfo(null);
+            clearUserSession();
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to realtime updates');
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.error('Subscription error:', status);
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      console.log('Cleaning up subscription');
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [updateUserCache, clearUserSession]);
+
+  // Listen to Firebase auth changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      
+      if (!firebaseUser) {
+        console.log('No Firebase user, clearing info');
+        setUserInfo(null);
+        clearUserSession();
+        
+        // Clean up subscription when user logs out
+        if (channelRef.current) {
+          supabase.removeChannel(channelRef.current);
+          channelRef.current = null;
+        }
+        return;
+      }
+
+      try {
+        console.log('Fetching Supabase user for UID:', firebaseUser.uid);
+
+        const { data, error } = await supabase
+          .from('Student_Users')
+          .select('*')
+          .eq('id', firebaseUser.uid)
+          .single();
+
+        if (error) {
+          console.error('Supabase fetch error:', error);
+          setUserInfo(null);
+        } else if (!data) {
+          console.warn('No user found in Supabase for UID:', firebaseUser.uid);
+          setUserInfo(null);
+        } else {
+          console.log('Supabase user fetched:', data);
+          setUserInfo(data);
+          await updateUserCache(data);
+          
+          // Setup realtime subscription for this user
+          setupRealtimeSubscription(firebaseUser.uid);
+        }
+      } catch (err) {
+        console.error('Error fetching user from Supabase:', err);
+        setUserInfo(null);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      // Clean up subscription on component unmount
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [updateUserCache, clearUserSession, setupRealtimeSubscription]);
+
   const contextValue = useMemo(
     () => ({
       user,
       userInfo,
-      shortlist,
-      isLoading: authLoading || !dataLoaded,
+      isLoading: !dataLoaded,
       clearUserSession,
     }),
-    [user, userInfo, shortlist, authLoading, dataLoaded, clearUserSession]
+    [user, userInfo, dataLoaded, clearUserSession]
   );
 
-  return (
-    <UserContext.Provider value={contextValue}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };

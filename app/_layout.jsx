@@ -9,23 +9,39 @@ import notificationService from "./firebase/notificationService";
 import * as SplashScreen from "expo-splash-screen";
 import { AppState } from "react-native";
 import UpdateRequiredScreen from "../components/UpdateRequiredScreen";
+import { supabase } from "./firebase/supabaseConfig";
 
 // Prevent splash from hiding before app is ready
 SplashScreen.preventAutoHideAsync();
 
+// Interval to check for notification permissions (every 30 minutes)
+const NOTIFICATION_CHECK_INTERVAL = 30 * 60 * 1000;
+
 export default function RootLayout() {
-//   android  new 25 2.0.3
-// # ios old  new 26 2.0.4
-  const CURRENT_VERSION = "2.0.5"; // ← Manually change this before each release
-  const LATEST_VERSION = "2.0.5";  // ← Change to the newest deployed version
+  const CURRENT_VERSION = "2.0.5";
+  const LATEST_VERSION = "2.0.5";
   
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
   
-  // Initialize as null to indicate "checking"
   const [versionOK, setVersionOK] = useState(null);
   const appState = useRef(AppState.currentState);
+  const notificationCheckInterval = useRef(null);
+
+  // Periodic notification check
+  const checkAndPromptNotifications = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+
+    const hasToken = await notificationService.checkUserHasToken(session.user.id);
+    
+    if (!hasToken) {
+      notificationService.promptForNotifications(async () => {
+        await notificationService.registerForPushNotifications(session.user.id);
+      });
+    }
+  };
 
   useEffect(() => {
     if (!loaded) return;
@@ -45,52 +61,77 @@ export default function RootLayout() {
     // Hide splash once everything is ready
     SplashScreen.hideAsync();
     
-    // Init auth listener for push token sync
-    const authUnsubscribe = notificationService.initAuthListener();
-    
-    // Register device for push notifications
-    const registerPushNotifications = async () => {
-      const token = await notificationService.registerForPushNotifications();
-      if (token) {
-        console.log("Push token registered:", token);
-      }
-    };
-    registerPushNotifications();
-    
-    // Notification setup
+    // Set up notification listeners
     const notificationCleanup = notificationService.listenToNotifications();
     notificationService.resetBadgeCount();
-    const tokenChangeSubscription = notificationService.listenForTokenChanges();
     
-    // Watch app state to manage badge/token
-    const subscription = AppState.addEventListener("change", nextAppState => {
+    // Register for notifications when user logs in
+    const setupNotifications = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const hasToken = await notificationService.checkUserHasToken(session.user.id);
+        
+        if (!hasToken) {
+          // Prompt immediately if no token
+          setTimeout(() => {
+            notificationService.promptForNotifications(async () => {
+              await notificationService.registerForPushNotifications(session.user.id);
+            });
+          }, 2000); // Delay 2 seconds after app loads
+        } else {
+          await notificationService.registerForPushNotifications(session.user.id);
+        }
+      }
+    };
+    setupNotifications();
+    
+    // Set up periodic notification check (every 30 minutes)
+    notificationCheckInterval.current = setInterval(checkAndPromptNotifications, NOTIFICATION_CHECK_INTERVAL);
+    
+    // Listen for auth changes to register/unregister notifications
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const hasToken = await notificationService.checkUserHasToken(session.user.id);
+        
+        if (!hasToken) {
+          notificationService.promptForNotifications(async () => {
+            await notificationService.registerForPushNotifications(session.user.id);
+          });
+        } else {
+          await notificationService.registerForPushNotifications(session.user.id);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        // Clear periodic check when user logs out
+        if (notificationCheckInterval.current) {
+          clearInterval(notificationCheckInterval.current);
+        }
+      }
+    });
+    
+    // Watch app state to reset badge and check notifications
+    const appStateSubscription = AppState.addEventListener("change", async (nextAppState) => {
       if (
         appState.current.match(/inactive|background/) &&
         nextAppState === "active"
       ) {
-        console.log("App has come to the foreground!");
         notificationService.resetBadgeCount();
         
-        // Verify push token is correctly stored
-        notificationService.verifyStoredToken().then(result => {
-          console.log("Token verification result:", result);
-          if (result.loggedIn && result.hasToken && !result.tokensMatch) {
-            console.log("Tokens don't match, updating stored token...");
-            notificationService.storeTokenInFirestore(result.currentToken);
-          }
-        });
+        // Check notification status when app comes to foreground
+        await checkAndPromptNotifications();
       }
       appState.current = nextAppState;
     });
     
     // Cleanup all listeners
     return () => {
-      subscription.remove();
-      if (tokenChangeSubscription?.remove) tokenChangeSubscription.remove();
+      appStateSubscription.remove();
+      subscription.unsubscribe();
       if (notificationCleanup) notificationCleanup();
-      if (authUnsubscribe) authUnsubscribe();
+      if (notificationCheckInterval.current) {
+        clearInterval(notificationCheckInterval.current);
+      }
     };
-  }, [loaded, CURRENT_VERSION, LATEST_VERSION]); // Add dependencies
+  }, [loaded, CURRENT_VERSION, LATEST_VERSION]);
   
   // App still loading fonts or checking version
   if (!loaded || versionOK === null) return null;

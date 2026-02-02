@@ -1,156 +1,132 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  LayoutAnimation,
+  UIManager,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { getAmenityIcon } from "../../assets/icons/amenityIcons";
 
-const renderIcon = (amenity) => {
-  // Consistent icon color that matches the app's theme
-  const color = "#2980b9";
+const INITIAL_DISPLAY_COUNT = 5;
 
-  switch (amenity.toLowerCase()) {
-    case "water supply":
-      return <Ionicons name="water-outline" size={20} color={color} />;
-    case "wardrobe":
-      return <Ionicons name="shirt-outline" size={20} color={color} />;
-    case "shared kitchen":
-      return <Ionicons name="restaurant-outline" size={20} color={color} />;
-    case "balcony/kitchen":
-      return <Ionicons name="home-outline" size={20} color={color} />;
-    case "shared bathroom":
-      return <MaterialCommunityIcons name="shower" size={20} color={color} />;
-    case "private bathroom":
-      return (
-        <MaterialCommunityIcons
-          name="bathtub-outline"
-          size={20}
-          color={color}
-        />
-      );
-    case "wifi services":
-      return <Ionicons name="wifi-outline" size={20} color={color} />;
-    case "generators/plants":
-      return (
-        <Ionicons name="battery-charging-outline" size={20} color={color} />
-      );
-    case "dry lines":
-      return <Ionicons name="sunny-outline" size={20} color={color} />;
-    case "study rooms":
-    case "table & chair":
-      return <Ionicons name="book-outline" size={20} color={color} />;
-    case "security":
-    case "cctv camera":
-      return (
-        <Ionicons name="shield-checkmark-outline" size={20} color={color} />
-      );
-    case "ac":
-      return <Ionicons name="snow-outline" size={20} color={color} />;
-    case "water heater":
-      return <Ionicons name="thermometer-outline" size={20} color={color} />;
-    case "swimming pool":
-      return <Ionicons name="water-outline" size={20} color={color} />;
-    case "basketball court":
-      return <Ionicons name="basketball-outline" size={20} color={color} />;
-    case "gym":
-      return <Ionicons name="barbell-outline" size={20} color={color} />;
-    case "game/tv room":
-    case "television":
-      return <Ionicons name="tv-outline" size={20} color={color} />;
-    case "fridge":
-      return <Ionicons name="thermometer-outline" size={20} color={color} />;
-    case "salon":
-      return <Ionicons name="cut-outline" size={20} color={color} />;
-    case "restaurant":
-    case "eatery":
-      return <Ionicons name="fast-food-outline" size={20} color={color} />;
-    case "laundry":
-    case "washing machine":
-      return <Ionicons name="shirt-outline" size={20} color={color} />;
-    case "football pitch":
-      return <Ionicons name="football-outline" size={20} color={color} />;
-    case "hostel shuttle":
-      return <Ionicons name="bus-outline" size={20} color={color} />;
-    case "bunk beds":
-    case "single beds":
-      return <Ionicons name="bed-outline" size={20} color={color} />;
-    case "gas cooker":
-      return <Ionicons name="flame-outline" size={20} color={color} />;
-    case "fenced wall":
-      return <Ionicons name="home-outline" size={20} color={color} />;
-    default:
-      return <Ionicons name="help-outline" size={20} color={color} />;
+// Enable LayoutAnimation on Android
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const Amenities = ({ amenities }) => {
+  const [showAll, setShowAll] = useState(false);
+
+  const displayedAmenities = showAll
+    ? amenities
+    : amenities.slice(0, INITIAL_DISPLAY_COUNT);
+
+  const handleShowAll = () => {
+    // Smooth expand animation (fade + slide)
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        300,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+
+    setShowAll(true);
+  };
+
+  if (!amenities || amenities.length === 0) {
+    return null;
   }
-};
 
-const Amenities = ({ amenities }) => (
-  <View style={styles.container}>
-    <Text style={styles.sectionTitle}>Amenities</Text>
-    <View style={styles.cardContainer}>
+  return (
+    <View style={styles.container}>
+      <Text style={styles.sectionTitle}>What this place offers</Text>
+
       <View style={styles.amenitiesContainer}>
-        {amenities.map((amenity, index) => (
+        {displayedAmenities.map((amenity, index) => (
           <View key={index} style={styles.amenityItem}>
-            <View style={styles.iconContainer}>{renderIcon(amenity)}</View>
+            <View style={styles.iconContainer}>
+              {getAmenityIcon(amenity)}
+            </View>
             <Text style={styles.amenityText} numberOfLines={1}>
               {amenity}
             </Text>
           </View>
         ))}
       </View>
+
+      {!showAll && amenities.length > INITIAL_DISPLAY_COUNT && (
+        <TouchableOpacity
+          style={styles.showAllButton}
+          onPress={handleShowAll}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.showAllText}>
+            Show all {amenities.length} amenities
+          </Text>
+          <Ionicons name="chevron-down" size={18} color="#666" />
+        </TouchableOpacity>
+      )}
     </View>
-  </View>
-);
+  );
+};
+
+export default Amenities;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 15,
+    marginVertical: 20,
+    backgroundColor: "#fff",
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    marginBottom: 12,
-    color: "#2c3e50",
-    paddingLeft: 2,
-  },
-  cardContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 16,
+    color: "#1a1a1a",
   },
   amenitiesContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    gap: 0,
   },
   amenityItem: {
     flexDirection: "row",
     alignItems: "center",
-    width: "50%",
-    marginBottom: 16,
-    paddingRight: 8,
+    paddingVertical: 9,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f0f9ff",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f8f8f8",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-    elevation: 1,
+    marginRight: 14,
   },
   amenityText: {
     flex: 1,
-    fontSize: 14,
-    color: "#34495e",
+    fontSize: 15,
+    color: "#333",
     fontWeight: "500",
   },
+  showAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 16,
+    gap: 6,
+  },
+  showAllText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#666",
+  },
 });
-
-export default Amenities;

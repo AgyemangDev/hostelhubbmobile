@@ -1,384 +1,216 @@
 import * as Notifications from 'expo-notifications';
-import { auth, db } from '../firebase/FirebaseConfig';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { supabase } from './supabaseConfig';
 import { Alert, Linking, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { onAuthStateChanged } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = 'expo_push_token';
-const STORAGE_USER_KEY = 'stored_user_id';
 
 const notificationService = {
-  // This will store the token when it's generated
-  _expoPushToken: null,
-  
-  // Initialize auth listener to update token when auth state changes
-  initAuthListener: () => {
-    console.log('📱 Setting up auth state listener for token management...');
+  // Check if user has notification token stored
+  checkUserHasToken: async (userId) => {
+    if (!userId) return false;
     
-    return onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        console.log('👤 User logged in, checking if token needs to be stored:', user.uid);
-        
-        // Check if we have a stored token and if it matches current user
-        const storedToken = await notificationService.getStoredToken();
-        const storedUserId = await notificationService.getStoredUserId();
-        
-        if (storedToken && storedUserId === user.uid) {
-          console.log('✅ Token already stored for this user in AsyncStorage');
-          // Token exists and user matches, just update Firestore if needed
-          await notificationService.storeTokenInFirestore(storedToken, user.uid);
-        } else {
-          console.log('🔄 New user or no token stored, attempting to register');
-          // If we already have the token cached, store it now that user is logged in
-          if (notificationService._expoPushToken) {
-            await notificationService.storeTokenInFirestore(notificationService._expoPushToken, user.uid);
-            await notificationService.saveTokenToAsyncStorage(notificationService._expoPushToken, user.uid);
-          } else {
-            // If no token yet, try to get it and store it
-            console.log('🔄 No token cached, attempting to register again now that user is logged in');
-            await notificationService.registerForPushNotifications();
-          }
-        }
-      } else {
-        console.log('👤 User logged out');
-      }
-    });
-  },
-  
-  // Save token to AsyncStorage
-  saveTokenToAsyncStorage: async (token, userId) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, token);
-      await AsyncStorage.setItem(STORAGE_USER_KEY, userId);
-      console.log('💾 Token saved to AsyncStorage');
+      const { data, error } = await supabase
+        .from('Student_Users')
+        .select('expo_token')
+        .eq('id', userId)
+        .single();
+      
+      if (error) throw error;
+      
+      return !!data?.expo_token;
     } catch (error) {
-      console.error('❌ Error saving token to AsyncStorage:', error);
-    }
-  },
-  
-  // Get stored token from AsyncStorage
-  getStoredToken: async () => {
-    try {
-      const token = await AsyncStorage.getItem(STORAGE_KEY);
-      return token;
-    } catch (error) {
-      console.error('❌ Error retrieving token from AsyncStorage:', error);
-      return null;
-    }
-  },
-  
-  // Get stored userId from AsyncStorage
-  getStoredUserId: async () => {
-    try {
-      const userId = await AsyncStorage.getItem(STORAGE_USER_KEY);
-      return userId;
-    } catch (error) {
-      console.error('❌ Error retrieving userId from AsyncStorage:', error);
-      return null;
-    }
-  },
-  
-  // Clear stored token
-  clearStoredToken: async () => {
-    try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
-      await AsyncStorage.removeItem(STORAGE_USER_KEY);
-      console.log('🗑️ Stored token cleared from AsyncStorage');
-    } catch (error) {
-      console.error('❌ Error clearing token from AsyncStorage:', error);
-    }
-  },
-  
-  // Store token in Firestore (separate function for reuse)
-  storeTokenInFirestore: async (tokenData, userId) => {
-    try {
-      // ✅ Early return if userId or tokenData is missing
-      if (!userId) {
-        console.warn('⚠️ Cannot store token: userId is undefined');
-        return false;
-      }
-      if (!tokenData) {
-        console.warn('⚠️ Cannot store token: tokenData is null or undefined');
-        return false;
-      }
-
-      console.log('💾 Storing token in Firestore for user:', userId);
-      console.log('💾 Token data:', tokenData);
-
-      const userRef = doc(db, 'Student_Users', userId);
-      const userDoc = await getDoc(userRef);
-
-      // Only update if token is different or doesn't exist
-      if (!userDoc.exists() || userDoc.data()?.expoPushToken !== tokenData) {
-        await setDoc(userRef, { expoPushToken: tokenData }, { merge: true });
-        console.log('✅ Push token stored/updated in Firestore for user:', userId);
-        return true;
-      } else {
-        console.log('✅ Token already up to date in Firestore');
-        return false;
-      }
-    } catch (error) {
-      console.error('❌ Error storing token in Firestore:', error);
+      console.error('Error checking token:', error);
       return false;
     }
   },
 
-  
-  registerForPushNotifications: async () => {
-    let token;
-    
+  // Register for push notifications and store token
+  registerForPushNotifications: async (userId) => {
     if (!Device.isDevice) {
-      console.log('📱 Must use physical device for push notifications - simulator/emulator not supported');
+      return null;
+    }
+    
+    if (!userId) {
+      console.warn('User ID required to register notifications');
       return null;
     }
     
     try {
-      // Check if the app has notification permissions
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      console.log('📱 Current notification permission status:', existingStatus);
-      
       let finalStatus = existingStatus;
       
-      // If no permission, request it
       if (existingStatus !== 'granted') {
-        console.log('📱 Requesting notification permissions...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
-        console.log('📱 New notification permission status:', finalStatus);
       }
       
-      // If still no permission after requesting, handle accordingly
       if (finalStatus !== 'granted') {
-        console.log('❌ Permission denied for push notifications.');
-        // Handle prompting user to enable notifications manually
-        if (finalStatus === 'denied') {
-          // Show a custom alert asking the user if they want to enable notifications
-          Alert.alert(
-            'Enable Push Notifications',
-            'Push notifications are disabled. Would you like to enable them to receive updates?',
-            [
-              {
-                text: 'No, Thanks',
-                onPress: () => console.log('User declined to enable notifications'),
-                style: 'cancel',
-              },
-              {
-                text: 'Go to Settings',
-                onPress: () => {
-                  // Open app settings to enable push notifications manually
-                  Linking.openSettings();
-                },
-              },
-            ],
-            { cancelable: true }
-          );
-        }
         return null;
       }
       
-      // Get the token
-      console.log('📱 Getting Expo push token...');
-      token = await Notifications.getExpoPushTokenAsync({
+      const token = await Notifications.getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
       
-      console.log('📱 Expo push token retrieved:', token.data);
+      // Store token in Supabase
+      const { error } = await supabase
+        .from('Student_Users')
+        .update({ expo_token: token.data })
+        .eq('id', userId);
       
-      // Cache the token for later use (when user logs in)
-      notificationService._expoPushToken = token.data;
-      
-      // Try to store token if user is already logged in
-      const user = auth.currentUser;
-      if (user) {
-        console.log('👤 User is logged in, storing token for user:', user.uid);
-        await notificationService.storeTokenInFirestore(token.data, user.uid);
-        await notificationService.saveTokenToAsyncStorage(token.data, user.uid);
-      } else {
-        console.log('❌ User not logged in, token is cached and will be stored when user logs in');
-      }
+      if (error) throw error;
       
       return token.data;
     } catch (error) {
-      console.error('❌ Error registering for push notifications:', error);
+      console.error('Error registering notifications:', error);
       return null;
     }
   },
-  
-  listenToNotifications: () => {
-    console.log('📱 Setting up notification handlers and listeners...');
-    
-    // Configure notification handler (only set once)
-    Notifications.setNotificationHandler({
-      handleNotification: async () => {
-        console.log('📱 Handling incoming notification...');
-        return {
-          shouldShowAlert: true,
-          shouldPlaySound: true,
-          shouldSetBadge: true,
-        };
-      },
-    });
-    
-    // Handle notifications when received in the foreground
-    const foregroundSubscription = Notifications.addNotificationReceivedListener(notification => {
-      console.log('📱 Notification received in foreground: ', JSON.stringify(notification, null, 2));
-      // Show toast message when the app is open
-      Toast.show({
-        type: 'success',
-        position: 'top',
-        text1: notification.request.content.title || 'New notification',
-        text2: notification.request.content.body || '',
-        visibilityTime: 4000,
-        autoHide: true,
-      });
-    });
-    
-    // Handle response to notifications when clicked
-    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('📱 Notification response received: ', JSON.stringify(response, null, 2));
-      
-      const data = response.notification.request.content.data;
-      
-      if (data && data.type) {
-        console.log(`📱 Processing ${data.type} notification with data:`, data);
-    
-        switch (data.type) {
-          case 'booking_cancelled':
-            // Navigate to booking details page with bookingId (or hostelId)
-            router.push(`/(bookings)/${data.bookingId}`);
-            break;
-          case 'booking_successful':
-            router.push(`/(bookings)/${data.bookingId}`);
-            break;
-          case 'booking_accepted':
-            router.push(`/(bookings)/${data.bookingId}`);
-            break;
-          case 'hostel_advertisement':
-            router.push({
-              pathname: "/(Details)/[id]",
-              params: { hostelId: data.hostelId }
-            });
-            break;
-          case 'notifications':
-            router.push('/NotificationScreen');
-            break;
-          default:
-            router.push('/'); 
+
+  // Show prompt to enable notifications
+  promptForNotifications: (onEnable) => {
+    Alert.alert(
+      '🔔 Enable Notifications',
+      'Stay updated with booking confirmations, special offers, and important updates. Enable notifications now?',
+      [
+        {
+          text: 'Later',
+          style: 'cancel',
+        },
+        {
+          text: 'Enable',
+          onPress: onEnable,
+        },
+      ]
+    );
+  },
+
+  // Safe navigation handler with error catching
+  handleNotificationNavigation: (data) => {
+    if (!data || !data.type) {
+      console.warn('No navigation data in notification');
+      return;
+    }
+
+    try {
+      console.log('Handling notification navigation:', data);
+
+      // Add a small delay to ensure app is fully loaded
+      setTimeout(() => {
+        try {
+          switch (data.type) {
+            case 'booking_cancelled':
+            case 'booking_successful':
+            case 'booking_accepted':
+              if (data.bookingId) {
+                router.push(`/(bookings)/${data.bookingId}`);
+              } else {
+                console.warn('No bookingId in notification data');
+                router.push('/');
+              }
+              break;
+
+            case 'hostel_advertisement':
+              if (data.hostelId) {
+                router.push({
+                  pathname: "/(Details)/[id]",
+                  params: { id: data.hostelId }
+                });
+              } else {
+                console.warn('No hostelId in notification data');
+                router.push('/');
+              }
+              break;
+
+            case 'notifications':
+              router.push('/NotificationScreen');
+              break;
+
+            default:
+              console.warn('Unknown notification type:', data.type);
+              router.push('/');
+          }
+        } catch (navError) {
+          console.error('Navigation error:', navError);
+          // Fallback to home if navigation fails
+          router.push('/');
         }
+      }, 100); // Small delay for iOS stability
+    } catch (error) {
+      console.error('Error in handleNotificationNavigation:', error);
+    }
+  },
+  
+  // Set up notification handlers
+  listenToNotifications: () => {
+    // Configure notification handler
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+    
+    // Handle notifications received while app is in foreground
+    const foregroundSubscription = Notifications.addNotificationReceivedListener(notification => {
+      try {
+        console.log('Notification received in foreground:', notification);
+        
+        Toast.show({
+          type: 'success',
+          position: 'top',
+          text1: notification.request.content.title || 'New notification',
+          text2: notification.request.content.body || '',
+          visibilityTime: 4000,
+          autoHide: true,
+        });
+      } catch (error) {
+        console.error('Error handling foreground notification:', error);
       }
     });
     
-    console.log('✅ Notification listeners set up successfully');
+    // Handle notification taps
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      try {
+        console.log('Notification tapped:', response);
+        
+        const data = response.notification.request.content.data;
+        notificationService.handleNotificationNavigation(data);
+      } catch (error) {
+        console.error('Error handling notification tap:', error);
+        // Fallback to home on error
+        setTimeout(() => {
+          try {
+            router.push('/');
+          } catch (navError) {
+            console.error('Fallback navigation failed:', navError);
+          }
+        }, 100);
+      }
+    });
     
-    // Return unsubscribe function for cleanup
     return () => {
-      foregroundSubscription.remove();
-      responseSubscription.remove();
+      try {
+        foregroundSubscription.remove();
+        responseSubscription.remove();
+      } catch (error) {
+        console.error('Error removing notification listeners:', error);
+      }
     };
   },
   
-  // Reset the app badge count
+  // Reset badge count
   resetBadgeCount: async () => {
     try {
       await Notifications.setBadgeCountAsync(0);
-      console.log('✅ Badge count reset to 0');
     } catch (error) {
-      console.error('❌ Error resetting badge count:', error);
+      console.error('Error resetting badge count:', error);
     }
   },
-  
-  // Listen for token changes and update stored value
-  listenForTokenChanges: () => {
-    console.log('📱 Setting up push token change listener...');
-    
-    const subscription = Notifications.addPushTokenListener(async token => {
-      console.log('📱 Push token changed:', token);
-      
-      // Update cached token
-      notificationService._expoPushToken = token.data;
-      
-      // Try to update in Firestore if user is logged in
-      const user = auth.currentUser;
-      if (user) {
-        await notificationService.storeTokenInFirestore(token.data, user.uid);
-        await notificationService.saveTokenToAsyncStorage(token.data, user.uid);
-      } else {
-        console.log('❌ User not logged in, updated token will be stored when user logs in');
-      }
-    });
-    
-    return subscription;
-  },
-  
-  // Send a local notification (useful for testing)
-  sendLocalNotification: async (title, body, data = {}) => {
-    try {
-      console.log('📱 Scheduling local notification:', { title, body, data });
-      
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title,
-          body,
-          data,
-          badge: 1,
-          sound: true,
-        },
-        trigger: null, // Send immediately
-      });
-      
-      console.log('✅ Local notification scheduled with ID:', notificationId);
-      return notificationId;
-    } catch (error) {
-      console.error('❌ Error sending local notification:', error);
-      return null;
-    }
-  },
-  
-  // Test function to verify the current stored token
-  verifyStoredToken: async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      console.log('❌ No user logged in to verify token');
-      return { loggedIn: false };
-    }
-    
-    try {
-      const userRef = doc(db, 'Student_Users', user.uid);
-      const userDoc = await getDoc(userRef);
-      
-      if (userDoc.exists() && userDoc.data().expoPushToken) {
-        console.log('✅ Stored token found:', userDoc.data().expoPushToken);
-        
-        // Compare with current token
-        const currentToken = notificationService._expoPushToken;
-        const storedToken = userDoc.data().expoPushToken;
-        const tokensMatch = currentToken === storedToken;
-        
-        console.log('✅ Current token:', currentToken);
-        console.log('✅ Stored token:', storedToken);
-        console.log('✅ Tokens match:', tokensMatch);
-        
-        return {
-          loggedIn: true,
-          hasToken: true,
-          storedToken,
-          currentToken,
-          tokensMatch
-        };
-      } else {
-        console.log('❌ No token stored for user:', user.uid);
-        return { loggedIn: true, hasToken: false };
-      }
-    } catch (error) {
-      console.error('❌ Error verifying stored token:', error);
-      return { loggedIn: true, hasToken: false, error: error.message };
-    }
-  }
 };
 
 export default notificationService;

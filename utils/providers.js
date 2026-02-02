@@ -2,11 +2,14 @@
 import React from "react";
 import { UserProvider } from "../context/UserContext";
 import { HostelsProvider } from "../context/HostelsContext";
+import { AccommodationProvider } from "../context/AccommodationContext";
 import { AdminProvider } from "../context/ManagersContext";
 import { BookingsProvider } from "../context/BookingsContext";
 import { ReviewsProvider } from "../context/ReviewsContext";
 import { TransactionProvider } from "../context/TransactionContext";
-import { StarredHostelsProvider } from "../context/StarredHostelsContext";
+import { FavoritesProvider } from "../context/FavoritesContext";
+
+
 
 /**
  * Utility function to set up all providers in the correct nesting order
@@ -17,17 +20,19 @@ export const setupProviders = () => {
   const ProvidersWrapper = ({ children }) => (
     <UserProvider>
       <HostelsProvider>
+        <AccommodationProvider>
         <BookingsProvider>
           <AdminProvider>
             <ReviewsProvider>
-              <StarredHostelsProvider>
+              <FavoritesProvider>
               <TransactionProvider>
                 {children}
               </TransactionProvider>
-              </StarredHostelsProvider>
+              </FavoritesProvider>
             </ReviewsProvider>
           </AdminProvider>
         </BookingsProvider>
+        </AccommodationProvider>
       </HostelsProvider>
     </UserProvider>
   );

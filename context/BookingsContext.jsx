@@ -1,8 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '../app/firebase/FirebaseConfig';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '../app/firebase/FirebaseConfig';
+// context/BookingsContext.jsx
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import { supabase } from '../app/firebase/supabaseConfig';
+import { UserContext } from './UserContext';
 
 const BookingsContext = createContext();
 
@@ -13,73 +12,102 @@ export const BookingsProvider = ({ children }) => {
   const [storageBookings, setStorageBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [user] = useAuthState(auth);
+  const { userInfo } = useContext(UserContext);
+  
+  const channelRef = useRef(null);
 
   useEffect(() => {
-    let unsubscribeBookings;
-    let unsubscribeStorage;
-
-    if (user) {
-      // --- Bookings Listener (Hostel Bookings) ---
-      const bookingsRef = collection(db, 'Bookings');
-      const bookingsQuery = query(bookingsRef, where('userId', '==', user.uid));
-
-      unsubscribeBookings = onSnapshot(
-        bookingsQuery,
-        (snapshot) => {
-          const data = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            type: 'accommodation',
-          }));
-          setBookings(data);
-        },
-        (err) => {
-          console.error('Error fetching hostel bookings:', err);
-          setError(err.message);
-        }
-      );
-
-      // --- Storage Listener (Storage Bookings) ---
-      const storageRef = collection(db, 'Storage');
-      const storageQuery = query(storageRef, where('userId', '==', user.uid));
-
-      unsubscribeStorage = onSnapshot(
-        storageQuery,
-        (snapshot) => {
-          const data = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            type: 'storage', // Mark this type
-          }));
-          setStorageBookings(data);
-        },
-        (err) => {
-          console.error('Error fetching storage bookings:', err);
-          setError(err.message);
-        }
-      );
-
-      // Finish loading when both are set (simple assumption)
-      setLoading(false);
-    } else {
+    if (!userInfo?.id) {
+      console.log('No user, clearing bookings');
       setBookings([]);
       setStorageBookings([]);
       setLoading(false);
+      
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      return;
     }
 
-    // Cleanup both listeners
-    return () => {
-      unsubscribeBookings && unsubscribeBookings();
-      unsubscribeStorage && unsubscribeStorage();
+    const fetchBookings = async () => {
+      try {
+        console.log('Fetching bookings for user:', userInfo.id);
+        const { data, error } = await supabase
+          .from('accommodation_booking')
+          .select('*')
+          .eq('student_id', userInfo.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        console.log('Fetched bookings:', data?.length);
+        setBookings(data || []);
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+        setError(err.message);
+        setBookings([]);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [user]);
+
+    // Initial fetch
+    setLoading(true);
+    fetchBookings();
+
+    // Setup realtime subscription
+    if (channelRef.current) {
+      console.log('Removing old channel');
+      supabase.removeChannel(channelRef.current);
+    }
+
+    console.log('Setting up realtime subscription for user:', userInfo.id);
+
+    const channel = supabase
+      .channel(`bookings_${userInfo.id}`) // ← FIX: Was missing opening parenthesis
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen to INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: 'accommodation_booking',
+          filter: `student_id=eq.${userInfo.id}`,
+        },
+        (payload) => {
+          console.log('Realtime event received:', payload.eventType, payload);
+          fetchBookings(); // Refetch all bookings
+        }
+      )
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to booking updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to channel');
+        } else if (status === 'TIMED_OUT') {
+          console.error('Subscription timed out');
+        } else if (status === 'CLOSED') {
+          console.log('Subscription closed');
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      console.log('Cleaning up bookings subscription');
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [userInfo?.id]);
 
   return (
     <BookingsContext.Provider
       value={{
-        bookings,          // Hostel bookings
-        storageBookings,   // Storage bookings
+        bookings,
+        storageBookings,
         loading,
         error,
       }}

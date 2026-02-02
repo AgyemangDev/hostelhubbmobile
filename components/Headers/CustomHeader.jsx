@@ -1,40 +1,32 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
-import { useNavigation } from 'expo-router';
-import HeaderTextBlock from './HeaderTextBlock';
+import { useRouter } from 'expo-router';
 import NotificationBell from './NotificationBell';
-import FavoriteIcon from './FavoriteIcon'; // Importing the FavoriteIcon component
-import SearchBar from './SearchBar';
+import FavoriteIcon from './FavoriteIcon';
+import SearchBar from '../SearchComponents/SearchInput';
 
 const CustomHeader = () => {
-  const navigation = useNavigation();
-
-  const handleNotificationPress = () => {
-    navigation.navigate("NotificationScreen");
-  };
-
-  const handleSearchPress = () => {
-    navigation.navigate('SearchScreen');
-  };
-
-  const handleFavoritePress = () => {
-    navigation.navigate('(shortlist)');
-  };
+  const Router = useRouter();
 
   return (
     <View style={styles.container}>
       <View style={styles.statusBarSpace} />
+
       <View style={styles.row}>
-        {/* Welcome text on the left */}
-        <HeaderTextBlock />
-        
+        {/* flexible search */}
+        <View style={styles.searchWrap}>
+          <SearchBar
+            placeholder="Search accommodation "
+            onPress={() => Router.push('/SearchScreen')}
+          />
+        </View>
+
+        {/* fixed icons */}
         <View style={styles.iconsContainer}>
-          <FavoriteIcon onPress={handleFavoritePress} />
-          <NotificationBell onPress={handleNotificationPress} />
+<FavoriteIcon onPress={() => Router.push('/Shortlist')} />
+<NotificationBell onPress={() => Router.push('/NotificationScreen')} />
         </View>
       </View>
-      
-      <SearchBar onPress={handleSearchPress} />
     </View>
   );
 };
@@ -47,21 +39,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
+    paddingBottom:10
   },
+
   statusBarSpace: {
     height: Platform.OS === 'ios' ? 0 : 30,
   },
+
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-
+    paddingHorizontal: 12,
   },
+
+  searchWrap: {
+    flex: 1,              // 👈 takes remaining width only
+    marginRight: 8,       // 👈 spacing instead of space-between
+  },
+
   iconsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: 90,
     justifyContent: 'space-between',
-    width: 90, 
-    gap:2
   },
 });

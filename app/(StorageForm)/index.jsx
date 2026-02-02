@@ -58,18 +58,18 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
         <View style={styles.introSection}>
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>2000+</Text>
-              <Text style={styles.statLabel}>Items Stored</Text>
+              <Text style={styles.statNumber}>10,000+</Text>
+              <Text style={styles.statLabel}>Bookings Completed</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>99.9%</Text>
+              <Text style={styles.statNumber}>100%</Text>
               <Text style={styles.statLabel}>Student Satisfaction</Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>24/7</Text>
-              <Text style={styles.statLabel}>Access & Support</Text>
+              <Text style={styles.statLabel}>Access & Support Customer Care</Text>
             </View>
           </View>
         </View>
@@ -168,7 +168,7 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
             </TouchableOpacity>
           </View>
           <Text style={styles.footerText}>
-            © 2025 HostelHubb Storage Reservation
+            © {new Date().getFullYear()} HostelHubb Storage Reservation
           </Text>
           <Text style={styles.footerSubtext}>
             Secure • Accessible • Reliable

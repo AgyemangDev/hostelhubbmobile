@@ -8,7 +8,6 @@ import {
   ScrollView,
   Text
 } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -39,27 +38,6 @@ const ProductImages = ({ images = [] }) => {
     setActiveIndex(index);
   };
 
-  const onHandlerStateChange = (event) => {
-    if (event.nativeEvent.state === State.END) {
-      const { translationX, velocityX } = event.nativeEvent;
-      const threshold = screenWidth * 0.2;
-      
-      let newIndex = activeIndex;
-      
-      if (translationX > threshold || velocityX > 500) {
-        // Swipe right - go to previous image
-        newIndex = Math.max(0, activeIndex - 1);
-      } else if (translationX < -threshold || velocityX < -500) {
-        // Swipe left - go to next image
-        newIndex = Math.min(displayImages.length - 1, activeIndex + 1);
-      }
-      
-      if (newIndex !== activeIndex) {
-        setActiveIndex(newIndex);
-      }
-    }
-  };
-
   const handleImageLoad = (index) => {
     setImageLoadStates(prev => ({
       ...prev,
@@ -75,27 +53,22 @@ const ProductImages = ({ images = [] }) => {
     <View style={styles.container}>
       {/* Main Image Container */}
       <View style={styles.mainImageContainer}>
-        <PanGestureHandler
-          onHandlerStateChange={onHandlerStateChange}
-          activeOffsetX={[-20, 20]}
-        >
-          <View style={styles.mainImageWrapper}>
-            <Image
-              source={{ uri: displayImages[activeIndex] }}
-              style={styles.mainImage}
-              resizeMode="cover"
-              onLoad={() => handleImageLoad(activeIndex)}
-              onError={() => handleImageError(activeIndex)}
-            />
-            
-            {/* Loading placeholder */}
-            {!imageLoadStates[activeIndex] && (
-              <View style={styles.loadingPlaceholder}>
-                <View style={styles.loadingShimmer} />
-              </View>
-            )}
-          </View>
-        </PanGestureHandler>
+        <View style={styles.mainImageWrapper}>
+          <Image
+            source={{ uri: displayImages[activeIndex] }}
+            style={styles.mainImage}
+            resizeMode="cover"
+            onLoad={() => handleImageLoad(activeIndex)}
+            onError={() => handleImageError(activeIndex)}
+          />
+          
+          {/* Loading placeholder */}
+          {!imageLoadStates[activeIndex] && (
+            <View style={styles.loadingPlaceholder}>
+              <View style={styles.loadingShimmer} />
+            </View>
+          )}
+        </View>
         
         {/* Image Counter */}
         <View style={styles.imageCounter}>
@@ -254,23 +227,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+  loadingPlaceholder: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#f0f0f0',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#d1d5db',
-    marginHorizontal: 4,
-  },
-  activeDot: {
-    backgroundColor: '#007AFF',
-    transform: [{ scale: 1.2 }],
+  loadingShimmer: {
+    flex: 1,
+    backgroundColor: '#e0e0e0',
   },
 });
 

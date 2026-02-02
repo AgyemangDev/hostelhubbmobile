@@ -66,9 +66,22 @@ const ClientLogIn = () => {
           "Please verify your email before logging in.",
           [
             {
-              text: "Resend Email",
-              onPress: () => sendEmailVerification(user),
-            },
+  text: "Resend Email",
+  onPress: async () => {
+    try {
+      await sendEmailVerification(user);
+      Alert.alert(
+        "Verification Email Sent",
+        "An email verification link has been sent. Please check your inbox and spam folder."
+      );
+    } catch (err) {
+      Alert.alert(
+        "Error",
+        "Could not resend verification email. Please try again."
+      );
+    }
+  },
+},
             { text: "OK" },
           ]
         );

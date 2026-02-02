@@ -5,138 +5,40 @@ import { useRouter } from 'expo-router';
 import COLORS from '../../../constants/Colors';
 import EmptyHostelShimmer from '../EmptyHostelShimmer';
 
-const HorizontalScrollCardList = ({ hostels }) => {
+const HorizontalScrollCardList = ({ accommodations }) => {
   const router = useRouter();
 
-  const filteredHostels = useMemo(() => {
-    const popular = hostels?.filter(
-      (hostel) => hostel.views > 2000
-    );
+  // Popular accommodations
+  const filteredAccommodations = useMemo(() => {
+    const popular = accommodations?.filter(acc => acc.views > 3500);
     return popular ? [...popular].sort(() => 0.5 - Math.random()) : [];
-  }, [hostels]);
+  }, [accommodations]);
 
-  const lastMinuteHostels = useMemo(() => {
-    return hostels
-      ? [...hostels].sort(() => 0.5 - Math.random()).slice(0, 10)
+  // Last minute ideas
+  const lastMinuteAccommodations = useMemo(() => {
+    return accommodations
+      ? [...accommodations].sort(() => 0.5 - Math.random()).slice(0, 10)
       : [];
-  }, [hostels]);
+  }, [accommodations]);
 
-  const recentlyAddedHostels = useMemo(() => {
-  return hostels ? hostels.filter(h => h.views < 500).slice(0, 10) : [];
-}, [hostels]);
+  // Recently added
+  const recentlyAddedAccommodations = useMemo(() => {
+    return accommodations
+      ? accommodations.filter(acc => acc.views < 2000).slice(0, 10)
+      : [];
+  }, [accommodations]);
 
-  return (
-    <View style={styles.container}>
-      {/* Popular Hostels Section */}
-      <View style={styles.titleRow}>
-        <Text style={styles.titleText}>Popular Hostels</Text>
-        <TouchableOpacity onPress={() => router.push({ pathname: '(hostels)', params: { tab: 'popular' } })}>
-          <Text style={styles.seeMore}>See more</Text>
-        </TouchableOpacity>
-      </View>
-
-      {filteredHostels?.length > 0 ? (
-        <FlatList
-          data={filteredHostels}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item, index }) => (
-            <HorizontalScrollCard
-              hostelId={item.id}
-              isFirstItem={index === 0}
-              hostelName={item.hostelName}
-              ImageUrl={{ uri: item.frontImage }}
-              institution={item.institution}
-              views={item.views}
-              location={item.location}
-              availability={item.hostelAvailability}
-              isLastItem={index === filteredHostels.length - 1}
-              onCardPress={() =>
-                router.push({
-                  pathname: "/(Details)/[id]",
-                  params: { hostelId: item.id }
-                })
-              }
-            />
-          )}
-        />
-      ) : (
-       <EmptyHostelShimmer/>
-      )}
-
-      <View style={{ height: 32 }} />
-
-      {/* Last Minute Ideas Section */}
-      <View style={styles.titleRow}>
-        <Text style={styles.titleText}>Last Minute Ideas</Text>
-        <TouchableOpacity onPress={() => router.push({ pathname: '(hostels)', params: { tab: 'lastminute' } })}>
-          <Text style={styles.seeMore}>See more</Text>
-        </TouchableOpacity>
-      </View>
-
-      {lastMinuteHostels?.length > 0 ? (
-        <FlatList
-          data={lastMinuteHostels}
-          keyExtractor={(item) => item.id}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item, index }) => (
-            <HorizontalScrollCard
-              hostelId={item.id}
-              hostelName={item.hostelName}
-              isFirstItem={index === 0}
-              ImageUrl={{ uri: item.frontImage }}
-              institution={item.institution}
-              views={item.views}
-              location={item.location}
-              availability={item.hostelAvailability}
-              isLastItem={index === lastMinuteHostels.length - 1}
-              onCardPress={() =>
-                router.push({
-                  pathname: "/(Details)/[id]",
-                  params: { hostelId: item.id }
-                })
-              }
-            />
-          )}
-        />
-      ) : (
-      <EmptyHostelShimmer/>
-      )}
-
-<View style={{ height: 32 }} />
-
-      <View style={styles.titleRow}>
-  <Text style={styles.titleText}>Recently Added</Text>
-  <TouchableOpacity
-    onPress={() =>
-      router.push({ pathname: '(hostels)', params: { tab: 'justadded' } })
-    }
-  >
-    <Text style={styles.seeMore}>See more</Text>
-  </TouchableOpacity>
-</View>
-
-<FlatList
-  data={recentlyAddedHostels}
-  keyExtractor={(item) => item.id}
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={styles.listContent}
-  renderItem={({ item, index }) => (
+  const renderCard = (item, index, listLength) => (
     <HorizontalScrollCard
       hostelId={item.id}
-      hostelName={item.hostelName}
+      hostelName={item.accommodation_name}
       isFirstItem={index === 0}
-      ImageUrl={{ uri: item.frontImage }}
+      ImageUrl={{ uri: item.front_image }}
       institution={item.institution}
       views={item.views}
       location={item.location}
-      availability={item.hostelAvailability}
-      isLastItem={index === recentlyAddedHostels.length - 1}
+      availability={item.accommodation_availability}
+      isLastItem={index === listLength - 1}
       onCardPress={() =>
         router.push({
           pathname: "/(Details)/[id]",
@@ -144,12 +46,63 @@ const HorizontalScrollCardList = ({ hostels }) => {
         })
       }
     />
-  )}
-/>
+  );
 
+  return (
+    <View style={styles.container}>
+      {/* Popular Section */}
+      <Section
+        title="Popular Hostels"
+        list={filteredAccommodations}
+        listLength={filteredAccommodations.length}
+        renderCard={renderCard}
+        onSeeMore={() => router.push({ pathname: '(hostels)', params: { tab: 'popular' } })}
+      />
+
+      {/* Last Minute Section */}
+      <Section
+        title="Last Minute Ideas"
+        list={lastMinuteAccommodations}
+        listLength={lastMinuteAccommodations.length}
+        renderCard={renderCard}
+        onSeeMore={() => router.push({ pathname: '(hostels)', params: { tab: 'lastminute' } })}
+      />
+
+      {/* Recently Added Section */}
+      <Section
+        title="Recently Added"
+        list={recentlyAddedAccommodations}
+        listLength={recentlyAddedAccommodations.length}
+        renderCard={renderCard}
+        onSeeMore={() => router.push({ pathname: '(hostels)', params: { tab: 'justadded' } })}
+      />
     </View>
   );
 };
+
+// Reusable Section component
+const Section = ({ title, list, listLength, renderCard, onSeeMore }) => (
+  <View style={{ marginBottom: 32 }}>
+    <View style={styles.titleRow}>
+      <Text style={styles.titleText}>{title}</Text>
+      <TouchableOpacity onPress={onSeeMore}>
+        <Text style={styles.seeMore}>See more</Text>
+      </TouchableOpacity>
+    </View>
+    {list?.length > 0 ? (
+      <FlatList
+        data={list}
+        keyExtractor={(item) => item.id}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item, index }) => renderCard(item, index, listLength)}
+      />
+    ) : (
+      <EmptyHostelShimmer />
+    )}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -177,11 +130,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingRight: 16,
     paddingBottom: 8,
-  },
-  emptyText: {
-    color: '#718096',
-    fontSize: 16,
-    paddingLeft: 4,
   },
 });
 

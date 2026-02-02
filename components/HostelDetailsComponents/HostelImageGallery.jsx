@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Dimensions,
   FlatList,
-  Animated,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import PlaceHolderCard from "../PlaceHolderCard";
@@ -21,38 +20,11 @@ const HostelImageGallery = ({ images }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
   const thumbnailsScrollRef = useRef(null);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Viewability tracking
-  const viewabilityConfigCallbackPairs = useRef([
-    {
-      viewabilityConfig: { viewAreaCoveragePercentThreshold: 50 },
-      onViewableItemsChanged: ({ viewableItems }) => {
-        if (viewableItems.length > 0) {
-          const newIndex = viewableItems[0].index;
-          setActiveIndex(newIndex);
-          scrollToActiveThumbnail(newIndex);
-        }
-      },
-    },
-  ]);
-
-  useEffect(() => {
-    if (images && images.length > 0) {
-      scrollToActiveThumbnail(0, false);
-    }
-  }, [images]);
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, [activeIndex]);
-
+  // Scroll thumbnail into view
   const scrollToActiveThumbnail = (index, animated = true) => {
-    const scrollX = index * (THUMBNAIL_SIZE + THUMBNAIL_SPACING) - width / 2 + THUMBNAIL_SIZE / 2;
+    const scrollX =
+      index * (THUMBNAIL_SIZE + THUMBNAIL_SPACING) - width / 2 + THUMBNAIL_SIZE / 2;
     thumbnailsScrollRef.current?.scrollTo({ x: Math.max(scrollX, 0), animated });
   };
 
@@ -68,6 +40,23 @@ const HostelImageGallery = ({ images }) => {
     }
   };
 
+  // Sync activeIndex when user scrolls FlatList
+  const onViewableItemsChanged = ({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      const newIndex = viewableItems[0].index;
+      setActiveIndex(newIndex);
+      scrollToActiveThumbnail(newIndex);
+    }
+  };
+
+  const viewabilityConfig = { viewAreaCoveragePercentThreshold: 50 };
+
+  useEffect(() => {
+    if (images && images.length > 0) {
+      scrollToActiveThumbnail(0, false);
+    }
+  }, [images]);
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -78,14 +67,14 @@ const HostelImageGallery = ({ images }) => {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
-          <Animated.View style={[styles.page, { opacity: fadeAnim }]}>
+          <View style={styles.page}>
             <ExpoImage
               source={{ uri: item }}
               style={styles.image}
               placeholderContent={<PlaceHolderCard />}
               contentFit="cover"
             />
-          </Animated.View>
+          </View>
         )}
         getItemLayout={(data, index) => ({
           length: width,
@@ -95,9 +84,11 @@ const HostelImageGallery = ({ images }) => {
         initialNumToRender={3}
         maxToRenderPerBatch={5}
         windowSize={5}
-        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
       />
 
+      {/* Thumbnails */}
       <View style={styles.thumbnailContainer}>
         <ScrollView
           ref={thumbnailsScrollRef}
@@ -114,15 +105,11 @@ const HostelImageGallery = ({ images }) => {
                 activeIndex === index && styles.activeThumbnail,
               ]}
             >
-              <Animated.View
-                style={{ transform: [{ scale: activeIndex === index ? 1.1 : 1 }] }}
-              >
-                <ExpoImage
-                  source={{ uri: image }}
-                  style={styles.thumbnail}
-                  contentFit="cover"
-                />
-              </Animated.View>
+              <ExpoImage
+                source={{ uri: image }}
+                style={styles.thumbnail}
+                contentFit="cover"
+              />
             </TouchableOpacity>
           ))}
         </ScrollView>

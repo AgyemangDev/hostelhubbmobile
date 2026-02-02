@@ -12,7 +12,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     Alert.alert(
-      "Have you finished booking your hostel?",
+      "Have you finished making your student life comfortable with our services?",
       "",
       [
         {

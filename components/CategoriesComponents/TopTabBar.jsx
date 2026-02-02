@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   tabBarContent: {
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 10,
   },
   tabItem: {
     flexDirection: 'row',

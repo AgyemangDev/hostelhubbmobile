@@ -3,98 +3,47 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
   ScrollView,
-  Platform,
   TouchableOpacity,
 } from 'react-native';
-import StepOneFormScreen from './StepOneFormScreen';
-import StepTwoSelectRoomScreen from './StepTwoSelectRoomScreen';
-import StepThreeAgentScreen from './StepThreeAgentScreen';
-import BookingProgressBar from './BookingProgressBar'; // 👈 import new component
+import StepSelectAccommodationScreen from './StepSelectAccommodationScreen';
 import COLORS from '../../constants/Colors';
 
 const BookingStepper = ({
-  step,
-  setStep,
   hostelData,
   formData,
-  handleInputChange,
   handleSelectPaymentRange,
-  isStepOneComplete,
   handleBooking,
 }) => {
-  const handleNext = () => {
-    if (step === 1 && !isStepOneComplete()) {
-      alert('Please fill in all required fields.');
-      return;
-    }
 
-if (step < 2) {
-  setStep(step + 1);
-} else {
-  handleBooking();
-}
-  };
-
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <StepOneFormScreen
-            formData={formData}
-            handleInputChange={handleInputChange}
-            hostelData={hostelData}
-            handleSelectPaymentRange={handleSelectPaymentRange}
-          />
-        );
-      case 2:
-        return (
-          <StepTwoSelectRoomScreen
-            formData={formData}
-            hostelData={hostelData}
-            handleSelectPaymentRange={handleSelectPaymentRange}
-          />
-        );
-      // case 3:
-      //   return (
-      //     <StepThreeAgentScreen
-      //       formData={formData}
-      //       handleInputChange={handleInputChange}
-      //     />
-      //   );
-      default:
-        return null;
-    }
-  };
+  const isBookingReady = () =>
+    formData.selectedPayment && formData.selectedRoomType;
 
   return (
-<View style={styles.container}>
-  {/* Booking Title */}
-  <Text style={styles.title}>Booking {hostelData?.hostelName}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>
+        Reservation at {hostelData?.accommodation_name}
+      </Text>
 
-  {/* KeyboardAvoidingView for inputs only */}
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-  >
-    {/* Progress Bar */}
-    <BookingProgressBar step={step} />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+<StepSelectAccommodationScreen
+  hostelData={hostelData}
+  formData={formData} 
+  handleSelectPaymentRange={handleSelectPaymentRange}
+/>
+      </ScrollView>
 
-    <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-      {renderStep()}
-    </ScrollView>
-  </KeyboardAvoidingView>
-
-  {/* Button OUTSIDE KeyboardAvoidingView */}
-  <TouchableOpacity style={styles.button} onPress={handleNext}>
-    <Text style={styles.buttonText}>
-      {step < 2 ? 'Continue' : 'Confirm Booking'}
-    </Text>
-  </TouchableOpacity>
-</View>
-
+      <TouchableOpacity
+        style={[
+          styles.button,
+          !isBookingReady() && { opacity: 0.5 }
+        ]}
+        disabled={!isBookingReady()}
+        onPress={handleBooking}
+      >
+        <Text style={styles.buttonText}>Confirm Booking</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 

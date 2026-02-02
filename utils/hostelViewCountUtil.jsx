@@ -1,8 +1,8 @@
-import { db } from '../app/firebase/FirebaseConfig';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+// utils/hostelViewCountUtil.js
+import { supabase } from "../app/firebase/supabaseConfig";
 
 /**
- * Updates the view count for a hostel in Firebase
+ * Updates the view count for a hostel in Supabase
  * @param {string} hostelId - The ID of the hostel to update
  */
 export const updateHostelViewCount = async (hostelId) => {
@@ -12,20 +12,32 @@ export const updateHostelViewCount = async (hostelId) => {
       return;
     }
 
-    const hostelInfoRef = doc(db, "Hostels", hostelId);
-    
-    // Fetch the document snapshot
-    const docSnapshot = await getDoc(hostelInfoRef);
-    
-    if (docSnapshot.exists()) {
-      // Update the views field by incrementing it
-      await updateDoc(hostelInfoRef, {
-        views: increment(1),
-      });
+    // First, get the current number of views
+    const { data: hostel, error: fetchError } = await supabase
+      .from("accommodation")
+      .select("views")
+      .eq("id", hostelId)
+      .single();
+
+    if (fetchError) {
+      console.error("Error fetching hostel views:", fetchError);
+      return;
+    }
+
+    // Increment views
+    const newViews = (hostel.views || 0) + 1;
+
+    const { error: updateError } = await supabase
+      .from("accommodation")
+      .update({ views: newViews })
+      .eq("id", hostelId);
+
+    if (updateError) {
+      console.error("Error updating hostel views:", updateError);
     } else {
-      console.warn(`No document found for hostelId: ${hostelId}`);
+      console.log(`Updated views for hostel ${hostelId} to ${newViews}`);
     }
   } catch (error) {
-    console.error("Error updating hostel views:", error);
+    console.error("Unexpected error updating hostel views:", error);
   }
 };

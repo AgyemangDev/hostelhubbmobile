@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import COLORS from "../../constants/Colors";
 import FormInput from "../InputFields/FormInput";
-import CustomDropdown from "../CustomDropdown";
+import CustomDropdown from "../Dropdowns/CustomDropdown";
 import Button from "../ButtonComponents/ButtonComponent";
 
 const PersonalInfoForm = ({
@@ -47,12 +47,12 @@ const PersonalInfoForm = ({
         editable={!loading}
       />
 
-      <FormInput
+      {/* <FormInput
         placeholder="Agent or Referral Code (Optional)"
         value={referredBy}
         onChangeText={setReferredBy}
         editable={!loading}
-      />
+      /> */}
 
       <CustomDropdown
         data={["Male", "Female"]}

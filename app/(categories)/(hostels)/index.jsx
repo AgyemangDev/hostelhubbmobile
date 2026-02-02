@@ -1,9 +1,9 @@
 // hostels/index.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useHostels } from '../../../context/HostelsContext';
+import { AccommodationContext } from '../../../context/AccommodationContext';
 
 import AllHostels from './AllHostels';
 import PopularHostel from './PopularHostel';
@@ -20,12 +20,18 @@ const TABS = [
   { key: 'homestel', label: 'Homestels' },
   { key: 'popular', label: 'Popular' },
   { key: 'lastminute', label: 'Last Minute' },
-  { key: 'recent', label: 'Recently Viewed' },
 ];
 
 export default function HostelScreen() {
   const { tab } = useLocalSearchParams();
-    const { hostels, loading } = useHostels();
+  const { 
+    accommodations, 
+    loading, 
+    loadMore, 
+    hasMore, 
+    refresh 
+  } = useContext(AccommodationContext);
+  
   const [activeTab, setActiveTab] = useState(tab || 'all');
 
   useEffect(() => {
@@ -37,31 +43,87 @@ export default function HostelScreen() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'popular':
-        return <PopularHostel hostels={hostels} />;
+        return (
+          <PopularHostel 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       case 'justadded':
-        return <NewHostels hostels={hostels} />;
+        return (
+          <NewHostels 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       case 'lastminute':
-        return <LastMinute hostels={hostels} />;
+        return (
+          <LastMinute 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       case 'homestel':
-        return <Homestel hostels={hostels} />;
+        return (
+          <Homestel 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       case 'recent':
-        return <RecentlyViewed hostels={hostels} />;
+        return (
+          <RecentlyViewed 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       case 'top':
-        return <TopStays hostels={hostels} />;
+        return (
+          <TopStays 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
       default:
-        return <AllHostels hostels={hostels} />;
+        return (
+          <AllHostels 
+            hostels={accommodations} 
+            loading={loading}
+            loadMore={loadMore}
+            hasMore={hasMore}
+            refresh={refresh}
+          />
+        );
     }
   };
 
   return (
     <View style={styles.container}>
-    <View style={styles.tabWrapper}>
-      <TopTabBar tabs={TABS} activeTab={activeTab} onTabPress={setActiveTab} />
+      <View style={styles.tabWrapper}>
+        <TopTabBar tabs={TABS} activeTab={activeTab} onTabPress={setActiveTab} />
+      </View>
+      <View style={styles.content}>
+        {renderTabContent()}
+      </View>
     </View>
-    <View style={styles.content}>
-      {renderTabContent()}
-    </View>
-  </View>
   );
 }
 

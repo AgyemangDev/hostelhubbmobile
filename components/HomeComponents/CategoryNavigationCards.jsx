@@ -2,31 +2,29 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 
-
 const screenWidth = Dimensions.get("window").width;
-const cardWidth = screenWidth / 4 - 16; // Adjust to fit 4 cards in one row
-
+const cardWidth = screenWidth / 4 - 16;
 
 const categories = [
   {
     name: "Hostels",
     image: require("../../assets/images/hostel.png"),
-    route: "(hostels)",
+    route: "/(categories)/(hostels)", // ✅ Use full path from app root
   },
   {
     name: "Shop",
     image: require("../../assets/images/shop.png"),
-    route: "(shop)",
+    route: "/(categories)/(shop)",
   },
   {
     name: "Transport",
     image: require("../../assets/images/transport.png"),
-    route: "(transport)",
+    route: "/(categories)/(transport)",
   },
   {
     name: "Storage",
     image: require("../../assets/images/storage.png"),
-    route: "(StorageForm)",
+    route: "/(StorageForm)",
   },
 ];
 
@@ -39,7 +37,10 @@ const CategoryNavigationCards = () => {
         <TouchableOpacity
           key={item.name}
           style={[styles.card, { width: cardWidth }]}
-          onPress={() => router.push(item.route)}
+          onPress={() => {
+            console.log(`Navigating to: ${item.route}`); // Debug log
+            router.push(item.route);
+          }}
         >
           <View style={styles.imageWrapper}>
             <Image source={item.image} style={styles.image} resizeMode="contain" />

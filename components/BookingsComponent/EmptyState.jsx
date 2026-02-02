@@ -15,15 +15,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor:'white',
-    flex:1
+    flex:1,
+    paddingBottom:100
   },
   emptyImage: {
-    width: 300, 
-    height: 300, 
+    width: 250, 
+    height: 250, 
     resizeMode: 'contain',
   },
   emptyText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#555',
     marginTop: 10,
     fontWeight:"bold"

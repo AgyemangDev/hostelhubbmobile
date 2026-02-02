@@ -1,95 +1,73 @@
-// HostelCard.js
-import { Pressable, StyleSheet, View } from "react-native";
-import React, { useState, useContext, useEffect } from "react";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { Pressable, StyleSheet, View, Animated } from "react-native";
+import React, { useState, useContext, useRef } from "react";
 import { ReviewsContext } from "../../../context/ReviewsContext";
 import { UserContext } from "../../../context/UserContext";
-import { StarredHostelsContext } from "../../../context/StarredHostelsContext";
-import { auth, db } from "../../../app/firebase/FirebaseConfig";
-import { formatViews } from "../../../utils/firebaseUtils";
-import { handleHostelCardPress } from "../../../utils/PaymentCheck";
+import { auth } from "../../../app/firebase/FirebaseConfig";
 import ImageSection from "./ImageSection";
-import FavoriteButton from "../HorizontalScroll/FavoriteButton";
+import FavoriteButton from "../../ButtonComponents/FavoriteButton";
 import ContentSection from "./ContentSection";
 import { addRecentlyViewedHostel } from "../../../utils/recentlyViewedUtils";
+import { handleHostelCardPress } from "../../../utils/PaymentCheck";
 
 const HostelCard = ({
-  hostelName,
+  accommodation_name,
   location,
   institution,
   ImageUrl,
   availability,
   isLastItem,
   onCardPress,
-  hostelId,
+  id,
   transactionScreen,
   views,
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
-  const scale = useSharedValue(1);
-
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const { reviews } = useContext(ReviewsContext);
   const { userInfo } = useContext(UserContext);
-  const { starredMap, fetchStarredStatus, toggleStar } = useContext(StarredHostelsContext);
   const user = auth.currentUser;
 
-  const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  useEffect(() => {
-    fetchStarredStatus(hostelId);
-  }, [hostelId]);
-
-  const isStarred = starredMap[hostelId] ?? false;
-
-  const handleToggleStar = (e) => {
-    e.stopPropagation();
-    toggleStar(hostelId);
-  };
-
   const handleCardPress = async () => {
-    
-    await addRecentlyViewedHostel(hostelId);
-
-    handleHostelCardPress({
-      userInfo,
-      user,
-      db,
-      onCardPress,
-      transactionScreen,
-    });
+    await addRecentlyViewedHostel(id);
+    handleHostelCardPress({ userInfo, user, onCardPress, transactionScreen });
   };
 
-  const reviewCount = reviews.filter((review) => review.hostelId === hostelId).length;
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.98,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const reviewCount = reviews.filter(r => r.hostelId === id).length;
   const reviewText = reviewCount === 0 ? "No reviews yet" : `${reviewCount} review${reviewCount > 1 ? "s" : ""}`;
-  const formattedViews = formatViews(views);
 
   return (
-    <Animated.View style={[styles.container, animatedStyles]}>
+    <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
       <Pressable
         onPress={handleCardPress}
-        onPressIn={() => (scale.value = withSpring(0.98))}
-        onPressOut={() => (scale.value = withSpring(1))}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         style={[styles.card, isLastItem && styles.lastCard]}
       >
         <View style={styles.imageContainer}>
-          <ImageSection
-            ImageUrl={ImageUrl}
-            setImageLoaded={setImageLoaded}
-          />
-          <FavoriteButton
-            isStarred={isStarred}
-            onPress={handleToggleStar}
-            style={styles.favoriteButton} 
-          />
+          <ImageSection ImageUrl={ImageUrl} setImageLoaded={setImageLoaded} />
+          <FavoriteButton accommodationId={id} style={styles.favoriteButton} />
         </View>
         <ContentSection
-          hostelName={hostelName}
+          id={id}
+          accommodation_name={accommodation_name}
           location={location}
           institution={institution}
           reviewText={reviewText}
-          views={formattedViews}
+          views={views}
           availability={availability}
         />
       </Pressable>
@@ -98,10 +76,10 @@ const HostelCard = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-    borderRadius: 10,
-    overflow: "hidden",
+  container: { 
+    marginBottom: 20, 
+    borderRadius: 10, 
+    overflow: "hidden" 
   },
   card: {
     backgroundColor: "#fff",
@@ -113,20 +91,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: "#e0e0e0", 
+    borderColor: "#e0e0e0",
   },
-  lastCard: {
-    marginBottom: 100,
+  lastCard: { 
+    marginBottom: 100 
   },
-  imageContainer: {
-    position: "relative",
+  imageContainer: { 
+    position: "relative" 
   },
-  favoriteButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 10,
-    elevation: 10,
+  favoriteButton: { 
+    position: 'absolute', 
+    top: 10, 
+    right: 10, 
+    zIndex: 10, 
+    elevation: 10 
   },
 });
 

@@ -14,14 +14,6 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
     flexGrow: 1, // Ensures the scrollable content covers full height
   },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#9a0b0d",
-    textAlign: "center",
-    marginBottom: 24,
-    marginTop: headerMarginTop, // Responsive top margin
-  },
   gridContainer: {
     flexDirection: "column",
     marginHorizontal: 15,
@@ -131,6 +123,21 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginRight: 16,
   },
+  avatarCircle: {
+  width: 50,
+  height: 50,
+  borderRadius: 25, // Makes it circular
+  backgroundColor: COLORS.background, // Use your theme color
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 12, // Space between circle and text
+},
+
+avatarLetter: {
+  color: "#fff", // White letter inside the circle
+  fontSize: 20,
+  fontWeight: "bold",
+},
 });
 
 export default styles;

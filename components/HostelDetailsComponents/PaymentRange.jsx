@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const PaymentRange = ({ paymentRanges }) => {
@@ -11,8 +11,6 @@ const PaymentRange = ({ paymentRanges }) => {
     "ThreeInARoom",
     "FourInARoom",
   ];
-
-  console.log("Payment Ranges", paymentRanges);
 
   // Function to format the room type (e.g., "ThreeInARoom" -> "Three In A Room")
   const formatRoomType = (roomType) => {

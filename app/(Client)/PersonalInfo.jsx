@@ -9,13 +9,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { onAuthStateChanged, sendEmailVerification } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { sendEmailVerification } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { validatePersonalInfoForm } from "../../utils/ValidationUtils/personalInfoValidation";
-import { supabase } from "../firebase/supabaseCofig";
+import { supabase } from "../firebase/supabaseConfig";
 
 import COLORS from "../../constants/Colors";
-import { auth, db } from "../firebase/FirebaseConfig";
+import { auth } from "../firebase/FirebaseConfig";
 import PersonalInfoForm from "../../components/Forms/PersonalInfoForm";
 import { findReferredUser } from "../../utils/referralFetcherUtils";
 
@@ -35,10 +35,6 @@ const ClientSignUp = () => {
   const [selectedGender, setSelectedGender] = useState("");
   const [isGenderVisible, setIsGenderVisible] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    return unsubscribe;
-  }, []);
 
   const generateReferralCode = () => {
     return `${firstName[0]?.toUpperCase()}${String.fromCharCode(
@@ -48,73 +44,107 @@ const ClientSignUp = () => {
     )}`;
   };
 
-  const handleSignUp = async () => {
-    const error = validatePersonalInfoForm({
-  firstName,
-  surname,
-  phoneNumber,
-  gender: selectedGender,
-});
+const handleSignUp = async () => {
+  const error = validatePersonalInfoForm({
+    firstName,
+    surname,
+    phoneNumber,
+    gender: selectedGender,
+  });
 
-if (error) {
-  Alert.alert("Error", error);
-  return;
-}
-    setLoading(true);
+  if (error) {
+    Alert.alert("Error", error);
+    return;
+  }
 
-    try {
-      const defaultReferrerId = "9NDBkpDcM3ThpPXCaL5MvLg0Dtt2";
-      let referredById = defaultReferrerId;
+  setLoading(true);
 
-      if (referredBy) {
-        const referredUser = await findReferredUser(referredBy);
-        if (!referredUser) {
-          Alert.alert("Error", "Invalid referral code");
-          setLoading(false);
-          return;
-        }
+  try {
+    // -----------------------------
+    // STEP 1 — Validate referral code
+    // -----------------------------
+    const defaultReferrerId = null;
+    let referredById = defaultReferrerId;
 
-        referredById = referredUser.id;
-        await setDoc(
-          doc(db, "Student_Users", referredUser.id),
-          { totalReferal: (referredUser.totalReferal || 0) + 1 },
-          { merge: true }
-        );
+    if (referredBy?.trim()) {
+      const referredUser = await findReferredUser(referredBy.trim());
+
+      if (!referredUser) {
+        Alert.alert("Error", "Incorrect referral code");
+        setLoading(false);
+        return;
       }
 
-      const userData = {
-        firstName,
-        surname,
-        phoneNumber,
-        gender: selectedGender,
-        referralCode: generateReferralCode(),
-        referredBy: referredById,
-        institution: selectedUniversities,
-      };
-
-      await setDoc(doc(db, "Student_Users", user.uid), userData, { merge: true });
-      await sendEmailVerification(auth.currentUser);
-
-      Alert.alert(
-        "Verify Your Email",
-        "A verification email has been sent.",
-        [
-          {
-            text: "OK",
-            onPress: () =>
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "ClientLogIn" }],
-              }),
-          },
-        ]
-      );
-    } catch (err) {
-      Alert.alert("Error", "Failed to complete sign-up");
-    } finally {
-      setLoading(false);
+      referredById = referredUser.id;
     }
-  };
+
+    // -----------------------------
+    // STEP 2 — Create Firebase user
+    // -----------------------------
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    const firebaseUid = cred.user.uid;
+
+    // -----------------------------
+    // STEP 3 — Send verification email
+    // -----------------------------
+    await sendEmailVerification(cred.user);
+
+    // -----------------------------
+    // STEP 4 — Insert into Supabase
+    // -----------------------------
+    const { error: supabaseError } = await supabase
+      .from("Student_Users")
+      .insert({
+        id: firebaseUid,
+        first_name: firstName,
+        surname: surname,
+        email: email, 
+        phone_number: phoneNumber,
+        gender: selectedGender,
+        institution: selectedUniversity,
+        referral_code: generateReferralCode(),
+        referred_by: referredById,
+        balance: 0,
+        expo_token: null,
+        created_at: new Date().toISOString(),
+        last_interacted: new Date().toISOString(),
+        paymentStatus:false,
+        paymentDate:null
+      });
+
+    if (supabaseError) {
+      throw supabaseError;
+    }
+
+    // -----------------------------
+    // STEP 5 — Success → go to login
+    // -----------------------------
+    Alert.alert(
+      "Verify Your Email",
+      "Account created. Please verify your email before logging in.",
+      [
+        {
+          text: "OK",
+          onPress: () =>
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "ClientLogIn" }],
+            }),
+        },
+      ]
+    );
+  } catch (err) {
+    console.log(err);
+    Alert.alert("Signup Failed", err.message || "Could not create account");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <KeyboardAvoidingView

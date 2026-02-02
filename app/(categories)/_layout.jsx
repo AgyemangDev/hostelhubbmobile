@@ -15,7 +15,7 @@ const _layout = () => {
       <Stack.Screen 
         name="(hostels)" 
         options={{ 
-          title: 'Accommodation', 
+          headerShown: false,
           headerBackVisible: false 
         }} 
       />

@@ -2,27 +2,18 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "expo-router";
-import { doc, deleteDoc } from "firebase/firestore";
-import { db } from "../../app/firebase/FirebaseConfig";
+import { LinearGradient } from 'expo-linear-gradient';
 
 const BookingCard = ({ booking }) => {
   const navigation = useNavigation();
-  
-  // Normalize hostel info from either hostelInfo or top-level fields
-  const normalizedHostelInfo = booking.hostelInfo || {
-    hostelName: booking.hostelName,
-    frontImage: booking.frontImage,
-    managerId: booking.adminUid,
-  };
 
-  const imageUri = normalizedHostelInfo.frontImage;
-  const adminId = normalizedHostelInfo.managerId;
-
-  if (!normalizedHostelInfo.hostelName) {
-    return null; // still don't render if no useful hostel data
-  }
+  // Get hostel info
+  const hostelName = booking.hostelName || booking.hostelInfo?.accommodation_name || "Unknown Hostel";
+  const imageUri = booking.frontImage || booking.hostelInfo?.images?.[0];
+  const adminId = booking.adminUid || booking.accommodation_owner_id;
 
   const formatRoomType = (roomType) => {
+    if (!roomType) return "N/A";
     return roomType
       .replace(/(\d+)/, (match) => `${match} `)
       .replace(/([A-Z])/g, " $1")
@@ -32,88 +23,119 @@ const BookingCard = ({ booking }) => {
   const handlePayNowPress = () => {
     navigation.navigate("PayNow", {
       bookingData: booking,
-      hostelData: normalizedHostelInfo,
+      hostelData: booking.hostelInfo,
       adminId: adminId
     });
   };
 
-  const handleDelete = async () => {
-    const bookingDoc = doc(db, "Bookings", booking.id);
-    try {
-      await deleteDoc(bookingDoc);
-    } catch (error) {
-      console.error("Error deleting booking: ", error);
+  const getStatusConfig = () => {
+    switch (booking.status) {
+      case "pending":
+        return {
+          icon: "time-outline",
+          color: "#FF9500",
+          bgColor: "#FFF3E0",
+          label: "Pending Approval"
+        };
+      case "accepted":
+        return {
+          icon: "checkmark-circle",
+          color: "#34C759",
+          bgColor: "#E8F5E9",
+          label: booking.paymentStatus ? "Confirmed" : "Ready to Pay"
+        };
+      case "paid":
+        return {
+          icon: "checkmark-circle",
+          color: "#34C759",
+          bgColor: "#E8F5E9",
+          label: "Paid"
+        };
+      case "cancelled":
+        return {
+          icon: "close-circle",
+          color: "#FF3B30",
+          bgColor: "#FFEBEE",
+          label: "Cancelled"
+        };
+      default:
+        return {
+          icon: "information-circle-outline",
+          color: "#8E8E93",
+          bgColor: "#F2F2F7",
+          label: booking.status
+        };
     }
   };
 
-  const renderStatusContent = () => {
-    switch (booking.status) {
-      case "pending":
-        return (
-          <View style={styles.pendingContainer}>
-            <View style={styles.statusBadge}>
-              <Ionicons name="time-outline" size={14} color="#f39c12" />
-              <Text style={styles.pendingText}>Pending</Text>
-            </View>
-            <Text style={styles.pendingMessage}>
-              Waiting for hostel manager's approval. You'll be able to pay once accepted.
-            </Text>
-          </View>
-        );
-     
-      case "accepted":
-        return (
-          <View style={styles.acceptedContainer}>
-            <View style={styles.statusBadge}>
-              <Ionicons name="checkmark-circle-outline" size={14} color="#27ae60" />
-              <Text style={styles.acceptedText}>Accepted</Text>
-            </View>
-            {!booking.paymentStatus && (
-              <TouchableOpacity style={styles.payNowButton} onPress={handlePayNowPress}>
-                <Text style={styles.payNowButtonText}>Pay Now</Text>
-              </TouchableOpacity>
-            )}
-            {booking.paymentStatus && (
-              <View style={styles.paidBadge}>
-                <Ionicons name="card-outline" size={14} color="#27ae60" />
-                <Text style={styles.paidText}>Paid</Text>
-              </View>
-            )}
-          </View>
-        );
-     
-      case "cancelled":
-        return (
-          <View style={styles.statusBadge}>
-            <Ionicons name="close-circle-outline" size={14} color="#e74c3c" />
-            <Text style={styles.cancelledText}>Cancelled</Text>
-          </View>
-        );
-     
-      default:
-        return null;
-    }
-  };
+  const statusConfig = getStatusConfig();
+  const showPayButton = booking.status === "accepted" && !booking.paymentStatus;
 
   return (
     <View style={styles.container}>
-      <View style={styles.cardHeader}>
-        <View style={styles.hostelInfo}>
-          {imageUri && <Image source={{ uri: imageUri }} style={styles.image} />}
-          <View style={styles.details}>
-            <Text style={styles.hostelName}>{normalizedHostelInfo.hostelName}</Text>
-            <Text style={styles.roomType}>
-              {formatRoomType(booking.selectedRoomType)}
-            </Text>
-            <Text style={styles.price}>GHC {(booking.selectedPayment * 1.05).toFixed(2)}</Text>
+      {/* Image and Basic Info Section */}
+      <View style={styles.contentWrapper}>
+        <View style={styles.imageContainer}>
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.image} />
+          ) : (
+            <View style={[styles.image, styles.placeholderImage]}>
+              <Ionicons name="bed-outline" size={32} color="#C7C7CC" />
+            </View>
+          )}
+          {/* Status Badge Overlay */}
+          <View style={[styles.statusBadge, { backgroundColor: statusConfig.bgColor }]}>
+            <Ionicons name={statusConfig.icon} size={12} color={statusConfig.color} />
           </View>
         </View>
-        <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-          <Ionicons name="trash-outline" size={18} color="#e74c3c" />
-        </TouchableOpacity>
+
+        <View style={styles.infoContainer}>
+          <Text style={styles.hostelName} numberOfLines={1}>
+            {hostelName}
+          </Text>
+          <View style={styles.roomRow}>
+            <Ionicons name="key-outline" size={14} color="#8E8E93" />
+            <Text style={styles.roomType} numberOfLines={1}>
+              {formatRoomType(booking.selectedRoomType || booking.room_type)}
+            </Text>
+          </View>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceLabel}>Total:</Text>
+            <Text style={styles.price}>
+              GHC {((booking.selectedPayment || booking.payment_option) * 1.05).toFixed(2)}
+            </Text>
+          </View>
+        </View>
       </View>
-      <View style={styles.statusSection}>
-        {renderStatusContent()}
+
+      {/* Status and Action Section */}
+      <View style={styles.footerSection}>
+        <View style={[styles.statusChip, { backgroundColor: statusConfig.bgColor }]}>
+          <Ionicons name={statusConfig.icon} size={14} color={statusConfig.color} />
+          <Text style={[styles.statusText, { color: statusConfig.color }]}>
+            {statusConfig.label}
+          </Text>
+        </View>
+
+        {showPayButton && (
+          <TouchableOpacity style={styles.payButton} onPress={handlePayNowPress}>
+            <LinearGradient
+              colors={['#34C759', '#30B350']}
+              style={styles.payButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <Ionicons name="card-outline" size={16} color="#fff" />
+              <Text style={styles.payButtonText}>Pay Now</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
+
+        {booking.status === "pending" && (
+          <Text style={styles.helperText}>
+            Awaiting acceptance
+          </Text>
+        )}
       </View>
     </View>
   );
@@ -121,130 +143,130 @@ const BookingCard = ({ booking }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    marginHorizontal: 16,
     marginVertical: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    overflow: "hidden",
   },
-  cardHeader: {
+  contentWrapper: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
+    padding: 14,
   },
-  hostelInfo: {
-    flexDirection: "row",
-    flex: 1,
-    alignItems: "center",
+  imageContainer: {
+    position: "relative",
   },
   image: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    marginRight: 12,
+    width: 90,
+    height: 90,
+    borderRadius: 12,
+    backgroundColor: "#F2F2F7",
   },
-  details: {
+  placeholderImage: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  statusBadge: {
+    position: "absolute",
+    top: 6,
+    right: 6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+  infoContainer: {
     flex: 1,
+    marginLeft: 14,
+    justifyContent: "space-between",
   },
   hostelName: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#1a1a1a",
-    marginBottom: 2,
-  },
-  roomType: {
-    fontSize: 14,
-    color: "#666",
+    fontWeight: "700",
+    color: "#1C1C1E",
     marginBottom: 4,
   },
-  price: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#27ae60",
-  },
-  deleteButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: "#ffeaea",
-  },
-  statusSection: {
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-  },
-  statusBadge: {
+  roomRow: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#f8f9fa",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  pendingContainer: {
-    alignItems: "flex-start",
-  },
-  pendingText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#f39c12",
-    marginLeft: 4,
-  },
-  pendingMessage: {
+  roomType: {
     fontSize: 13,
-    color: "#666",
-    fontStyle: "italic",
-    lineHeight: 18,
+    color: "#8E8E93",
+    marginLeft: 6,
+    flex: 1,
   },
-  acceptedContainer: {
-    alignItems: "flex-start",
-  },
-  acceptedText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#27ae60",
-    marginLeft: 4,
-  },
-  cancelledText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#e74c3c",
-    marginLeft: 4,
-  },
-  payNowButton: {
-    backgroundColor: "#27ae60",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignSelf: "flex-start",
-    marginTop: 8,
-  },
-  payNowButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  paidBadge: {
+  priceRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#e8f5e8",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginTop: 8,
+    marginTop: 2,
   },
-  paidText: {
-    fontSize: 12,
+  priceLabel: {
+    fontSize: 13,
+    color: "#8E8E93",
+    marginRight: 6,
+  },
+  price: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#34C759",
+  },
+  footerSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#F9F9F9",
+    borderTopWidth: 1,
+    borderTopColor: "#F2F2F7",
+  },
+  statusChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  statusText: {
+    fontSize: 13,
     fontWeight: "600",
-    color: "#27ae60",
-    marginLeft: 4,
+    marginLeft: 5,
+  },
+  payButton: {
+    borderRadius: 10,
+    overflow: "hidden",
+    shadowColor: "#34C759",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  payButtonGradient: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+  },
+  payButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "700",
+    marginLeft: 6,
+  },
+  helperText: {
+    fontSize: 12,
+    color: "#8E8E93",
+    fontStyle: "italic",
   },
 });
 

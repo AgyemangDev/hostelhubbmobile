@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MapPin, Eye, Heart } from 'lucide-react-native';
 import { FontAwesome, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { formatPrice } from '../../utils/helpers';
 import BookingButton from './BookingButton';

@@ -1,25 +1,47 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import React from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-const FilterButton = ({ label, onPress }) => (
-  <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.buttonText}>{label}</Text>
-  </TouchableOpacity>
-);
+const FilterButton = ({ onPress, size = 46 }) => {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[
+        styles.button,
+        {
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+        },
+      ]}
+      android_ripple={{ color: "#eee", borderless: true }}
+    >
+      <View style={styles.iconWrap}>
+        <Ionicons name="options-outline" size={22} color="#333" />
+      </View>
+    </Pressable>
+  );
+};
+
+export default FilterButton;
 
 const styles = StyleSheet.create({
   button: {
-    flex: 1,
-    padding: 8,
-    backgroundColor: '#ddd',
-    borderRadius: 8,
-    marginVertical: 3,
-    marginHorizontal: 5,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
+
+    // shadow
+    elevation: 3,
+    shadowColor: "#520000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.7,
+    shadowRadius: 2,
   },
-  buttonText: {
-    fontSize: 14,
-    textAlign: 'center',
+
+  iconWrap: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
-
-export default FilterButton;

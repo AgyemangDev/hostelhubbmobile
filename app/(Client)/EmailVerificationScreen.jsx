@@ -71,7 +71,7 @@ const EmailVerificationScreen = () => {
         <Button
           buttonText={sending ? "Sending..." : "Send Verification Email"}
           onPressFunction={handleSendVerification}
-          customStyle={{}} // white background + brown border/text
+          customStyle={{ marginBottom: 15 }}
         />
 
         <Button

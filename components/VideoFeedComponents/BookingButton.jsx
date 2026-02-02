@@ -1,35 +1,54 @@
 // components/BookingButton.jsx
-import React, { useCallback } from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
-import { MaterialIcons } from '@expo/vector-icons'; // ✅ Expo Vector Icons
+import React, { useCallback, useRef } from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  Animated,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const BookingButton = ({ onPress, disabled = false }) => {
-  const buttonScale = useSharedValue(1);
+  // Animated value
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePress = useCallback(() => {
-    buttonScale.value = withSpring(0.95, {}, () => {
-      buttonScale.value = withSpring(1);
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      damping: 15,
+      stiffness: 200,
+      mass: 0.6,
+    }).start(() => {
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        damping: 15,
+        stiffness: 200,
+        mass: 0.6,
+      }).start();
     });
+
     onPress?.();
   }, [onPress]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: buttonScale.value }],
-  }));
-
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View
+      style={{
+        transform: [{ scale: scaleAnim }],
+      }}
+    >
       <TouchableOpacity
         style={[styles.button, disabled && styles.disabled]}
         onPress={handlePress}
         disabled={disabled}
+        activeOpacity={0.85}
       >
-        <MaterialIcons name="event-available" size={20} color="white" />
+        <MaterialIcons
+          name="event-available"
+          size={20}
+          color="white"
+        />
         <Text style={styles.buttonText}>Reserve Now</Text>
       </TouchableOpacity>
     </Animated.View>

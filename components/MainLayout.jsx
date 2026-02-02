@@ -1,5 +1,5 @@
 // File: components/MainLayout.jsx
-import { useNavigation } from "expo-router";
+import {useRouter } from "expo-router";
 import { useContext, useCallback, useState, useEffect } from "react";
 import { UserContext } from "../context/UserContext";
 import { Stack } from "expo-router";
@@ -11,7 +11,7 @@ import {
 import { checkUserAuthState } from "../utils/authentication";
 
 export default function MainLayout() {
-  const navigation = useNavigation(); // Use only this for navigation
+  const router = useRouter();
   const { user, isLoading } = useContext(UserContext);
   const [deepLinkHostelId, setDeepLinkHostelId] = useState(null);
 
@@ -36,14 +36,14 @@ export default function MainLayout() {
     // Use the extracted authentication helper
     await checkUserAuthState({
       user,
-      router: navigation, // Use navigation here
+      router: router, // Use navigation here
       deepLinkHostelId,
       setDeepLinkHostelId,
     });
 
     // Hide the splash screen after routing is complete
     SplashScreen.hideAsync();
-  }, [user, isLoading, navigation, deepLinkHostelId]);
+  }, [user, isLoading, router, deepLinkHostelId]);
 
   // Check user session whenever auth state or deep link changes
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function MainLayout() {
       <Stack.Screen name="(categories)" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(StorageForm)" options={{ headerShown: false }} />
-      <Stack.Screen name="(shortlist)" options={{ headerShown: false }} />
+      <Stack.Screen name="Shortlist" options={{ headerShown: false }} />
       <Stack.Screen
         name="NotificationScreen"
         options={{ headerShown: false }}
@@ -82,13 +82,15 @@ export default function MainLayout() {
           headerShown: false,
         }}
       />
-      <Stack.Screen
-        name="SearchScreen"
-        options={{
-          title: "Booking",
-          headerShown: false,
-        }}
-      />
+<Stack.Screen
+  name="SearchScreen"
+  options={{
+    headerShown: false,
+    gestureEnabled: true,
+    gestureDirection: "horizontal",
+    presentation: "card",            
+  }}
+/>
       <Stack.Screen
         name="StorageEdit"
         options={{
@@ -96,6 +98,7 @@ export default function MainLayout() {
           headerShown: false,
         }}
       />
+
     </Stack>
   );
 }

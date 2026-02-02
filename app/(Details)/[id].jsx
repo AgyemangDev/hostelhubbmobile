@@ -1,104 +1,124 @@
-import React, { useEffect,useRef } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Linking } from "react-native";
+import React, { useEffect, useContext, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Linking,
+  StatusBar,
+  ScrollView,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
-import { useHostels } from "../../context/HostelsContext";
-import { useContext } from "react";
+
 import { UserContext } from "../../context/UserContext";
 import COLORS from "../../constants/Colors";
+import { useAccommodationById } from "../../hooks/accommodationContext/useAccommodationById";
 
-// Import components
+// Components
 import HostelImageGallery from "../../components/HostelDetailsComponents/HostelImageGallery";
 import LoadingScreen from "../../components/HostelDetailsComponents/LoadingScreen";
 import HostelInfo from "../../components/HostelDetailsComponents/HostelInfo";
 import PaymentRange from "../../components/HostelDetailsComponents/PaymentRange";
 import Amenities from "../../components/HostelDetailsComponents/Amenities";
-import PorterInfo from "../../components/HostelDetailsComponents/PorterInfo";
-import BookingButton from "../../components/HostelDetailsComponents/BookingButton";
-import ReviewsModal from "../../components/ReviewsModal";
+import BookingButton from "../../components/ButtonComponents/BookingButton";
+import ReviewsModal from "../../components/modals/ReviewsModal";
 import HostelDetailsHeader from "../../components/HostelDetailsComponents/HostelDetailsHeader";
 
-// Import utilities
+// Utils
 import { updateHostelViewCount } from "../../utils/hostelViewCountUtil";
 
 const DetailsScreen = () => {
   const { hostelId } = useLocalSearchParams();
-  const { hostels, loading } = useHostels();
+  const { accommodation: hostel, loading } = useAccommodationById(hostelId);
   const { userInfo } = useContext(UserContext);
-  const hostel = hostels.find((item) => item.id === hostelId);
   const navigation = useNavigation();
   const router = useRouter();
-  const [isModalVisible, setIsModalVisible] = React.useState(false);
-  
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // Delay the view update by 30 seconds
-    const timer = setTimeout(() => updateHostelViewCount(hostelId), 30000);
-    
-    // Cleanup timer on component unmount
+    const timer = setTimeout(() => updateHostelViewCount(hostelId), 10000);
     return () => clearTimeout(timer);
   }, [hostelId]);
 
   useEffect(() => {
-    navigation.setOptions({
-      headerShown: false
-    });
+    navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
   if (loading || !hostel) {
-  return <LoadingScreen message="Loading hostel details..." />;
-}
+    return <LoadingScreen message="Loading hostel details..." />;
+  }
+
+  const buildPaymentRanges = (roomTypes = []) =>
+    roomTypes.reduce((acc, room) => {
+      const key = room.room_type;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push({
+        description: room.description,
+        price: room.price,
+        roomsAvailable: room.rooms_available,
+        available: room.room_availability,
+      });
+      return acc;
+    }, {});
 
   const handleCall = (phoneNumber) => {
     if (!userInfo.paymentStatus) {
       Alert.alert(
         "Support HostelHubb!",
-        "Your subscription helps us keep HostelHubb running and continue providing quality services. Please subscribe to access this feature. For assistance, feel free to contact our customer support team.",
+        "Please subscribe to access this feature.",
         [
-          {
-            text: "Support",
-            onPress: () => router.push("/transactions"),
-            style: "default",
-          },
-          {
-            text: "OK",
-            style: "cancel",
-          },
+          { text: "Support", onPress: () => router.push("/transactions") },
+          { text: "OK", style: "cancel" },
         ]
       );
       return;
     }
-  
-    // If paymentStatus is true, proceed with the call
     Linking.openURL(`tel:${phoneNumber}`);
   };
-  
+
   const handleBookingPress = () => {
-    if (!hostel.hostelAvailability) {
+    if (!hostel.accommodation_availability) {
       Alert.alert(
-        "Hostel Full",
-        "This hostel is fully booked. You cannot proceed with the booking.",
+        "Oops! Hostel Fully Booked",
+        "This hostel is currently full.",
         [{ text: "OK" }]
       );
       return;
     }
-  
+
     navigation.navigate("bookingModal", {
       hostelId: hostel.id,
-      managerId: hostel.managerId,
+      managerId: hostel.manager_id,
     });
   };
 
-  const handleShowReviews = () => setIsModalVisible(true);
-  const handleCloseModal = () => setIsModalVisible(false);
+  const handleScroll = (event) => {
+    const scrollPosition = event.nativeEvent.contentOffset.y;
+    setScrolled(scrollPosition > 270);
+  };
+
+  const paymentRanges = buildPaymentRanges(hostel?.room_types || []);
 
   return (
-    <View style={styles.container}>  
-        <HostelDetailsHeader hostel={hostel} hostelId={hostelId} />
-      <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
+      {/* Header with transition effect */}
+      <HostelDetailsHeader hostel={hostel} hostelId={hostelId} scrolled={scrolled} />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <HostelImageGallery images={hostel?.images || []} />
+
         <View style={styles.components}>
           <HostelInfo
             hostel={hostel}
@@ -107,29 +127,23 @@ const DetailsScreen = () => {
 
           <TouchableOpacity
             style={styles.reviewsButton}
-            onPress={handleShowReviews}
+            onPress={() => setIsModalVisible(true)}
           >
-            <MaterialIcons name="rate-review" size={20} color="#ffffff" />
+            <MaterialIcons name="rate-review" size={20} color="#fff" />
             <Text style={styles.reviewsButtonText}>See All Reviews</Text>
           </TouchableOpacity>
 
           <ReviewsModal
             visible={isModalVisible}
-            onClose={handleCloseModal}
+            onClose={() => setIsModalVisible(false)}
             hostelId={hostelId}
           />
 
-          <PaymentRange paymentRanges={hostel?.paymentRanges || []} />
+          <PaymentRange paymentRanges={paymentRanges} />
           <Amenities amenities={hostel?.amenities || []} />
-          {/* <PorterInfo
-            porter={hostel?.porter || ""}
-            contact={hostel?.porterContact || ""}
-            onCallPress={handleCall}
-          /> */}
         </View>
       </ScrollView>
 
-      {/* Fixed Booking Button */}
       <View style={styles.fixedBookingButtonContainer}>
         <BookingButton onPress={handleBookingPress} />
       </View>
@@ -138,21 +152,10 @@ const DetailsScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f0f0f0",
-  },
-  scrollViewContent: {
-    paddingBottom: 120, // Make space for the fixed button at the bottom
-  },
-  components: {
-    marginHorizontal: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollViewContent: { paddingBottom: 120 },
+  components: { marginHorizontal: 10 },
+
   reviewsButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -162,30 +165,33 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignSelf: "center",
     marginVertical: 20,
+    elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5,
   },
   reviewsButtonText: {
-    color: "#ffffff",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     marginLeft: 8,
   },
-  // Fixed booking button container
   fixedBookingButtonContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 10,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
     paddingVertical: 8,
     borderTopWidth: 1,
     borderTopColor: "#ddd",
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
 });
 

@@ -1,20 +1,22 @@
-// screens/HorizontalScrollCardComponent.jsx
-import { View, SafeAreaView } from 'react-native';
-import HorizontalScrollCardList from "../../components/Cards/HorizontalScroll/HorizontalScrollCardList"
-import { useHostels } from '../../context/HostelsContext';
-
+import { View, SafeAreaView, Text } from "react-native";
+import HorizontalScrollCardList from "../../components/Cards/HorizontalScroll/HorizontalScrollCardList";
+import { useContext } from "react";
+import { AccommodationContext } from "../../context/AccommodationContext";
 
 export default function HorizontalScrollCardComponent() {
-    const { hostels, loading,getCacheInfo  } = useHostels();
+  const { randomAccommodations, randomLoading } = useContext(AccommodationContext);
 
-const checkCache = async () => {
-  const info = await getCacheInfo();
-  console.log('Cache info:', info);
-  // Output: { hasCachedData: true, hostelCount: 150, cacheAge: 5400000, isValid: true }
-};
+  if (randomLoading) {
+    return <Text style={{ textAlign: "center", marginTop: 20 }}>Loading...</Text>;
+  }
+
+  if (!randomAccommodations || randomAccommodations.length === 0) {
+    return <Text style={{ textAlign: "center", marginTop: 20 }}>No accommodations available on this campus. </Text>;
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <HorizontalScrollCardList hostels={hostels} />
+      <HorizontalScrollCardList accommodations={randomAccommodations} loading={randomLoading} />
     </SafeAreaView>
   );
 }

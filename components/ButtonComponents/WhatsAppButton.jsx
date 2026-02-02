@@ -1,31 +1,30 @@
 import React, { useRef, useEffect } from 'react';
-import { TouchableOpacity, Linking, StyleSheet, Image, Animated } from 'react-native';
+import { TouchableOpacity, Linking,View, StyleSheet, Image, Animated } from 'react-native';
 import WhatsappImage from "../../assets/images/whatsapp.png";
+import DepositButton from './DepositButton';
 
-export const WhatsAppButton = ({ size = 40 }) => {
-  const phoneNumber = "233245746198"; // without +
-  const message = "Hi, I need support!"; 
+export const WhatsAppButton = ({ size = 56 }) => {
+  const phoneNumber = "233245746198";
+  const message = "Hi, I need help with [please describe your issue here]"; 
 
-  // Animation reference
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Infinite pulsing animation
     Animated.loop(
       Animated.sequence([
         Animated.timing(scaleAnim, {
-          toValue: 0.8,
-          duration: 2000,
+          toValue: 1.1,
+          duration: 1500,
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 1500,
           useNativeDriver: true,
         }),
       ])
     ).start();
-  }, [scaleAnim]);
+  }, []);
 
   const openWhatsApp = () => {
     let url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
@@ -35,10 +34,16 @@ export const WhatsAppButton = ({ size = 40 }) => {
   };
 
   return (
+    <View>
     <Animated.View
       style={[
         styles.outerCircle,
-        { width: size + 8, height: size + 8, borderRadius: (size + 20) / 1, transform: [{ scale: scaleAnim }] }
+        { 
+          width: size + 12, 
+          height: size + 12, 
+          borderRadius: (size + 12) / 2,
+          transform: [{ scale: scaleAnim }] 
+        }
       ]}
     >
       <TouchableOpacity
@@ -47,39 +52,45 @@ export const WhatsAppButton = ({ size = 40 }) => {
           { width: size, height: size, borderRadius: size / 2 }
         ]}
         onPress={openWhatsApp}
-        activeOpacity={0.7}
+        activeOpacity={0.8}
       >
         <Image
           source={WhatsappImage}
           style={{
-            width: size * 0.6,
-            height: size * 0.6,
+            width: size * 0.55,
+            height: size * 0.55,
             resizeMode: "contain"
           }}
         />
       </TouchableOpacity>
     </Animated.View>
+    {/* <DepositButton/> */}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   outerCircle: {
-    backgroundColor: "#25D366", // outer green circle
+    backgroundColor: "#25D366",
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
     bottom: 20,
     right: 20,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    elevation: 8,
+    shadowColor: "#25D366",
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
-    shadowRadius: 3,
+    shadowRadius: 8,
   },
   button: {
-    backgroundColor: "#fff", // inner green
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
   },
 });

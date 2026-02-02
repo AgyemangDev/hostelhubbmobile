@@ -1,55 +1,42 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import {
   StyleSheet,
   View,
   SafeAreaView,
   ScrollView,
-  FlatList,
-  Dimensions,
 } from "react-native";
 import CustomHeader from "../../../components/Headers/CustomHeader";
 import HorizontalScrollCardComponent from "../../../components/HomeComponents/HorizontalScrollCardComponent";
 import CategoryNavigationCards from "../../../components/HomeComponents/CategoryNavigationCards";
-import BenefitSlider from "../../../components/BenefitSlider/BenefitSlider";
+import BenefitSlider from "../../../components/Sliders/BenefitSlider";
 import { hostelBenefits } from "../../../assets/data/SlideData";
-import notificationService from "../../firebase/notificationService";
-import StorageBanner from "../../../components/BannerComponents/Banner";
-import StoreData from "../../../assets/data/StoreData";
 import { WhatsAppButton } from "../../../components/ButtonComponents/WhatsAppButton";
-
-const { width } = Dimensions.get("window");
+import StorageBannerSlider from "../../../components/Sliders/StorageBannerSlider";
+import notificationService from "../../firebase/notificationService";
+import { UserContext } from "../../../context/UserContext";
+import NotificationPromptBanner from "../../../components/BannerComponents/Notificationpromptbanner";
 
 const Index = () => {
-  const flatListRef = useRef(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const { user, userInfo } = useContext(UserContext);
 
-  useEffect(() => {
-    const registerPushNotifications = async () => {
-      const token = await notificationService.registerForPushNotifications();
-      if (token) {
-        console.log("Push token registered and stored in Firestore");
-      }
-    };
+  // Banner shows whenever expo_token is null
+const showNotificationPrompt =
+  !!user &&
+  !!userInfo &&
+  (
+    userInfo.expo_token === null ||
+    userInfo.expo_token === "null" ||
+    userInfo.expo_token === ""
+  );
 
-    registerPushNotifications();
-    notificationService.listenToNotifications();
-  }, []);
+  const handleEnableNotifications = async () => {
+    if (!user) return;
 
-  // Auto scroll every 4s
-  useEffect(() => {
-    const interval = setInterval(() => {
-      let nextIndex = (currentIndex + 1) % StoreData.length;
-      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
-      setCurrentIndex(nextIndex);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [currentIndex]);
+    const token =
+      await notificationService.registerForPushNotifications(user.uid);
 
-  const handleScroll = (event) => {
-    const slideIndex = Math.round(
-      event.nativeEvent.contentOffset.x / width
-    );
-    setCurrentIndex(slideIndex);
+    // ⛔️ Do NOT manually hide banner here
+    // Supabase realtime update will update userInfo.expo_token
   };
 
   return (
@@ -64,36 +51,14 @@ const Index = () => {
           <CustomHeader />
         </View>
 
-        <CategoryNavigationCards />
-
-        {/* Horizontal banner carousel */}
-        <View>
-          <FlatList
-            ref={flatListRef}
-            data={StoreData}
-            renderItem={({ item }) => <StorageBanner facility={item} />}
-            keyExtractor={(item) => item.id}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
+        {showNotificationPrompt && (
+          <NotificationPromptBanner
+            onEnable={handleEnableNotifications}
           />
+        )}
 
-          {/* Pagination dots */}
-          <View style={styles.pagination}>
-            {StoreData.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.dot,
-                  index === currentIndex ? styles.activeDot : null,
-                ]}
-              />
-            ))}
-          </View>
-        </View>
-
+        <CategoryNavigationCards />
+        <StorageBannerSlider />
         <HorizontalScrollCardComponent />
         <BenefitSlider benefits={hostelBenefits} />
       </ScrollView>
@@ -107,33 +72,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    paddingBottom: 10
   },
   scrollView: {
     flex: 1,
   },
   scrollViewContent: {
     paddingBottom: 20,
-  },
-  headerWrapper: {
-    paddingHorizontal: 16,
-    backgroundColor: "#fff",
-    zIndex: 10,
-  },
-  pagination: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 8,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#ccc",
-    marginHorizontal: 4,
-  },
-  activeDot: {
-    backgroundColor: "#610b0c",
-    width: 12,
   },
 });
 
