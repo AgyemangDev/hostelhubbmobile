@@ -1,6 +1,4 @@
 // File: utils/authentication.js
-import { db } from "../app/firebase/FirebaseConfig";
-import { getDoc, doc } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const checkUserAuthState = async ({
@@ -9,16 +7,15 @@ export const checkUserAuthState = async ({
   deepLinkHostelId,
   setDeepLinkHostelId
 }) => {
-  const storedHostelId = await AsyncStorage.getItem('deepLinkHostelId') || deepLinkHostelId;
+  try {
+    // Check stored deep link first
+    const storedHostelId = (await AsyncStorage.getItem('deepLinkHostelId')) || deepLinkHostelId;
 
-  if (user) {
-    const userProfileRef = doc(db, "Student_Users", user.uid);
-    const userProfile = await getDoc(userProfileRef);
-
-    if (userProfile.exists()) {
-      // User has a profile, proceed directly
+    if (user) {
       if (storedHostelId) {
         console.log("Navigating to deep linked hostel:", storedHostelId);
+
+        // Clear deep link after use
         setDeepLinkHostelId && setDeepLinkHostelId(null);
         await AsyncStorage.removeItem('deepLinkHostelId');
 
@@ -27,15 +24,16 @@ export const checkUserAuthState = async ({
           params: { hostelId: storedHostelId }
         });
       } else {
-        // Normal flow - go to home
+        // Normal flow: go to home
         router.replace("(tabs)/(index)");
       }
     } else {
-      // Profile not found, send to locSelection
-      router.replace("locSelection");
+      // User not logged in: go to login
+      router.replace("/(Client)");
     }
-  } else {
-    // User not logged in, go to login
-    router.replace("/(Client)"); // <-- Fixed route
+  } catch (err) {
+    console.error("Error checking auth state:", err);
+    // Fallback to login on error
+    router.replace("/(Client)");
   }
 };

@@ -26,13 +26,11 @@ export const AdminProvider = ({ children }) => {
       const cachedData = await AsyncStorage.getItem(CACHE_KEY);
       const lastFetch = await AsyncStorage.getItem(TIMESTAMP_KEY);
 
-      console.log('Cached data:', cachedData ? JSON.parse(cachedData) : []);
-      console.log('Last fetch timestamp:', lastFetch);
+
 
       const cachedAdmins = cachedData ? JSON.parse(cachedData) : [];
       const currentAdminIds = new Set(cachedAdmins.map((admin) => admin.id));
 
-      console.log('Current admin IDs in cache:', currentAdminIds);
 
       // Identify new manager IDs that need to be fetched
       const newManagerIds = Array.from(managerIds).filter((id) => !currentAdminIds.has(id));

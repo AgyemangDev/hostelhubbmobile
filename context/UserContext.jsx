@@ -1,9 +1,16 @@
-// context/UserContext.jsx
-import React, { createContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../app/firebase/supabaseConfig';
 import { auth } from '../app/firebase/FirebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import API_BASE_URL from '../utils/api/api';
+import EventSource from 'react-native-sse'; // Add this import
 
 export const UserContext = createContext();
 
@@ -12,172 +19,165 @@ const STORAGE_KEYS = {
 };
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // Firebase user
-  const [userInfo, setUserInfo] = useState(null); // Supabase user info
-  const [dataLoaded, setDataLoaded] = useState(false);
-  const channelRef = useRef(null); // Store the subscription channel
+  const [user, setUser] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const eventSourceRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
 
-  // Save userInfo to AsyncStorage
-  const updateUserCache = useCallback(async (data) => {
+  /* ------------------ Cache Helpers ------------------ */
+
+  const saveCache = async (data) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEYS.userSession, JSON.stringify(data));
-      console.log('User cache updated:', data);
-    } catch (err) {
-      console.error('Error updating cache:', err);
+    } catch (e) {
+      console.error('Cache save error:', e);
     }
-  }, []);
+  };
 
-  const clearUserSession = useCallback(async () => {
+  const clearCache = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEYS.userSession);
-      console.log('User session cleared');
-    } catch (err) {
-      console.error('Error clearing session:', err);
+    } catch (e) {
+      console.error('Cache clear error:', e);
     }
-  }, []);
+  };
 
-  // Load cached user info on app start
-  useEffect(() => {
-    const loadCachedData = async () => {
-      try {
-        const cached = await AsyncStorage.getItem(STORAGE_KEYS.userSession);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          setUserInfo(parsed);
-          console.log('Loaded cached user info:', parsed);
-        }
-      } catch (err) {
-        console.error('Error loading cached user:', err);
-      } finally {
-        setDataLoaded(true);
-      }
-    };
-    loadCachedData();
-  }, []);
+  /* ------------------ SSE Connection ------------------ */
 
-  // Setup Supabase Realtime subscription
-  const setupRealtimeSubscription = useCallback((userId) => {
-    // Clean up any existing subscription
-    if (channelRef.current) {
-      console.log('Removing existing subscription');
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+  const connectToStream = useCallback(async (firebaseUser) => {
+    // Close existing connection
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
     }
 
-    console.log('Setting up realtime subscription for user:', userId);
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
 
-    // Create a new channel for this specific user
-    const channel = supabase
-      .channel(`student_user_${userId}`)
-      .on(
-        'postgres_changes',
+    try {
+      const token = await firebaseUser.getIdToken(true);
+      
+      const es = new EventSource(
+        `${API_BASE_URL}/api/students/me/stream`,
         {
-          event: '*', // Listen to all events: INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'Student_Users',
-          filter: `id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Realtime update received:', payload);
-
-          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            const updatedData = payload.new;
-            console.log('User data updated in real-time:', updatedData);
-            setUserInfo(updatedData);
-            updateUserCache(updatedData);
-          } else if (payload.eventType === 'DELETE') {
-            console.log('User record deleted');
-            setUserInfo(null);
-            clearUserSession();
-          }
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to realtime updates');
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.error('Subscription error:', status);
+      );
+
+      es.addEventListener('message', async (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (!data.error) {
+            setUserInfo(data);
+            await saveCache(data);
+          }
+        } catch (err) {
+          console.error('Parse error:', err);
         }
       });
 
-    channelRef.current = channel;
+      es.addEventListener('error', (error) => {
+        console.error('SSE error:', error);
+        
+        // Reconnect after 5 seconds
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (auth.currentUser) {
+            connectToStream(auth.currentUser);
+          }
+        }, 100000);
+      });
 
-    return () => {
-      console.log('Cleaning up subscription');
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+      es.addEventListener('open', () => {
+        console.log('SSE connection opened');
+      });
+
+      eventSourceRef.current = es;
+    } catch (err) {
+      console.error('SSE connection error:', err);
+      
+      // Retry connection
+      reconnectTimeoutRef.current = setTimeout(() => {
+        if (auth.currentUser) {
+          connectToStream(auth.currentUser);
+        }
+      }, 5000);
+    }
+  }, []);
+
+  const disconnectStream = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  };
+
+  /* ------------------ Load Cached User ------------------ */
+
+  useEffect(() => {
+    const loadCache = async () => {
+      try {
+        const cached = await AsyncStorage.getItem(STORAGE_KEYS.userSession);
+        if (cached) {
+          setUserInfo(JSON.parse(cached));
+        }
+      } catch (e) {
+        console.error('Cache load error:', e);
       }
     };
-  }, [updateUserCache, clearUserSession]);
 
-  // Listen to Firebase auth changes
+    loadCache();
+  }, []);
+
+  /* ------------------ Auth Listener ------------------ */
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-      
+
       if (!firebaseUser) {
-        console.log('No Firebase user, clearing info');
+        disconnectStream();
         setUserInfo(null);
-        clearUserSession();
-        
-        // Clean up subscription when user logs out
-        if (channelRef.current) {
-          supabase.removeChannel(channelRef.current);
-          channelRef.current = null;
-        }
+        await clearCache();
+        setLoading(false);
         return;
       }
 
-      try {
-        console.log('Fetching Supabase user for UID:', firebaseUser.uid);
-
-        const { data, error } = await supabase
-          .from('Student_Users')
-          .select('*')
-          .eq('id', firebaseUser.uid)
-          .single();
-
-        if (error) {
-          console.error('Supabase fetch error:', error);
-          setUserInfo(null);
-        } else if (!data) {
-          console.warn('No user found in Supabase for UID:', firebaseUser.uid);
-          setUserInfo(null);
-        } else {
-          console.log('Supabase user fetched:', data);
-          setUserInfo(data);
-          await updateUserCache(data);
-          
-          // Setup realtime subscription for this user
-          setupRealtimeSubscription(firebaseUser.uid);
-        }
-      } catch (err) {
-        console.error('Error fetching user from Supabase:', err);
-        setUserInfo(null);
-      }
+      await connectToStream(firebaseUser);
+      setLoading(false);
     });
 
     return () => {
       unsubscribe();
-      // Clean up subscription on component unmount
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      disconnectStream();
     };
-  }, [updateUserCache, clearUserSession, setupRealtimeSubscription]);
+  }, [connectToStream]);
 
-  const contextValue = useMemo(
-    () => ({
-      user,
-      userInfo,
-      isLoading: !dataLoaded,
-      clearUserSession,
-    }),
-    [user, userInfo, dataLoaded, clearUserSession]
+  /* ------------------ Context Value ------------------ */
+
+  const value = useMemo(() => ({
+    user,
+    userInfo,
+    isLoading: loading,
+    logoutCleanup: async () => {
+      disconnectStream();
+      setUserInfo(null);
+      await clearCache();
+    },
+  }), [user, userInfo, loading]);
+
+  return (
+    <UserContext.Provider value={value}>
+      {children}
+    </UserContext.Provider>
   );
-
-  return <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>;
 };

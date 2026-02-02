@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   StyleSheet,
   KeyboardAvoidingView,
@@ -9,25 +9,21 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { sendEmailVerification } from "firebase/auth";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { validatePersonalInfoForm } from "../../utils/ValidationUtils/personalInfoValidation";
-import { supabase } from "../firebase/supabaseConfig";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import API_BASE_URL from "../../utils/api/api";
 
 import COLORS from "../../constants/Colors";
-import { auth } from "../firebase/FirebaseConfig";
 import PersonalInfoForm from "../../components/Forms/PersonalInfoForm";
-import { findReferredUser } from "../../utils/referralFetcherUtils";
+import { UserContext } from "../../context/UserContext";
 
 const ClientSignUp = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { email, password, selectedUniversity } = route.params;
-  console.log( selectedUniversity,email,password);
+  const { setUserSession } = useContext(UserContext);
 
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const [firstName, setFirstName] = useState("");
   const [surname, setSurname] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -35,116 +31,83 @@ const ClientSignUp = () => {
   const [selectedGender, setSelectedGender] = useState("");
   const [isGenderVisible, setIsGenderVisible] = useState(false);
 
+  const handleSignUp = async () => {
+    const error = validatePersonalInfoForm({
+      firstName,
+      surname,
+      phoneNumber,
+      gender: selectedGender,
+    });
 
-  const generateReferralCode = () => {
-    return `${firstName[0]?.toUpperCase()}${String.fromCharCode(
-      97 + Math.random() * 26
-    )}${Math.floor(10 + Math.random() * 90)}${String.fromCharCode(
-      65 + Math.random() * 26
-    )}`;
-  };
-
-const handleSignUp = async () => {
-  const error = validatePersonalInfoForm({
-    firstName,
-    surname,
-    phoneNumber,
-    gender: selectedGender,
-  });
-
-  if (error) {
-    Alert.alert("Error", error);
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    // -----------------------------
-    // STEP 1 — Validate referral code
-    // -----------------------------
-    const defaultReferrerId = null;
-    let referredById = defaultReferrerId;
-
-    if (referredBy?.trim()) {
-      const referredUser = await findReferredUser(referredBy.trim());
-
-      if (!referredUser) {
-        Alert.alert("Error", "Incorrect referral code");
-        setLoading(false);
-        return;
-      }
-
-      referredById = referredUser.id;
+    if (error) {
+      Alert.alert("Error", error);
+      return;
     }
 
-    // -----------------------------
-    // STEP 2 — Create Firebase user
-    // -----------------------------
-    const cred = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+    setLoading(true);
 
-    const firebaseUid = cred.user.uid;
-
-    // -----------------------------
-    // STEP 3 — Send verification email
-    // -----------------------------
-    await sendEmailVerification(cred.user);
-
-    // -----------------------------
-    // STEP 4 — Insert into Supabase
-    // -----------------------------
-    const { error: supabaseError } = await supabase
-      .from("Student_Users")
-      .insert({
-        id: firebaseUid,
-        first_name: firstName,
-        surname: surname,
-        email: email, 
-        phone_number: phoneNumber,
-        gender: selectedGender,
-        institution: selectedUniversity,
-        referral_code: generateReferralCode(),
-        referred_by: referredById,
-        balance: 0,
-        expo_token: null,
-        created_at: new Date().toISOString(),
-        last_interacted: new Date().toISOString(),
-        paymentStatus:false,
-        paymentDate:null
+    try {
+      // Hit the backend API endpoint
+      const response = await fetch(`${API_BASE_URL}/api/students/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_name: firstName,
+          surname: surname,
+          phone_number: phoneNumber,
+          gender: selectedGender,
+          institution: selectedUniversity,
+          email: email,
+          password: password,
+          referred_by: referredBy?.trim() || null,
+        }),
       });
 
-    if (supabaseError) {
-      throw supabaseError;
-    }
+      const data = await response.json();
 
-    // -----------------------------
-    // STEP 5 — Success → go to login
-    // -----------------------------
-    Alert.alert(
-      "Verify Your Email",
-      "Account created. Please verify your email before logging in.",
-      [
-        {
-          text: "OK",
-          onPress: () =>
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "ClientLogIn" }],
-            }),
-        },
-      ]
-    );
-  } catch (err) {
-    console.log(err);
-    Alert.alert("Signup Failed", err.message || "Could not create account");
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create account');
+      }
+
+      // Store the user session data in AsyncStorage
+      const sessionData = {
+        firebaseUid: data.firebaseUid,
+        firebaseToken: data.firebaseToken,
+        student: data.student,
+        tokenExpiry: Date.now() + (3600 * 1000), // Token expires in 1 hour
+      };
+
+      await AsyncStorage.setItem('userSession', JSON.stringify(sessionData));
+
+      // Update the user context
+      if (setUserSession) {
+        setUserSession(sessionData);
+      }
+
+      // Success - Navigate to login or email verification
+      Alert.alert(
+        "Verify Your Email",
+        "Account created successfully. Please verify your email before logging in.",
+        [
+          {
+            text: "OK",
+            onPress: () =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "ClientLogIn" }],
+              }),
+          },
+        ]
+      );
+    } catch (err) {
+      console.error('Signup error:', err);
+      Alert.alert("Signup Failed", err.message || "Could not create account");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
