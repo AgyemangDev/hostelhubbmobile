@@ -6,7 +6,6 @@ import { AccommodationProvider } from "../context/AccommodationContext";
 import { AdminProvider } from "../context/ManagersContext";
 import { BookingsProvider } from "../context/BookingsContext";
 import { ReviewsProvider } from "../context/ReviewsContext";
-import { TransactionProvider } from "../context/TransactionContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
 
 
@@ -25,9 +24,9 @@ export const setupProviders = () => {
           <AdminProvider>
             <ReviewsProvider>
               <FavoritesProvider>
-              <TransactionProvider>
+
                 {children}
-              </TransactionProvider>
+
               </FavoritesProvider>
             </ReviewsProvider>
           </AdminProvider>

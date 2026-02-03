@@ -3,7 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useFavorites } from "../../context/FavoritesContext";
 import { useFavoriteAccommodations } from "../../hooks/accommodationContext/useFavoriteAccommodations";
-import SkeletonCards from "../SkeletonCard";
+import SkeletonCards from "../Loading/SkeletonCard";
 import WishlistHeader from "../Headers/WishlistHeader";
 import EmptyState from "./EmptyState";
 import HostelList from "./HostelList";

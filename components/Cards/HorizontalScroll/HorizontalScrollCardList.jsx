@@ -3,7 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native
 import HorizontalScrollCard from './HorizontalScrollCard';
 import { useRouter } from 'expo-router';
 import COLORS from '../../../constants/Colors';
-import EmptyHostelShimmer from '../EmptyHostelShimmer';
+import EmptyHostelShimmer from '../../Loading/EmptyHostelShimmer';
 
 const HorizontalScrollCardList = ({ accommodations }) => {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Pressable, ScrollView } from "react-native";
-import ReceivedPayments from "../../../components/ProfileComponent/ReceivedPayments";
+import TransactionsMade from "../../../components/ProfileComponent/TransactionsMade";
 import BalanceInfo from "../../../components/ProfileComponent/BalanceInfo";
 import WithdrawalScreen from "../../../components/ProfileComponent/WithdrawalScreen";
 
@@ -47,7 +47,7 @@ const TransactionsPage = () => {
         showsHorizontalScrollIndicator={false}
       >
         {selectedTab === "Balance Info" && <BalanceInfo />}
-        {selectedTab === "Received Payments" && <ReceivedPayments />}
+        {selectedTab === "Received Payments" && <TransactionsMade />}
         {selectedTab === "Withdraw Money" && <WithdrawalScreen />}
       </ScrollView>
     </View>

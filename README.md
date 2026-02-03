@@ -9,3 +9,9 @@
 # commonds
 npx expo run:ios
 
+#installations
+npm install lucide-react-native
+
+npm install @supabase/supabase-js
+
+

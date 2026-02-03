@@ -1,52 +1,68 @@
+// AccountBalanceInfo.jsx - UPDATED
 import React, { useState, useContext } from "react";
 import { View, Text, TextInput, Pressable, StyleSheet, Alert, Linking, ActivityIndicator } from "react-native";
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import COLORS from "../../constants/Colors";
 import { UserContext } from "../../context/UserContext";
-import axios from "axios";
 import DepositInstruction from "./DepositInstruction";
 import SubscribeButton from "./SubscribeButton";
+import API_BASE_URL from "../../utils/api/api";
 
 const AccountBalanceInfo = () => {
-  const { userInfo } = useContext(UserContext);
+  const { user, userInfo } = useContext(UserContext);
   const [amount, setAmount] = useState(""); 
-  const [loading, setLoading] = useState(false); // Loading state for activity indicator
-  const email = userInfo?.email;
-  const userId = userInfo?.id;
+  const [loading, setLoading] = useState(false);
   const Userbalance = userInfo?.balance || 0.00;
 
-  const handleDeposit = async () => {
-    const depositAmount = parseFloat(amount);
-    if (isNaN(depositAmount) || depositAmount <= 0) {
-      Alert.alert("Invalid amount", "Please enter a valid deposit amount.");
-      return;
+// AccountBalanceInfo.jsx - FIX to use cached token
+
+const handleDeposit = async () => {
+  const depositAmount = parseFloat(amount);
+  if (isNaN(depositAmount) || depositAmount <= 0) {
+    Alert.alert("Invalid amount", "Please enter a valid deposit amount.");
+    return;
+  }
+
+  if (!user) {
+    Alert.alert("Error", "You must be logged in to deposit.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    // FIX: Use forceRefresh: false
+    const token = await user.getIdToken(false);
+
+    const response = await fetch(`${API_BASE_URL}/api/deposit`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: depositAmount * 100,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to initiate deposit');
     }
 
-    try {
-      setLoading(true); // Start loading
-      const response = await axios.post('https://hostelhubbbackend.onrender.com/api/deposit', {
-        amount: depositAmount * 100, // Convert to kobo if using Paystack
-        email: email,
-        id: userId,
-        role: 'user'
-      });
-
-      const { authorization_url } = response.data; // Get the Paystack URL to redirect for payment
-      Linking.openURL(authorization_url);
-    } catch (error) {
-      Alert.alert("Error", "Could not initiate deposit. Please try again.");
-      console.error("Deposit error:", error);
-    } finally {
-      setLoading(false); // Stop loading
-      setAmount("")
-    }
-  };
-
+    const data = await response.json();
+    Linking.openURL(data.authorization_url);
+  } catch (error) {
+    Alert.alert("Error", "Could not initiate deposit. Please try again.");
+    console.error("Deposit error:", error);
+  } finally {
+    setLoading(false);
+    setAmount("");
+  }
+};
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Deposit once, use Everywhere</Text>
 
-      {/* Display Balance */}
       <View style={styles.balanceContainer}>
         <MaterialIcons name="account-balance-wallet" size={24} color={COLORS.background} />
         <View style={styles.balanceInfo}>
@@ -55,7 +71,6 @@ const AccountBalanceInfo = () => {
         </View>
       </View>
 
-      {/* Deposit Amount Input */}
       <View style={styles.inputContainer}>
         <FontAwesome name="money" size={20} color={COLORS.placeholder} />
         <TextInput
@@ -68,7 +83,6 @@ const AccountBalanceInfo = () => {
         />
       </View>
 
-      {/* Deposit Button */}
       <Pressable style={styles.depositButton} onPress={handleDeposit} disabled={loading}>
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
@@ -84,6 +98,7 @@ const AccountBalanceInfo = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

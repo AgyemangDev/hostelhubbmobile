@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { TouchableOpacity } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { TransactionProvider } from "../../../context/TransactionContext";
 
 const ProfileLayout = () => {
   const router = useRouter();
@@ -26,80 +27,82 @@ const ProfileLayout = () => {
   );
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: "#610b0c",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "600",
-          fontSize: 18,
-          color: "#fff",
-        },
-        headerShadowVisible: false,
-        headerBackTitleVisible: false,
-        headerLeft: () => <CustomBackButton />,
-        headerTitleAlign: "center",
-        animation: "slide_from_right",
-      }}
-    >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
+    <TransactionProvider>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#610b0c",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "600",
+            fontSize: 18,
+            color: "#fff",
+          },
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
+          headerLeft: () => <CustomBackButton />,
+          headerTitleAlign: "center",
+          animation: "slide_from_right",
         }}
-      />
-      <Stack.Screen
-        name="personalInfo"
-        options={{
-          headerShown: true,
-          title: "Personal Info",
-        }}
-      />
-      <Stack.Screen
-        name="howHostelHubbWorks"
-        options={{
-          headerShown: false,
-          title: "How the App Works",
-        }}
-      />
-      <Stack.Screen
-        name="reportAConcern"
-        options={{
-          headerShown: true,
-          title: "Report Concern",
-        }}
-      />
-      <Stack.Screen
-        name="reviews"
-        options={{
-          headerShown: true,
-          title: "Reviews",
-        }}
-      />
-      <Stack.Screen
-        name="transactions"
-        options={{
-          headerShown: true,
-          title: "Transactions",
-        }}
-      />
-      <Stack.Screen
-        name="referralInfo"
-        options={{
-          headerShown: true,
-          title: "Referral Program",
-        }}
-      />
-      <Stack.Screen
-        name="contactHostel"
-        options={{
-          headerShown: true,
-          title: "About Us",
-        }}
-      />
-    </Stack>
+      >
+        <Stack.Screen
+          name="index"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="personalInfo"
+          options={{
+            headerShown: true,
+            title: "Personal Info",
+          }}
+        />
+        <Stack.Screen
+          name="howHostelHubbWorks"
+          options={{
+            headerShown: false,
+            title: "How the App Works",
+          }}
+        />
+        <Stack.Screen
+          name="reportAConcern"
+          options={{
+            headerShown: true,
+            title: "Report Concern",
+          }}
+        />
+        <Stack.Screen
+          name="reviews"
+          options={{
+            headerShown: true,
+            title: "Reviews",
+          }}
+        />
+        <Stack.Screen
+          name="transactions"
+          options={{
+            headerShown: true,
+            title: "Transactions",
+          }}
+        />
+        <Stack.Screen
+          name="referralInfo"
+          options={{
+            headerShown: true,
+            title: "Referral Program",
+          }}
+        />
+        <Stack.Screen
+          name="contactHostel"
+          options={{
+            headerShown: true,
+            title: "About Us",
+          }}
+        />
+      </Stack>
+    </TransactionProvider>
   );
 };
 

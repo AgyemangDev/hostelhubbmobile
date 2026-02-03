@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, FlatList, View } from "react-native";
 import Cads from "./Cads";
 import { useRouter } from "expo-router";
-import SkeletonCards from "../../SkeletonCard";
+import SkeletonCards from "../../Loading/SkeletonCard";
 
 const CardListScreen = ({ hostels, loading, onEndReached }) => {
   const router = useRouter();

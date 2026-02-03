@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext } from "react";
 import {
   StyleSheet,
   View,
@@ -17,28 +17,68 @@ import { UserContext } from "../../../context/UserContext";
 import NotificationPromptBanner from "../../../components/BannerComponents/Notificationpromptbanner";
 
 const Index = () => {
-  const { user, userInfo } = useContext(UserContext);
+  const { user, userInfo, patchUserData } = useContext(UserContext);
 
-  // Banner shows whenever expo_token is null
-const showNotificationPrompt =
-  !!user &&
-  !!userInfo &&
-  (
-    userInfo.expo_token === null ||
-    userInfo.expo_token === "null" ||
-    userInfo.expo_token === ""
-  );
+  const [currentExpoToken, setCurrentExpoToken] = React.useState(null);
 
-  const handleEnableNotifications = async () => {
-    if (!user) return;
+  // Get the current Expo push token for this device
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (!user) return;
 
-    const token =
-      await notificationService.registerForPushNotifications(user.uid);
+      try {
+        const token = await notificationService.registerForPushNotifications(user.uid);
+        setCurrentExpoToken(token);
+      } catch (err) {
+        console.error('Failed to get current Expo token:', err);
+      }
+    };
 
-    // ⛔️ Do NOT manually hide banner here
-    // Supabase realtime update will update userInfo.expo_token
-  };
+    fetchToken();
+  }, [user]);
 
+  const showNotificationPrompt =
+    !!user &&
+    !!userInfo &&
+    (
+      !userInfo.expo_token ||
+      userInfo.expo_token === 'null' ||
+      userInfo.expo_token === '' ||
+      (currentExpoToken && userInfo.expo_token !== currentExpoToken)
+    );
+// Index.jsx - FIX handleEnableNotifications to use cached token
+
+const handleEnableNotifications = async () => {
+  console.log('🔔 ENABLE NOTIFICATIONS CLICKED');
+  console.log('User exists:', !!user);
+  console.log('UserInfo:', userInfo);
+  
+  if (!user) {
+    console.log('❌ No user, returning');
+    return;
+  }
+
+  try {
+    console.log('Step 1: Requesting push token...');
+    const expoToken = await notificationService.registerForPushNotifications(user.uid);
+    console.log('Expo token received:', expoToken);
+    
+    if (!expoToken) {
+      console.log('❌ No expo token, returning');
+      return;
+    }
+
+    console.log('Step 2: Calling patchUserData...');
+    await patchUserData({
+      expo_token: expoToken,
+      last_interacted: new Date().toISOString(),
+    });
+
+    console.log('✅ Notification update completed');
+  } catch (err) {
+    console.error('❌ Failed to enable notifications:', err);
+  }
+};
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -67,6 +107,7 @@ const showNotificationPrompt =
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
