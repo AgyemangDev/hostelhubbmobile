@@ -14,6 +14,7 @@ import PriceSlider from "./PriceSlider";
 import CustomDropdown from "../Dropdowns/CustomDropdown";
 import CloseButton from "../ButtonComponents/CloseButton";
 import Button from "../ButtonComponents/ButtonComponent";
+import { UserContext } from "../../context/UserContext";
 
 import {
   institutions,
@@ -23,8 +24,10 @@ import {
 } from "../../assets/data/data";
 
 const FilterSheet = ({ visible, onClose }) => {
-  const { filters, setFilters, clearFilters, updateUserSchool } =
+  const { filters, setFilters, clearFilters } =
     useContext(AccommodationContext);
+
+  const {patchUserData} = useContext(UserContext);
 
   const [schoolOpen, setSchoolOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
@@ -65,10 +68,14 @@ const FilterSheet = ({ visible, onClose }) => {
               placeholder="Select School"
               visible={schoolOpen}
               onPress={() => setSchoolOpen(!schoolOpen)}
-              onSelect={(label) => {
-                setSelectedSchool(label);
-                updateUserSchool(label);
-              }}
+ onSelect={async (label) => {
+   setSelectedSchool(label);
+   try {
+     await patchUserData({ institution: label });
+   } catch (err) {
+     console.error("Failed to update school:", err);
+   }
+ }}
             />
 
             <PriceSlider />

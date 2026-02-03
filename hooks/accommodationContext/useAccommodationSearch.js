@@ -1,59 +1,60 @@
-import { useState, useEffect, useCallback, useContext } from "react";
-import { supabase } from "../../app/firebase/supabaseConfig";
+// hooks/accommodationContext/useAccommodationSearch.js - UPDATE
+
+import { useState, useEffect, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
+import API_BASE_URL from "../../utils/api/api";
 
 export const useAccommodationSearch = (searchQuery) => {
-  const { userInfo } = useContext(UserContext);
+  const { user, userInfo } = useContext(UserContext);
   const selectedUniversity = userInfo?.institution;
 
-  const [results, setResults] = useState([]);
+  const [accommodations, setAccommodations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchSearchResults = useCallback(async () => {
-    if (!selectedUniversity || !searchQuery) {
-      setResults([]);
-      return;
-    }
+  useEffect(() => {
+    const searchAccommodations = async () => {
+      if (!selectedUniversity || !user || !searchQuery || searchQuery.trim() === '') {
+        setAccommodations([]);
+        return;
+      }
 
-    try {
       setLoading(true);
       setError(null);
 
-      // Split query into words for partial/fuzzy matching
-      const queryWords = searchQuery.trim().split(/\s+/);
+      try {
+        const idToken = await user.getIdToken(false);
 
-      // Build OR conditions for each field with ILIKE
-      let filters = [];
-      queryWords.forEach((word) => {
-        filters.push(`accommodation_name.ilike.%${word}%`);
-      });
+        const response = await fetch(
+          `${API_BASE_URL}/api/accommodations/search?institution=${encodeURIComponent(selectedUniversity)}&query=${encodeURIComponent(searchQuery)}`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${idToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-      // Supabase does not support direct OR with multiple columns dynamically in one call,
-      // so we use `or` string
-      const orString = filters.join(",");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to search accommodations');
+        }
 
-      const { data, error } = await supabase
-        .from("accommodation")
-        .select("*")
-        .eq("institution", selectedUniversity)
-        .eq("deleted", false)
-        .or(orString)
-        .order("created_at", { ascending: false });
+        const result = await response.json();
+        setAccommodations(result.data || []);
+      } catch (err) {
+        console.error("Search accommodations error:", err);
+        setError(err.message);
+        setAccommodations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      if (error) throw error;
+    const debounceTimer = setTimeout(searchAccommodations, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [selectedUniversity, searchQuery, user]);
 
-      setResults(data || []);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery, selectedUniversity]);
-
-  useEffect(() => {
-    fetchSearchResults();
-  }, [fetchSearchResults]);
-
-  return { results, loading, error };
+  return { accommodations, loading, error };
 };

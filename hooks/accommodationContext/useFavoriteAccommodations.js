@@ -1,41 +1,41 @@
-import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../app/firebase/supabaseConfig";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
+import { AccommodationContext } from "../../context/AccommodationContext";
+import isEqual from "lodash.isequal"; // small helper to deeply compare arrays
 
-/**
- * Hook to fetch accommodations by a list of IDs
- * @param {string[]} accommodationIds - Array of accommodation IDs to fetch
- */
 export const useFavoriteAccommodations = (accommodationIds = []) => {
+  const { fetchByIds } = useContext(AccommodationContext);
+
   const [accommodations, setAccommodations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Keep track of previous IDs
+  const prevIdsRef = useRef([]);
+
   const fetchAccommodations = useCallback(async () => {
-    if (!accommodationIds.length) {
+    if (!accommodationIds || accommodationIds.length === 0) {
       setAccommodations([]);
       return;
     }
+
+    // Only fetch if IDs actually changed
+    if (isEqual(prevIdsRef.current, accommodationIds)) return;
+
+    prevIdsRef.current = accommodationIds;
 
     try {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
-        .from("accommodation")
-        .select("*")
-        .in("id", accommodationIds) // fetch only those with matching IDs
-        .eq("deleted", false)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
+      const data = await fetchByIds(accommodationIds);
       setAccommodations(data || []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Failed to fetch accommodations");
+      setAccommodations([]);
     } finally {
       setLoading(false);
     }
-  }, [accommodationIds]);
+  }, [accommodationIds, fetchByIds]);
 
   useEffect(() => {
     fetchAccommodations();

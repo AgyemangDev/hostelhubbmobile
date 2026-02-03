@@ -3,7 +3,6 @@ import React from "react";
 import { UserProvider } from "../context/UserContext";
 import { HostelsProvider } from "../context/HostelsContext";
 import { AccommodationProvider } from "../context/AccommodationContext";
-import { AdminProvider } from "../context/ManagersContext";
 import { BookingsProvider } from "../context/BookingsContext";
 import { ReviewsProvider } from "../context/ReviewsContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
@@ -21,7 +20,6 @@ export const setupProviders = () => {
       <HostelsProvider>
         <AccommodationProvider>
         <BookingsProvider>
-          <AdminProvider>
             <ReviewsProvider>
               <FavoritesProvider>
 
@@ -29,7 +27,6 @@ export const setupProviders = () => {
 
               </FavoritesProvider>
             </ReviewsProvider>
-          </AdminProvider>
         </BookingsProvider>
         </AccommodationProvider>
       </HostelsProvider>

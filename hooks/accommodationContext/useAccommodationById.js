@@ -1,14 +1,15 @@
-// hooks/accommodationContext/useAccommodationById.js
-import { useEffect, useState } from "react";
-import { supabase } from "../../app/firebase/supabaseConfig";
+import { useEffect, useState, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
+import API_BASE_URL from "../../utils/api/api";
 
 export const useAccommodationById = (accommodationId) => {
+  const { user } = useContext(UserContext);
   const [accommodation, setAccommodation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!accommodationId) {
+    if (!accommodationId || !user) {
       setLoading(false);
       return;
     }
@@ -17,28 +18,30 @@ export const useAccommodationById = (accommodationId) => {
       setLoading(true);
 
       try {
-        const { data, error } = await supabase
-          .from("accommodation")
-          .select(`
-            *,
-            room_types: accommodation_room_types(*),
-            owner: manager_id (
-              id,
-              firstname,
-              surname,
-              email,
-              phone,
-              address,
-              expopushtoken
-            )
-          `)
-          .eq("id", accommodationId)
-          .single();
+        // Get Firebase ID token from context user (with cache)
+        const idToken = await user.getIdToken(false);
 
-        if (error) throw error;
+        // Call backend API
+        const response = await fetch(
+          `${API_BASE_URL}/api/accommodations/${accommodationId}`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${idToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
 
-        setAccommodation(data);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to fetch accommodation');
+        }
+
+        const result = await response.json();
+        setAccommodation(result.data);
       } catch (err) {
+        console.error('Accommodation by ID error:', err);
         setError(err.message);
         setAccommodation(null);
       } finally {
@@ -47,7 +50,7 @@ export const useAccommodationById = (accommodationId) => {
     };
 
     fetchAccommodation();
-  }, [accommodationId]);
+  }, [accommodationId, user]);
 
   return { accommodation, loading, error };
 };

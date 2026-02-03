@@ -1,4 +1,6 @@
-import React, { useMemo } from "react";
+// components/BookingsComponent/ShortListCardList.jsx - ADD REFETCH
+
+import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -12,12 +14,13 @@ const ShortListCardList = () => {
   const router = useRouter();
   const { getFavoriteIds, isLoading: favoritesLoading } = useFavorites();
 
-  // Memoize favoriteIds to prevent constant re-fetching
-  const favoriteIds = useMemo(() => getFavoriteIds(), [getFavoriteIds]);
+  const favoriteIds = getFavoriteIds();
 
-  // Fetch only favorite accommodations from Supabase
-  const { accommodations: favoriteHostels, loading: favoriteHostelsLoading, error } =
-    useFavoriteAccommodations(favoriteIds);
+  const { 
+    accommodations: favoriteHostels, 
+    loading: favoriteHostelsLoading, 
+    error
+  } = useFavoriteAccommodations(favoriteIds);
 
   if (favoritesLoading || favoriteHostelsLoading) {
     return (
@@ -46,6 +49,7 @@ const ShortListCardList = () => {
     </View>
   );
 };
+
 
 export default ShortListCardList;
 

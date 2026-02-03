@@ -1,24 +1,30 @@
-import React, { useState, useContext } from "react";
+// screens/SearchScreen.jsx - USE CONTEXT
+
+import React, { useContext } from "react";
 import { View, StyleSheet } from "react-native";
-import { useAccommodationSearch } from "../hooks/accommodationContext/useAccommodationSearch";
 import { AccommodationContext } from "../context/AccommodationContext";
 import CardListScreen from "../components/Cards/VerticalScroll/CardListScreen";
 import SearchBar from "../components/SearchComponents/SearchInput";
 import EmptyState from "../components/BookingsComponent/EmptyState";
 import FilterSheet from "../components/FilterComponents/FilterSheet";
 import FilterButton from "../components/FilterComponents/FilterButton";
+import { useState } from "react";
 
 const SearchScreen = () => {
-  const { accommodations, loading, loadMore, hasMore } =
-    useContext(AccommodationContext);
+  const {
+    accommodations,
+    loading,
+    loadMore,
+    hasMore,
+    searchAccommodations,
+    searchLoading,
+    searchQuery,
+    setSearchQuery,
+  } = useContext(AccommodationContext);
 
-  const [searchQuery, setSearchQuery] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
 
-  const { results: searchResults, loading: searchLoading } =
-    useAccommodationSearch(searchQuery);
-
-  const dataToShow = searchQuery ? searchResults : accommodations;
+  const dataToShow = searchQuery ? searchAccommodations : accommodations;
   const isLoading = searchQuery ? searchLoading : loading;
 
   return (
@@ -76,7 +82,7 @@ const styles = StyleSheet.create({
   },
 
   searchFlex: {
-    flex: 1, // takes remaining width
+    flex: 1,
   },
 
   listContainer: {

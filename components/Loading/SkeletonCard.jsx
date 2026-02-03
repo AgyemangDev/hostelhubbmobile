@@ -63,17 +63,18 @@ const styles = StyleSheet.create({
   cardSpacing: {
     marginBottom: 20,
   },
-  card: {
-    backgroundColor: '#f4f4f4',
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-    width: '100%',
-  },
+card: {
+  backgroundColor: '#f4f4f4',
+  borderRadius: 12,
+  overflow: 'hidden',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 4,
+  elevation: 2,
+  width: width - 32, // full screen width minus wrapper paddingHorizontal * 2
+  alignSelf: 'center', // center it
+},
   imagePlaceholder: {
     height: 180,
     backgroundColor: '#e0e0e0',
