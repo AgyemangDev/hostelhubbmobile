@@ -1,50 +1,52 @@
-import { StyleSheet, Text, View } from 'react-native'
+import React from "react";
+import { Stack } from "expo-router";
+import { TouchableOpacity } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const _layout = () => {
+  const router = useRouter();
+
+  const CustomBackButton = () => (
+    <TouchableOpacity
+      onPress={() => router.replace("(tabs)/(index)")}
+      style={{
+        width: 30,
+        height: 30,
+        borderRadius: 12,
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
+        alignItems: "center",
+        justifyContent: "center",
+        marginLeft: 8,
+      }}
+    >
+      <FontAwesome name="arrow-left" size={20} color="#fff" />
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.messageBox}>
-        <Text style={styles.title}>Coming Soon!</Text>
-        <Text style={styles.subtitle}>
-          We are bringing the best transport system to you in this reopening. Stay tuned.
-        </Text>
-      </View>
-    </View>
+    <Stack
+      initialRouteName="index"
+      screenOptions={{
+        headerStyle: { backgroundColor: "#610b0c" },
+        headerTintColor: "#fff",
+        headerTitleStyle: { fontWeight: "600", fontSize: 18, color: "#fff" },
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+        headerLeft: () => <CustomBackButton />,
+        headerTitleAlign: "center",
+        gestureEnabled: false, // ✅ disable swipe back gesture
+      }}
+    >
+      <Stack.Screen
+        name="index"
+        options={{
+          headerShown: true,
+          title: "Board Make we Move", // ✅ custom title
+        }}
+      />
+    </Stack>
   );
 };
 
 export default _layout;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  messageBox: {
-    backgroundColor: '#f1f1f1',
-    padding: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 12,
-    color: '#111',
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#555',
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-});

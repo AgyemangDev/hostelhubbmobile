@@ -11,9 +11,11 @@ const PaidBookingList = ({ userBookings }) => {
       return (
 <PaidBookingCard
   booking={item}
-  onPress={() =>
-    navigation.navigate('PaidBookingDetails', { bookingId: item.id })
-  }
+onPress={() =>
+  navigation.navigate("PaidBookingDetails", {
+    item: JSON.stringify(item),
+  })
+}
 />
       );
     }
@@ -52,6 +54,7 @@ const PaidBookingList = ({ userBookings }) => {
 const styles = StyleSheet.create({
   listContainer: {
     padding: 10,
+    backgroundColor:"#fff"
   },
   emptyText: {
     fontSize: 16,

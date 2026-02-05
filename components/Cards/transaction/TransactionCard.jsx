@@ -16,7 +16,7 @@ const TransactionCard = ({
     switch (method) {
       case "Hostel Payment":
       case "Video Booking Payment":
-        return `Payment to ${hostel_name}`;
+        return `Payment for Accommodation`;
       case "HostelHubb Payment":
         return "Hostelhubb Subscription";
       case "Storage Payment":

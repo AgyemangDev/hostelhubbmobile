@@ -69,7 +69,7 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>24/7</Text>
-              <Text style={styles.statLabel}>Access & Support Customer Care</Text>
+              <Text style={styles.statLabel}>Support Customer Care</Text>
             </View>
           </View>
         </View>

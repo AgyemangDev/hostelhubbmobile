@@ -1,63 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
-import PaidBookingList from '../../../components/BookingsComponent/PaidBookingList';
-// import EmptyState from '../../../components/BookingsComponent/EmptyState';
-// import { useBookingsContext } from '../../../context/BookingsContext';
-// import { useAdmin } from '../../../context/ManagersContext';
-// import { useHostels } from '../../../context/HostelsContext';
-// import { auth } from '../../firebase/FirebaseConfig';
+// app/(tabs)/(bookings)/PaidBookings.jsx
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
+import PaidBookingList from "../../../components/BookingsComponent/PaidBookingList";
+import EmptyState from "../../../components/BookingsComponent/EmptyState";
+import { useBookingsContext } from "../../../context/BookingsContext";
 
 const PaidBookings = ({ navigation }) => {
-  // const { bookings, storageBookings } = useBookingsContext();
-  // const { admins } = useAdmin();
-  // const { hostels } = useHostels();
-  // const [userBookings, setUserBookings] = useState([]);
+  const { bookings, loading: contextLoading, error } = useBookingsContext();
+  const [paidBookings, setPaidBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const currentUser = auth.currentUser;
-  //   if (!currentUser) return;
+  useEffect(() => {
+    if (contextLoading) return;
 
-  //   // 1. Get only paid hostel bookings
-  //   const paidHostelBookings = bookings
-  //     .filter(
-  //       (booking) =>
-  //         booking.userId === currentUser.uid && booking.paymentStatus === true
-  //     )
-  //     .map((booking) => {
-  //       const admin = admins.find((a) => a.id === booking.adminUid);
-  //       const hostel = hostels.find((h) => h.id === booking.hostelId);
+    setLoading(true);
 
-  //       return {
-  //         ...booking,
-  //         adminInfo: admin ?? null,
-  //         hostelInfo: hostel ?? null,
-  //       };
-  //     });
+    try {
+      if (!bookings || bookings.length === 0) {
+        setPaidBookings([]);
+        return;
+      }
 
-  //   // 2. Get all storage bookings (already paid)
-  //   const paidStorageBookings = storageBookings.filter(
-  //     (booking) => booking.userId === currentUser.uid
-  //   );
+      // ✅ Only PAID bookings
+      const filtered = bookings
+        .filter((booking) => booking.payment_status === true)
+        .map((booking) => ({
+          ...booking,
+          payment_option: booking.payment_option
+            ? parseFloat(booking.payment_option) * 1.05
+            : 0,
+        }));
 
-  //   // 3. Combine and sort by latest date
-  //   const combined = [...paidHostelBookings, ...paidStorageBookings];
+      setPaidBookings(filtered);
+    } catch (err) {
+      console.error("Error processing paid bookings:", err);
+      setPaidBookings([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [bookings, contextLoading]);
 
-  //   const sorted = combined.sort((a, b) => {
-  //     const dateA = a.acceptedDate ?? a.bookingDate ?? 0;
-  //     const dateB = b.acceptedDate ?? b.bookingDate ?? 0;
-  //     return dateB - dateA;
-  //   });
+  if (contextLoading || loading) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#10B981" />
+        <Text style={{ marginTop: 10, color: "#666" }}>
+          Loading paid bookings...
+        </Text>
+      </View>
+    );
+  }
 
-  //   setUserBookings(sorted);
-  // }, [bookings, storageBookings, admins, hostels]);
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <Text style={{ color: "red" }}>
+          Error fetching bookings: {error}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* {userBookings.length === 0 ? (
+      {paidBookings.length === 0 ? (
         <EmptyState message="No Paid Bookings Found." />
       ) : (
-        <PaidBookingList userBookings={userBookings} navigation={navigation} />
-      )} */}
+        <PaidBookingList
+          userBookings={paidBookings}
+          navigation={navigation}
+        />
+      )}
     </View>
   );
 };
@@ -65,7 +78,11 @@ const PaidBookings = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
+  },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

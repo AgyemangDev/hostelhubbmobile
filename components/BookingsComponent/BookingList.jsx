@@ -6,13 +6,12 @@ import StorageBookingCard from "./StorageBookingCard";
 
 const BookingList = ({ userBookings, navigation }) => {
   const renderBookingItem = ({ item }) => {
-
     if (item.type === "accommodation") {
       return (
         <BookingCard
           booking={item}
           onPress={() =>
-            navigation.navigate("BookingDetails", { bookingId: item.id })
+            navigation.navigate("BookingDetails", { bookingData: item })
           }
         />
       );
@@ -23,9 +22,7 @@ const BookingList = ({ userBookings, navigation }) => {
         <StorageBookingCard
           booking={item}
           onPress={() =>
-            navigation.navigate("StorageBookingDetails", {
-              bookingId: item.bookingReference,
-            })
+            navigation.navigate("StorageBookingDetails", { bookingData: item })
           }
         />
       );
@@ -62,7 +59,7 @@ const BookingList = ({ userBookings, navigation }) => {
 
 const styles = StyleSheet.create({
   listContainer: {
-    padding: 10,
+    padding: 0,
   },
   emptyContainer: {
     flex: 1,

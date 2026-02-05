@@ -8,8 +8,7 @@ const _layout = () => {
       <Stack.Screen 
         name="(transport)" 
         options={{ 
-          title: 'Transport', 
-          headerBackVisible: false 
+         headerShown:false 
         }} 
       />
       <Stack.Screen 

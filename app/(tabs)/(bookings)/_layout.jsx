@@ -20,10 +20,20 @@ const _layout = () => {
       }}
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="payment" />
-      <Stack.Screen name="PayNow" />
+            <Stack.Screen
+        name="PayNow"
+        options={{
+          headerShown: false, 
+        }}
+      />
       <Stack.Screen name="PaidBookings" />
       <Stack.Screen name="PaidBookingDetails" />
+      <Stack.Screen name="PaymentCompleted" 
+  
+      options={{
+        gestureEnabled:false,
+          headerShown: false, 
+        }}/>
     </Stack>
   );
 };
@@ -34,7 +44,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingTop: Platform.OS === "android" ? 20 : 50,
     paddingBottom: 15,
-    paddingHorizontal: 20,
+    paddingHorizontal: 0,
     alignItems: "center",
   },
   headerTitle: {
