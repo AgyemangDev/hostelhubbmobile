@@ -29,7 +29,6 @@ const confirmAndPay = async () => {
     return;
   }
 
-  // 🛑 MAIN BALANCE GUARD
   if (hasInsufficientBalance) {
     Alert.alert(
       "Insufficient Balance",
@@ -43,7 +42,7 @@ const confirmAndPay = async () => {
         { text: "Cancel", style: "cancel" },
       ]
     );
-    return; // ⛔ STOP TRANSACTION
+    return;
   }
 
   try {
@@ -55,7 +54,11 @@ const confirmAndPay = async () => {
       amount: totalAmount,
     });
 
-    router.push({
+    // ✅ RESET STORAGE FLOW HERE
+    await resetReservation();
+
+    // ✅ Navigate AFTER reset
+    router.replace({
       pathname: "SuccessScreen",
       params: {
         transactionReference: paymentResult.transactionReference,
@@ -70,8 +73,6 @@ const confirmAndPay = async () => {
     setLoading(false);
   }
 };
-
-
   return (
     <View style={styles.wrapper}>
       <ScrollView contentContainerStyle={styles.container}>
