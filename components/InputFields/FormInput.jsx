@@ -19,7 +19,7 @@ const FloatingLabelInput = ({
   isPasswordInput = false,
   isPasswordVisible,
   togglePasswordVisibility,
-  disabled = false,
+  disabled = false, // Changed default to false
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -37,7 +37,7 @@ const FloatingLabelInput = ({
   // Label style interpolation
   const labelStyle = {
     position: "absolute",
-    left: 16, // padding from left
+    left: 16,
     top: labelAnim.interpolate({
       inputRange: [0, 1],
       outputRange: [18, -8],
@@ -51,7 +51,7 @@ const FloatingLabelInput = ({
       outputRange: [COLORS.placeholder, COLORS.background],
     }),
     backgroundColor: COLORS.white,
-    paddingHorizontal: 4, // little gap so label text doesn't stick
+    paddingHorizontal: 4,
   };
 
   const inputProps = {
@@ -64,12 +64,12 @@ const FloatingLabelInput = ({
     onBlur: () => setIsFocused(false),
     style: [
       styles.input,
-      { paddingLeft: 16, paddingRight: isPasswordInput ? 40 : 16 }, // inner spacing
+      { paddingLeft: 16, paddingRight: isPasswordInput ? 40 : 16 },
     ],
   };
 
   return (
-    <View style={[styles.container, disabled && styles.disabled]}>
+    <View style={styles.container}>
       <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
       <TextInput {...inputProps} />
       {isPasswordInput && (
@@ -111,9 +111,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 12,
     top: 14,
-  },
-  disabled: {
-    backgroundColor: COLORS.placeholder,
-    opacity: 0.6,
   },
 });

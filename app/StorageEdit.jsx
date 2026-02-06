@@ -5,10 +5,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { UserContext } from '../context/UserContext';
 
 import BookingHeader from '../components/Headers/BookingHeader';
-import DatesSection from '../components/StoreComponent/DatesSection';
-import LocationsSection from '../components/StoreComponent/LocationsSection';
-import ItemsSection from '../components/StoreComponent/ItemsSection';
-import DeliveryStatusSection from '../components/StoreComponent/DeliveryStatusSection';
 
 const StorageEdit = () => {
   const router = useRouter();
@@ -62,34 +58,7 @@ const StorageEdit = () => {
           }}
         />
 
-        <DatesSection
-          dates={{
-            bookingDate: bookingData.bookingDate,
-            pickupDate: bookingData.pickupDate,
-            deliveryDate: bookingData.deliveryDate,
-          }}
-        />
 
-        <LocationsSection
-          locations={{
-            pickupLocation: bookingData.pickupLocation,
-            deliveryLocation: bookingData.deliveryLocation,
-          }}
-          deliveryDate={bookingData.deliveryDate}
-          onUpdateLocation={handleLocationUpdate}
-          bookingReference={bookingData.bookingReference}
-        />
-
-        <ItemsSection items={bookingData.items} />
-
-        <DeliveryStatusSection
-          status={bookingData.status}
-          bookingReference={bookingData.bookingReference}
-          onStatusUpdate={handleStatusUpdate}
-          userInfo={userInfo}
-          setUserInfo={setUserInfo}
-          router={router}
-        />
       </ScrollView>
     </SafeAreaView>
   );

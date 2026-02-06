@@ -3,33 +3,21 @@ import {
   View,
   Text,
   ScrollView,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
   Dimensions,
   ImageBackground,
   StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import styles from "./Styles/Styles";
+import Button from "../../components/ButtonComponents/ButtonComponent";
 
-const { width } = Dimensions.get("window");
-
-export default function index() {
+export default function Index() {
   const router = useRouter();
 
   const handleReservePress = () => {
-    // Navigate to StoreForm
-    router.push("StoreForm");
+    router.push("ItemsSelection");
+  };
 
-    // Or show alert (comment out the other line above)
-    // Alert.alert(
-    //   "Booking Closed",
-    //   "Booking has been closed for this semester. Thank you for trusting Hostelhubb Storage Facility.",
-    //   [{ text: "OK" }]
-    // );
-  }
   return (
     <>
       <StatusBar barStyle="light-content" />
@@ -48,7 +36,8 @@ export default function index() {
                 Secure Space for Your Valuables
               </Text>
               <Text style={styles.heroDescription}>
-Secure your belongings with confidence — 100% insured, free pickup and delivery right to your next hostel.
+                Secure your belongings with confidence — 100% insured, free
+                pickup and delivery right to your next hostel.
               </Text>
             </View>
           </View>
@@ -73,59 +62,25 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
             </View>
           </View>
         </View>
-        
-        <View style={styles.ctaSection}>
-          <View style={styles.ctaButtonsContainer}>
-            <TouchableOpacity
-             onPress={handleReservePress}
-              style={styles.primaryButton}
-            >
-              <Text style={styles.primaryButtonText}>Reserve Storage Now</Text>
-            </TouchableOpacity>
+
+                {/* How it Works */}
+        <View style={styles.howItWorksSection}>
+
+                    <View style={styles.ctaButtonsContainer}>
+            <Button
+              buttonText="Reserve Storage Now"
+              onPressFunction={handleReservePress}
+              customStyle={styles.primaryButton}
+            />
           </View>
           
-          {/* Guarantee Section - Added right below the button */}
-          <View style={styles.guaranteeSection}>
-            <Text style={styles.guaranteeTitle}>Our Promise to You</Text>
-            <View style={styles.guaranteeItems}>
-              <View style={styles.guaranteeItem}>
-                <Text style={styles.guaranteeEmoji}>🛡️</Text>
-                <Text style={styles.guaranteeText}>100% Security & Insurance Guarantee</Text>
-              </View>
-              <View style={styles.guaranteeItem}>
-                <Text style={styles.guaranteeEmoji}>📦</Text>
-                <Text style={styles.guaranteeText}>Free Pickup From Your Hostel</Text>
-              </View>
-              <View style={styles.guaranteeItem}>
-                <Text style={styles.guaranteeEmoji}>🚚</Text>
-                <Text style={styles.guaranteeText}>Delivery to Your Next Hostel</Text>
-              </View>
-              <View style={styles.guaranteeItem}>
-                <Text style={styles.guaranteeEmoji}>💰</Text>
-                <Text style={styles.guaranteeText}>Best Affordable Prices</Text>
-              </View>
-            </View>
-            <Text style={styles.guaranteeSubtext}>
-              No extra costs • No hidden fees • Complete peace of mind
-            </Text>
-          </View>
-        </View>
-
-        <Text style={styles.ctaTitle}>Ready to Secure Your Space?</Text>
-        <Text style={styles.ctaDescription}>
-          Book your storage unit today and enjoy peace of mind knowing your
-          belongings are safe and accessible.
-        </Text>
-
-        {/* How it Works */}
-        <View style={styles.howItWorksSection}>
           <Text style={styles.sectionTitle}>How Reservation Works</Text>
           <View style={styles.stepsContainer}>
             {[
               {
                 number: "01",
-                title: "Enter Your Details",
-                desc: "Provide your name, contact info and email.",
+                title: "Choose Items to Store",
+                desc: "Select items you'd like us to safely store over the break.",
               },
               {
                 number: "02",
@@ -134,11 +89,6 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
               },
               {
                 number: "03",
-                title: "Choose Items to Store",
-                desc: "List or select items you'd like us to safely store over the break.",
-              },
-              {
-                number: "04",
                 title: "Confirm & Relax",
                 desc: "Our team will pick up your items and deliver them when school resumes.",
               },
@@ -156,17 +106,51 @@ Secure your belongings with confidence — 100% insured, free pickup and deliver
           </View>
         </View>
 
+        {/* CTA Section */}
+        <View style={styles.ctaSection}>
+
+          {/* Guarantee Section */}
+          <View style={styles.guaranteeSection}>
+            <View style={styles.guaranteeItems}>
+              <View style={styles.guaranteeItem}>
+                <Text style={styles.guaranteeEmoji}>🛡️</Text>
+                <Text style={styles.guaranteeText}>
+                  100% Security Guarantee
+                </Text>
+              </View>
+              <View style={styles.guaranteeItem}>
+                <Text style={styles.guaranteeEmoji}>📦</Text>
+                <Text style={styles.guaranteeText}>
+                  Free Pickup and Delivery to Your Hostel
+                </Text>
+              </View>
+              <View style={styles.guaranteeItem}>
+                <Text style={styles.guaranteeEmoji}>💰</Text>
+                <Text style={styles.guaranteeText}>
+                  Best Affordable Prices
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* CTA Text */}
+        <Text style={styles.ctaTitle}>Ready to Secure Your Space?</Text>
+        <Text style={styles.ctaDescription}>
+          Book your storage unit today and enjoy peace of mind knowing your
+          belongings are safe.
+        </Text>
 
         {/* Footer */}
         <View style={styles.footer}>
-                    <View style={styles.ctaButtonsContainer}>
-            <TouchableOpacity
-             onPress={handleReservePress}
-              style={styles.primaryButton}
-            >
-              <Text style={styles.primaryButtonText}>Reserve Storage Now</Text>
-            </TouchableOpacity>
+          <View style={styles.ctaButtonsContainer}>
+            <Button
+              buttonText="Reserve Storage Now"
+              onPressFunction={handleReservePress}
+              customStyle={styles.primaryButton}
+            />
           </View>
+
           <Text style={styles.footerText}>
             © {new Date().getFullYear()} HostelHubb Storage Reservation
           </Text>
