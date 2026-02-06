@@ -17,42 +17,33 @@ import { useStorageReservation } from "../../context/StorageReservationContext";
 import COLORS from "../../constants/Colors";
 import BottomButton from "../../components/ButtonComponents/BottomButton";
 
-
 export default function ImageUpload() {
   const router = useRouter();
-  const { reservation, upsertItem } = useStorageReservation();
+  const { reservation, updateReservation } = useStorageReservation();
   const [preview, setPreview] = useState(null);
 
-  // Request permissions before opening camera or gallery
+  // Request permissions
   const requestPermissions = async (type) => {
-    if (type === "camera") {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Camera permission is required to take photos. Please enable it in your device settings.",
-          [{ text: "OK" }]
-        );
-        return false;
-      }
-    } else if (type === "gallery") {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Gallery permission is required to select photos. Please enable it in your device settings.",
-          [{ text: "OK" }]
-        );
-        return false;
-      }
+    const perms =
+      type === "camera"
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (perms.status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        `Permission to access ${type} is required.`,
+        [{ text: "OK" }]
+      );
+      return false;
     }
     return true;
   };
 
-  // Prompt user to either pick from gallery or take a photo
-  const pickImage = async (itemId) => {
+  // Pick single group image
+  const pickImage = async () => {
     Alert.alert(
-      "Select Image",
+      "Select Group Image",
       "Choose an option",
       [
         {
@@ -60,13 +51,14 @@ export default function ImageUpload() {
           onPress: async () => {
             const hasPermission = await requestPermissions("camera");
             if (!hasPermission) return;
-
             const result = await ImagePicker.launchCameraAsync({
               quality: 0.7,
               allowsEditing: true,
               aspect: [4, 3],
             });
-            if (!result.canceled) updateItemImage(itemId, result.assets[0]);
+            if (!result.canceled) {
+              updateReservation({ groupImage: result.assets[0] });
+            }
           },
         },
         {
@@ -74,14 +66,15 @@ export default function ImageUpload() {
           onPress: async () => {
             const hasPermission = await requestPermissions("gallery");
             if (!hasPermission) return;
-
             const result = await ImagePicker.launchImageLibraryAsync({
               quality: 0.7,
-              allowsMultipleSelection: false,
               allowsEditing: true,
+              allowsMultipleSelection: false,
               aspect: [4, 3],
             });
-            if (!result.canceled) updateItemImage(itemId, result.assets[0]);
+            if (!result.canceled) {
+              updateReservation({ groupImage: result.assets[0] });
+            }
           },
         },
         { text: "Cancel", style: "cancel" },
@@ -90,22 +83,11 @@ export default function ImageUpload() {
     );
   };
 
-  const updateItemImage = (itemId, image) => {
-    const selectedItem = reservation.items.find((i) => i.id === itemId);
-    if (!selectedItem) return;
-    upsertItem({
-      ...selectedItem,
-      image,
-    });
-  };
-
   const proceed = () => {
-    // Check if image exists AND has a uri
-    const missingImages = reservation.items.some((i) => !i.image?.uri);
-    if (missingImages) {
+    if (!reservation.groupImage?.uri) {
       Alert.alert(
-        "Missing Images",
-        "Please attach an image for every selected item.",
+        "Missing Image",
+        "Please attach a group image of all your items.",
         [{ text: "OK" }]
       );
       return;
@@ -113,155 +95,322 @@ export default function ImageUpload() {
     router.push("ReviewPay");
   };
 
-  // Helper function to check if image is actually selected
-  const hasValidImage = (item) => {
-    return item.image && item.image.uri;
-  };
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Upload Images for Selected Items</Text>
+    <View style={styles.wrapper}>
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Upload Group Photo</Text>
+          <Text style={styles.subtitle}>
+            Take or select a photo of all your items together
+          </Text>
+        </View>
 
-      {reservation.items.map((item) => (
-        <View key={item.id} style={styles.itemCard}>
-          {/* Product Name */}
-          <Text style={styles.itemName}>{item.name}</Text>
-
-          {/* Image Box */}
-          {!hasValidImage(item) ? (
-            // Empty state - dashed border with text
-            <Pressable
-              style={styles.emptyImageBox}
-              onPress={() => pickImage(item.id)}
-            >
-              <Ionicons name="image-outline" size={48} color={COLORS.textMuted} />
-              <Text style={styles.emptyText}>Add an image of your {item.name}</Text>
-              <Text style={styles.emptySubtext}>Tap to select or take a photo</Text>
+        {/* Group Image Upload */}
+        <View style={styles.uploadSection}>
+          {!reservation.groupImage?.uri ? (
+            <Pressable style={styles.emptyImageBox} onPress={pickImage}>
+              <View style={styles.iconCircle}>
+                <Ionicons name="images-outline" size={40} color={COLORS.primary} />
+              </View>
+              <Text style={styles.emptyText}>Add Group Photo</Text>
+              <Text style={styles.emptySubtext}>
+                Tap to take a photo or select from gallery
+              </Text>
             </Pressable>
           ) : (
-            // Image selected - show image with camera icon overlay
             <Pressable
               style={styles.filledImageBox}
-              onPress={() => setPreview(item.image.uri)}
+              onPress={() => setPreview(reservation.groupImage.uri)}
             >
-              <Image source={{ uri: item.image.uri }} style={styles.image} />
-              {/* Top-right camera icon to change image */}
+              <Image
+                source={{ uri: reservation.groupImage.uri }}
+                style={styles.image}
+              />
               <Pressable
                 style={styles.cameraIcon}
                 onPress={(e) => {
-                  e.stopPropagation(); // Prevent triggering preview
-                  pickImage(item.id);
+                  e.stopPropagation();
+                  pickImage();
                 }}
               >
                 <Ionicons name="camera" size={20} color={COLORS.white} />
               </Pressable>
+              <View style={styles.imageLabel}>
+                <Ionicons name="checkmark-circle" size={18} color={COLORS.success} />
+                <Text style={styles.imageLabelText}>Photo added</Text>
+              </View>
             </Pressable>
           )}
         </View>
-      ))}
 
-            <View style={styles.stickyButton}>
-        <BottomButton
-          buttonText="Continue"
-          onPressFunction={proceed}
-        />
+        {/* Instruction Card */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoHeader}>
+            <Ionicons name="information-circle" size={22} color={COLORS.primary} />
+            <Text style={styles.infoTitle}>Important</Text>
+          </View>
+          <Text style={styles.infoText}>
+            Please ensure <Text style={styles.boldText}>all items</Text> to be stored are clearly visible in the photo. This helps us with easy identification during pickup and delivery.
+          </Text>
+          
+          <View style={styles.tipsList}>
+            <View style={styles.tipItem}>
+              <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
+              <Text style={styles.tipText}>Good lighting</Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
+              <Text style={styles.tipText}>All items visible</Text>
+            </View>
+            <View style={styles.tipItem}>
+              <Ionicons name="checkmark-circle-outline" size={18} color={COLORS.success} />
+              <Text style={styles.tipText}>Clear and focused</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Spacer for button */}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* Sticky Button */}
+      <View style={styles.stickyButton}>
+        <BottomButton buttonText="Continue" onPressFunction={proceed} />
       </View>
 
-      {/* Image Preview Modal */}
+      {/* Preview Modal */}
       <Modal visible={!!preview} transparent animationType="fade">
         <Pressable style={styles.previewOverlay} onPress={() => setPreview(null)}>
           <Image source={{ uri: preview }} style={styles.previewImage} />
+          <Pressable style={styles.closeButton} onPress={() => setPreview(null)}>
+            <Ionicons name="close" size={28} color={COLORS.white} />
+          </Pressable>
         </Pressable>
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#f8f9fa",
+  },
+
   container: {
-    padding: 16,
-    paddingBottom: 100,
-    backgroundColor: COLORS.white,
+    padding: 20,
+    paddingBottom: 20,
   },
+
+  header: {
+    marginBottom: 24,
+  },
+
   title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
+    fontSize: 26,
+    fontWeight: "700",
     color: COLORS.textDark,
+    marginBottom: 8,
   },
-  itemCard: {
-    marginBottom: 24,
+
+  subtitle: {
+    fontSize: 15,
+    color: COLORS.textMuted,
+    lineHeight: 22,
   },
-  itemName: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 12,
-    color: COLORS.textDark,
+
+  uploadSection: {
+    marginBottom: 20,
   },
+
   emptyImageBox: {
-    height: 200,
-    borderRadius: 12,
+    height: 280,
+    borderRadius: 16,
     borderWidth: 2,
     borderStyle: "dashed",
-    borderColor: COLORS.border || "#D1D5DB",
-    backgroundColor: "transparent", // Changed from COLORS.background
+    borderColor: COLORS.primary,
+    backgroundColor: "#f0f9ff",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
+
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.white,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+
   emptyText: {
     marginTop: 12,
     color: COLORS.textDark,
-    fontSize: 16,
-    fontWeight: "500",
+    fontSize: 18,
+    fontWeight: "700",
     textAlign: "center",
   },
+
   emptySubtext: {
-    marginTop: 4,
+    marginTop: 8,
     color: COLORS.textMuted,
     fontSize: 14,
     textAlign: "center",
+    lineHeight: 20,
   },
+
   filledImageBox: {
-    height: 200,
-    borderRadius: 12,
+    height: 280,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORS.border || "#D1D5DB",
-    backgroundColor: COLORS.background || "#F9FAFB",
+    borderColor: "#e5e5e5",
+    backgroundColor: COLORS.white,
     overflow: "hidden",
     position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
+
   image: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
+
   cameraIcon: {
     position: "absolute",
-    top: 12,
-    right: 12,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 8,
-    borderRadius: 20,
-  },
-    stickyButton: {
-    position: "absolute",
-    bottom: 10,
-    left: 16,
+    top: 16,
     right: 16,
-    backgroundColor: COLORS.white,
-    paddingTop: 10,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    padding: 10,
+    borderRadius: 24,
   },
+
+  imageLabel: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    gap: 8,
+  },
+
+  imageLabelText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.success,
+  },
+
+  infoCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.primary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+
+  infoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    gap: 8,
+  },
+
+  infoTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textDark,
+  },
+
+  infoText: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+
+  boldText: {
+    fontWeight: "700",
+    color: COLORS.textDark,
+  },
+
+  tipsList: {
+    gap: 10,
+  },
+
+  tipItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  tipText: {
+    fontSize: 14,
+    color: COLORS.textDark,
+    fontWeight: "500",
+  },
+
+  stickyButton: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.white,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5e5",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+
   previewOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.9)",
+    backgroundColor: "rgba(0,0,0,0.95)",
     justifyContent: "center",
     alignItems: "center",
   },
+
   previewImage: {
     width: "90%",
-    height: "70%",
+    height: "75%",
     resizeMode: "contain",
     borderRadius: 12,
+  },
+
+  closeButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    padding: 10,
+    borderRadius: 24,
   },
 });

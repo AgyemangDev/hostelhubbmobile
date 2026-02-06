@@ -20,7 +20,7 @@ export default function PickupDeliveryInfo() {
     });
 
     if (error) {
-      Alert.alert("Missing information", error);
+      Alert.alert("Missing Information", error);
       return;
     }
 
@@ -29,77 +29,99 @@ export default function PickupDeliveryInfo() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.title}>Pickup & Delivery</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.subtitle}>
+            Choose when and where we should collect and return your items
+          </Text>
+        </View>
 
         {/* PICKUP SECTION */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pickup</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.iconCircle}>
+              <Text style={styles.iconText}>📦</Text>
+            </View>
+            <Text style={styles.sectionTitle}>Pickup Information</Text>
+          </View>
           
-          <DateSelector
-            label="Pickup date"
-            placeholder="Select your pickup date"
-            value={reservation.pickupInfo?.date}
-            minDate={new Date("2026-04-23")}
-            maxDate={new Date("2026-04-29")}
-            onChange={(date) =>
-              updateReservation({
-                pickupInfo: {
-                  ...reservation.pickupInfo,
-                  date,
-                },
-              })
-            }
-          />
+          <View style={styles.inputGroup}>
+            <DateSelector
+              placeholder="Select your pickup date"
+              value={reservation.pickupInfo?.date}
+              minDate={new Date("2026-04-22")}
+              maxDate={new Date("2026-04-26")}
+              onChange={(date) =>
+                updateReservation({
+                  pickupInfo: {
+                    ...reservation.pickupInfo,
+                    date,
+                  },
+                })
+              }
+            />
+          </View>
 
-          <LocationSelector
-            label="Pickup location"
-            placeholder="Select pickup location"
-            value={reservation.pickupInfo}
-            onSelectLocation={(val) =>
-              updateReservation({
-                pickupInfo: {
-                  ...reservation.pickupInfo,
-                  ...val,
-                },
-              })
-            }
-          />
+          <View style={styles.inputGroup}>
+            <LocationSelector
+              placeholder="Select pickup location"
+              value={reservation.pickupInfo}
+              onSelectLocation={(val) =>
+                updateReservation({
+                  pickupInfo: {
+                    ...reservation.pickupInfo,
+                    ...val,
+                  },
+                })
+              }
+            />
+          </View>
         </View>
 
         {/* DELIVERY SECTION */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Delivery</Text>
+          <View style={styles.sectionHeader}>
+            <View style={styles.iconCircle}>
+              <Text style={styles.iconText}>🚚</Text>
+            </View>
+            <Text style={styles.sectionTitle}>Delivery Information</Text>
+          </View>
           
-          <DateSelector
-            label="Delivery date"
-            placeholder="Select your delivery date"
-            value={reservation.deliveryInfo?.date}
-            minDate={new Date("2026-04-23")}
-            maxDate={new Date("2026-04-29")}
-            onChange={(date) =>
-              updateReservation({
-                deliveryInfo: {
-                  ...reservation.deliveryInfo,
-                  date,
-                },
-              })
-            }
-          />
+          <View style={styles.inputGroup}>
+            <DateSelector
+              placeholder="Select your delivery date"
+              value={reservation.deliveryInfo?.date}
+              minDate={new Date("2026-05-23")}
+              maxDate={new Date("2026-05-25")}
+              onChange={(date) =>
+                updateReservation({
+                  deliveryInfo: {
+                    ...reservation.deliveryInfo,
+                    date,
+                  },
+                })
+              }
+            />
+          </View>
 
-          <LocationSelector
-            label="Delivery location"
-            placeholder="Select delivery location"
-            value={reservation.deliveryInfo}
-            onSelectLocation={(val) =>
-              updateReservation({
-                deliveryInfo: {
-                  ...reservation.deliveryInfo,
-                  ...val,
-                },
-              })
-            }
-          />
+          <View style={styles.inputGroup}>
+            <LocationSelector
+              placeholder="Select delivery location"
+              value={reservation.deliveryInfo}
+              onSelectLocation={(val) =>
+                updateReservation({
+                  deliveryInfo: {
+                    ...reservation.deliveryInfo,
+                    ...val,
+                  },
+                })
+              }
+            />
+          </View>
         </View>
       </ScrollView>
 
@@ -117,36 +139,76 @@ export default function PickupDeliveryInfo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "600",
-    marginBottom: 24,
-    color: COLORS.textDark,
-  },
+  
   scroll: {
-    padding: 16,
+    padding: 20,
     paddingBottom: 140,
   },
-  section: {
-    marginBottom: 32,
-    paddingBottom: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border || "#E5E5E5",
+
+  header: {
+    marginBottom: 28,
   },
+
+  subtitle: {
+    fontSize: 15,
+    color: COLORS.textMuted,
+    lineHeight: 22,
+  },
+
+  section: {
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+  
+    marginBottom: 16,
+
+  },
+
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  iconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#f0f9ff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  iconText: {
+    fontSize: 20,
+  },
+
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.textDark,
-    marginBottom: 16,
+  },
+
+  inputGroup: {
+    marginBottom: 20,
   },
   stickyButton: {
     position: "absolute",
-    bottom: 10,
-    left: 16,
-    right: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: COLORS.white,
-    paddingTop: 10,
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingHorizontal: 0,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e5e5",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
   },
 });

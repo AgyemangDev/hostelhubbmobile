@@ -6,9 +6,10 @@ const StorageReservationContext = createContext(null);
 const STORAGE_KEY = "storage_reservation_draft";
 
 const initialState = {
-  items: [],          // Each item: {id, name, price, quantity, image}
+  items: [],
   pickupInfo: null,
   deliveryInfo: null,
+  groupImage: null,
 };
 
 export const StorageReservationProvider = ({ children }) => {

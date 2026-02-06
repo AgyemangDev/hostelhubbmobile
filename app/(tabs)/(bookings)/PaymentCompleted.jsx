@@ -107,8 +107,8 @@ const PaymentCompleted = () => {
 
       {/* Action Button */}
       <Button
-        buttonText="Book Transport Now"
-        onPressFunction={()=> router.replace("/(categories)/(transport)")}
+        buttonText="Go home"
+        onPressFunction={()=> router.replace("(tabs)/(index)")}
         customStyle={styles.doneButton}
       />
     </ScrollView>

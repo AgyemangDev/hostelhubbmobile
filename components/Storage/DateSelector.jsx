@@ -6,7 +6,6 @@ import FloatingLabelInput from "../InputFields/FormInput";
 import { Calendar } from "react-native-calendars";
 
 export default function DateSelector({
-  label,
   placeholder,
   value,
   minDate,

@@ -85,7 +85,7 @@ const PayNow = () => {
       });
 
       if (success) {
-        router.replace("/(tabs)/(bookings)/index");
+        router.replace("(bookings)/PaymentCompleted");
       }
     } catch (error) {
       console.error("Payment error:", error);

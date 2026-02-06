@@ -20,7 +20,6 @@ const ON_CAMPUS = [
 const OFF_CAMPUS_AREAS = ["Ayeduase", "Kotei", "Bomso", "New Site"];
 
 export default function LocationSelector({
-  label,
   placeholder,
   value,
   onSelectLocation,
@@ -74,8 +73,6 @@ export default function LocationSelector({
 
   return (
     <View style={styles.wrapper}>
-      {label && <Text style={styles.label}>{label}</Text>}
-
       {/* Main area dropdown */}
       <CustomDropdown
         data={mainDropdownData}

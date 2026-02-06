@@ -66,10 +66,14 @@ const _layout = () => {
         />
 
         {/* Success Screen */}
-        <Stack.Screen
-          name="SuccessScreen"
-          options={{ headerShown: false }}
-        />
+<Stack.Screen
+  name="SuccessScreen"
+  options={{
+    headerShown: false,      // Already hidden
+    gestureEnabled: false,    // Disable swipe back
+    headerLeft: null,         // No back button
+  }}
+/>
       </Stack>
     </StorageReservationProvider>
   );

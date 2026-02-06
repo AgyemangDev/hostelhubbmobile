@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { View, ScrollView, Alert, StyleSheet } from "react-native";
+import { View, ScrollView, Alert, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 
 import { STORAGE_ITEMS } from "../../assets/data/storageItems";
@@ -26,14 +26,24 @@ export default function ItemsSelection() {
         name: item.name,
         price: item.price,
         quantity: 1,
-        image: item.image, // comes from data
+        image: item.image,
       });
     }
   };
 
+  // Calculate total price
+  const calculateTotal = () => {
+    return reservation.items.reduce((sum, item) => {
+      return sum + (item.price * item.quantity);
+    }, 0);
+  };
+
+  const totalAmount = calculateTotal();
+  const hasItems = reservation.items.length > 0;
+
   const proceed = () => {
-    if (reservation.items.length === 0) {
-      Alert.alert("Select at least one item");
+    if (!hasItems) {
+      Alert.alert("No Items Selected", "Please select at least one item to continue.");
       return;
     }
 
@@ -73,12 +83,11 @@ export default function ItemsSelection() {
         })}
       </ScrollView>
 
-      {/* Sticky but lifted button */}
+      {/* Sticky button with total price */}
       <View style={styles.stickyButton}>
         <BottomButton
-          buttonText="Continue"
+          buttonText={hasItems ? `Continue - GH₵${totalAmount.toFixed(2)}` : "Continue"}
           onPressFunction={proceed}
-          disabled={reservation.items.length === 0}
         />
       </View>
     </View>
@@ -90,12 +99,12 @@ const styles = StyleSheet.create({
 
   scroll: {
     padding: 16,
-    paddingBottom: 160, // space so content scrolls under button
+    paddingBottom: 160,
   },
 
   stickyButton: {
     position: "absolute",
-    bottom: 0, // 👈 not glued to bottom
+    bottom: 0,
     left: 0,
     right: 0,
   },
