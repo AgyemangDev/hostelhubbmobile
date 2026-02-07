@@ -22,7 +22,7 @@ const BookingModal = () => {
   const { hostelId } = useLocalSearchParams();
   const router = useRouter();
 
-  const { user, userInfo } = useContext(UserContext);
+  const { user, userInfo, patchUserData } = useContext(UserContext); // <-- GET patchUserData
   const [currentStep, setCurrentStep] = useState(BOOKING_STEPS.SELECT);
 
   const { currentExpoToken, ensureNotificationsEnabled } = useNotificationPermission();
@@ -74,7 +74,8 @@ const BookingModal = () => {
       formData,
       hostelId,
       router,
-      currentExpoToken, // <-- pass latest token
+      patchUserData, // <-- PASS THIS
+      currentExpoToken,
       onSuccess: () => {
         resetFormData();
         setCurrentStep(BOOKING_STEPS.SUCCESS);
@@ -90,7 +91,7 @@ const BookingModal = () => {
     return (
       <StepBookingSuccessScreen
         hostelName={hostelData.accommodation_name}
-          onDone={() => router.replace("(tabs)/(bookings)")}
+        onDone={() => router.replace("(tabs)/(index)")}
       />
     );
   if (!hostelData)

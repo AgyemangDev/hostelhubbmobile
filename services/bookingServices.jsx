@@ -19,10 +19,11 @@ export const handleBookingProcess = async ({
   formData,
   hostelId,
   router,
+  patchUserData, // <-- ADD THIS
   onSuccess,
   onError,
   onFinally,
-  currentExpoToken, // <-- latest token from context
+  currentExpoToken,
 }) => {
   try {
     if (!user || !userInfo) throw new Error("User not logged in");
@@ -31,7 +32,12 @@ export const handleBookingProcess = async ({
     if (!isFirstTimeBooker(userInfo)) {
       const hasActiveAccess = hasValidAccess(userInfo);
       if (!hasActiveAccess) {
-        const paid = await handleSubscriptionPayment({ userInfo, router });
+        const paid = await handleSubscriptionPayment({ 
+          userInfo, 
+          user,
+          patchUserData, // <-- PASS THIS
+          router 
+        });
         if (!paid) {
           Alert.alert(
             "Booking Not Completed",

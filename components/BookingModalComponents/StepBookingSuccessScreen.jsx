@@ -105,7 +105,7 @@ const StepBookingSuccessScreen = ({ hostelName, onDone }) => {
 
       {/* Done Button */}
       <Button
-        buttonText="View my Bookings"
+        buttonText="Check Out Our Services"
         onPressFunction={onDone}
         customStyle={styles.doneButton}
       />

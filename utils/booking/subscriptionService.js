@@ -1,5 +1,4 @@
 import { Alert } from 'react-native';
-import { supabase } from '../../app/firebase/supabaseConfig';
 import { ACCESS_FEE, BOOKING_MESSAGES } from '../../constants/bookingConstants';
 
 /**
@@ -7,13 +6,13 @@ import { ACCESS_FEE, BOOKING_MESSAGES } from '../../constants/bookingConstants';
  * 
  * @param {Object} params
  * @param {Object} params.userInfo - User information
- * @param {number} params.userInfo.id - User ID
- * @param {number} params.userInfo.balance - Current balance
+ * @param {Object} params.user - Firebase user object
+ * @param {Function} params.patchUserData - Function to patch user data
  * @param {Object} params.router - Navigation router
  * @returns {Promise<boolean>} - True if payment succeeded, false otherwise
  */
-export const handleSubscriptionPayment = async ({ userInfo, router }) => {
-  const currentBalance = userInfo.balance || 0;
+export const handleSubscriptionPayment = async ({ userInfo, user, patchUserData, router }) => {
+  const currentBalance = parseFloat(userInfo.balance) || 0;
   const newBalance = currentBalance - ACCESS_FEE;
 
   // Case 1: Insufficient balance
@@ -28,8 +27,9 @@ export const handleSubscriptionPayment = async ({ userInfo, router }) => {
     return false;
   }
 
-  // Process payment
-  return await processPaymentDeduction(userInfo.id, newBalance);
+  // Process payment via backend PATCH
+  // Balance will be updated by database trigger when transaction is created
+  return await processPaymentDeduction(patchUserData);
 };
 
 /**
@@ -48,7 +48,7 @@ const promptInsufficientBalance = async (currentBalance, router) => {
         {
           text: 'Top Up Now',
           onPress: () => {
-            router.push('/transactions');
+            router.push('/(ProfileScreens)/transactions');
             resolve(false);
           },
         },
@@ -73,7 +73,7 @@ const requestPaymentConsent = async (currentBalance, newBalance, router) => {
       'Booking Fee Required',
       `To complete this booking, GHC ${ACCESS_FEE} will be deducted from your account.\n\nCurrent Balance: GHC ${currentBalance.toFixed(
         2
-      )}\nNew Balance would be: GHC ${newBalance.toFixed(
+      )}\nNew Balance: GHC ${newBalance.toFixed(
         2
       )}\n\nDo you want to proceed?`,
       [
@@ -84,7 +84,7 @@ const requestPaymentConsent = async (currentBalance, newBalance, router) => {
         {
           text: 'No, Top Up',
           onPress: () => {
-            router.push('/transactions');
+            router.push('/(ProfileScreens)/transactions');
             resolve(false);
           },
         },
@@ -99,37 +99,32 @@ const requestPaymentConsent = async (currentBalance, newBalance, router) => {
 };
 
 /**
- * Process payment deduction in database
+ * Process payment deduction via backend PATCH
+ * Balance is NOT sent - it will be updated by database trigger
  * 
  * @private
- * @param {string} userId - User ID
- * @param {number} newBalance - New balance after deduction
+ * @param {Function} patchUserData - Function to patch user data
  * @returns {Promise<boolean>} - True if successful
  */
-const processPaymentDeduction = async (userId, newBalance) => {
+// In subscriptionService.js
+const processPaymentDeduction = async (patchUserData) => {
   try {
-    const { error } = await supabase
-      .from('Student_Users')
-      .update({
-        balance: newBalance,
-        paymentstatus: true,
-        paymentdate: new Date().toISOString(),
-      })
-      .eq('id', userId);
+    console.log('📤 Sending subscription payment request...');
+    
+    const payload = {
+      paymentstatus: true,
+      paymentdate: new Date().toISOString(),
+      subscriptionAmount: ACCESS_FEE,
+    };
+    
+    console.log('📦 Payload being sent:', JSON.stringify(payload, null, 2));
+    
+    await patchUserData(payload);
 
-    if (error) {
-      console.error('Payment update error:', error);
-      Alert.alert(
-        BOOKING_MESSAGES.PAYMENT_ERROR.title,
-        BOOKING_MESSAGES.PAYMENT_ERROR.message,
-        [{ text: 'OK' }]
-      );
-      return false;
-    }
-
+    console.log('✅ Subscription payment processed successfully');
     return true;
   } catch (err) {
-    console.error('Payment error:', err);
+    console.error('❌ Payment error:', err);
     Alert.alert(
       BOOKING_MESSAGES.PAYMENT_ERROR.title,
       BOOKING_MESSAGES.PAYMENT_ERROR.message,
@@ -138,3 +133,37 @@ const processPaymentDeduction = async (userId, newBalance) => {
     return false;
   }
 };
+// ```
+
+// ## Key Changes:
+
+// 1. **Removed `balance` from updates** - It's not in `ALLOWED_FIELDS` and shouldn't be sent from frontend
+// 2. **Backend creates transaction FIRST** - This triggers the database trigger to update balance
+// 3. **Then updates paymentstatus and paymentdate** - After balance is already updated
+// 4. **`subscriptionAmount` is a signal** - Not stored in Student_Users, just tells backend to create transaction
+
+// ## The Flow Now:
+// ```
+// Frontend sends:
+// {
+//   paymentstatus: true,
+//   paymentdate: "2026-02-07...",
+//   subscriptionAmount: 5  // Signal only
+// }
+//     ↓
+// Backend receives patch
+//     ↓
+// Backend detects subscriptionAmount
+//     ↓
+// Backend creates transaction with amount: 5
+//     ↓
+// 🔥 Database trigger fires
+//     ↓
+// Database updates balance automatically
+// (balance = balance - 5)
+//     ↓
+// Backend updates paymentstatus + paymentdate
+//     ↓
+// SSE stream sends updated user data to frontend
+//     ↓
+// Frontend UI updates automatically ✅
