@@ -23,6 +23,8 @@ const TransactionCard = ({
         return "Storage Payment";
       case "Deposit":
         return "Deposit to Wallet";
+      case "Shop Purchase":
+        return "Shop Purchase";
       case "Withdrawal":
         return "Withdrawal from Wallet";
       default:

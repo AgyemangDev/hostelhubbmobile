@@ -40,7 +40,7 @@ const handleDeposit = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        amount: depositAmount * 100,
+        amount: depositAmount,
       }),
     });
 

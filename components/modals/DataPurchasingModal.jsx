@@ -7,198 +7,185 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import Modal from "react-native-modal";
 import { useRouter } from "expo-router";
 import { UserContext } from "../../context/UserContext";
-import { doc, updateDoc, increment } from "firebase/firestore";
-import { db } from "../../app/firebase/FirebaseConfig";
-import axios from "axios";
+import { purchaseData } from "../../services/purchaseData";
+import { useNotificationPermission } from "../../hooks/notification/useNotificationPermission";
+
+const providerPrefixes = {
+  MTN: ["024", "025", "053", "054", "055", "059"],
+  TELECEL: ["020", "050"],
+};
+
+const getProviderColor = (provider) => {
+  switch ((provider || "").toUpperCase()) {
+    case "MTN":
+      return "#FBBF24";
+    case "TELECEL":
+      return "#EF4444";
+    default:
+      return "#111";
+  }
+};
 
 const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
   const { userInfo, user } = useContext(UserContext);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  
+  // Add notification hook
+  const { currentExpoToken, ensureNotificationsEnabled } = useNotificationPermission();
 
-  // Allowed prefixes for networks
-  const providerPrefixes = {
-    MTN: ["024", "025", "053", "054", "055", "059"],
-    TELECEL: ["020", "050"],
-  };
-
-  // Dynamic button color by provider
-  const getProviderColor = (provider) => {
-    const p = provider?.toUpperCase();
-    switch (p) {
-      case "MTN":
-        return "#FBBF24"; // soft MTN yellow
-      case "TELECEL":
-        return "#EF4444"; // reddish for Telecel
-      default:
-        return "#111"; // fallback
-    }
-  };
-
-  // Handle the purchase confirmation
   const handleConfirm = async () => {
     if (!phoneNumber) {
       return Alert.alert("Error", "Please enter your phone number");
     }
-
     if (!/^0\d{9}$/.test(phoneNumber)) {
-      return Alert.alert(
-        "Error",
-        "Phone number must start with 0 and be 10 digits"
-      );
+      return Alert.alert("Error", "Phone number must start with 0 and be 10 digits");
     }
 
-    // Check provider prefix safely
     const first3 = phoneNumber.slice(0, 3);
-    const allowedPrefixes =
-      providerPrefixes[selectedPackage?.netprovider] || [];
+    const allowedPrefixes = providerPrefixes[selectedPackage?.netprovider] || [];
 
     if (!allowedPrefixes.includes(first3)) {
-      // Number does not match selected provider
       return Alert.alert(
         "Number Warning",
         `This number does not match the selected provider (${selectedPackage?.netprovider}). Do you still want to proceed?`,
         [
           { text: "Cancel", style: "cancel" },
-          {
-            text: "Yes, use it",
-            onPress: () => proceedPurchase(),
+          { text: "Yes, use it", onPress: proceedPurchaseWithBalanceCheck },
+        ]
+      );
+    }
+
+    proceedPurchaseWithBalanceCheck();
+  };
+
+  const proceedPurchaseWithBalanceCheck = async () => {
+    const price = parseFloat(selectedPackage.price);
+    const userBalance = userInfo?.balance || 0;
+
+    if (userBalance < price) {
+      const amountNeeded = price - userBalance;
+      return Alert.alert(
+        "Insufficient Balance",
+        `Your current balance (GHC ${userBalance.toFixed(2)}) is not enough to buy this bundle.\n\nYou need to top up at least GHC ${amountNeeded.toFixed(2)}.`,
+        [
+          { text: "Cancel", style: "cancel" },
+          { 
+            text: "Top Up", 
+            onPress: () => {
+              onClose();
+              setTimeout(() => router.replace("(ProfileScreens)/transactions"), 300);
+            },
           },
         ]
       );
     }
 
-    // If prefix is okay, proceed
+    // Enforce notifications before proceeding
+    const hasNotifications = await ensureNotificationsEnabled({
+      title: "Enable Notifications",
+      message: "Turn on notifications to receive updates about your data purchase status and delivery confirmation.",
+    });
+
+    if (!hasNotifications) return;
+
     proceedPurchase();
   };
 
   const proceedPurchase = async () => {
     setLoading(true);
     try {
-      const userBalance = userInfo.balance || 0;
-      const price = selectedPackage?.price || 0;
+      const result = await purchaseData({ 
+        userInfo, 
+        user, 
+        selectedPackage, 
+        phoneNumber,
+        currentExpoToken, // Pass token to service
+      });
 
-      if (userBalance < price) {
-        const amountNeeded = price - userBalance;
-        Alert.alert(
-          "Insufficient Balance",
-          `Your balance (GHC ${userBalance.toFixed(
-            2
-          )}) is not enough. You need at least GHC ${amountNeeded.toFixed(2)}.`,
-          [
-            { text: "Cancel", style: "cancel" },
-            {
-              text: "Go to Transactions",
-              onPress: () => {
-                onClose();
-                router.push("(ProfileScreens)/transactions");
-              },
-            },
-          ]
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Prepare API payload
-      const payload = {
-        email: userInfo.email,
-        customer_name:
-          userInfo.firstName +
-          " " +
-          (userInfo.surname || userInfo.lastName || ""),
-        customer_phone: phoneNumber,
-        idd: user.uid,
-        bundle: parseInt(selectedPackage.data_volume, 10),
-        netprovider: selectedPackage.netprovider?.toLowerCase(),
-      };
-
-      console.log("📤 Sending payload:", payload);
-
-      // Call backend API
-      const response = await axios.post(
-        "https://hostelhubbbackend.onrender.com/api/data-purchase",
-        payload
-      );
-
-      if (response.status >= 200 && response.status < 300) {
-        // Deduct balance atomically
-        const userRef = doc(db, "Student_Users", user.uid);
-        await updateDoc(userRef, { balance: increment(-price) });
-
+      if (result.success) {
         Alert.alert(
           "Purchase Successful",
-          `You have successfully purchased ${selectedPackage.data_volume}GB for ${phoneNumber}.`
+          `${result.message}\nYou bought ${selectedPackage.data_volume}GB for ${phoneNumber}.`
         );
-
         setPhoneNumber("");
         onClose();
       } else {
-        Alert.alert(
-          "Error",
-          "Something went wrong with the purchase. Please try again."
-        );
+        Alert.alert("Error", result.message);
       }
     } catch (error) {
-      console.error("Purchase Error:", error.response || error.message);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || error.message || "Unknown error"
-      );
-    } finally {
-      setLoading(false);
+      console.error("Purchase Error:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
+    setLoading(false);
   };
 
-  // Don't render modal if no package selected
-  if (!selectedPackage) return null;
-
   return (
-    <Modal isVisible={isVisible} onBackdropPress={onClose}>
-      <View style={styles.modalContent}>
-        <Text style={styles.modalTitle}>Enter Your Phone Number</Text>
-        <Text style={styles.modalSubtitle}>
-          Package: {selectedPackage.data_volume}GB • GHC{" "}
-          {selectedPackage.price}
-        </Text>
+    <Modal
+      visible={isVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.modalOverlay}
+      >
+        <TouchableWithoutFeedback onPress={onClose}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Enter Your Phone Number</Text>
+                <Text style={styles.modalSubtitle}>
+                  {selectedPackage 
+                    ? `Package: ${selectedPackage.data_volume}GB • GHC ${selectedPackage.price}`
+                    : "No package selected"}
+                </Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. 0241234567"
-          keyboardType="phone-pad"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          maxLength={10}
-        />
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g. 0241234567"
+                  keyboardType="phone-pad"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  maxLength={10}
+                />
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            { backgroundColor: getProviderColor(selectedPackage?.netprovider) },
-          ]}
-          onPress={handleConfirm}
-          disabled={loading || !selectedPackage}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Confirm Purchase</Text>
-          )}
-        </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    { backgroundColor: getProviderColor(selectedPackage?.netprovider) },
+                  ]}
+                  onPress={handleConfirm}
+                  disabled={loading || !selectedPackage}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Confirm Purchase</Text>
+                  )}
+                </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, styles.cancelButton]}
-          onPress={onClose}
-          disabled={loading}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={onClose}
+                  disabled={loading}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -206,10 +193,18 @@ const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
 export default DataPurchaseModal;
 
 const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modalContent: {
     backgroundColor: "#fff",
     padding: 20,
     borderRadius: 16,
+    width: "85%",
+    maxWidth: 400,
   },
   modalTitle: {
     fontSize: 20,
