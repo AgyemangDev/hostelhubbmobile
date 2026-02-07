@@ -20,18 +20,18 @@ onPress={() =>
       );
     }
 
-    if (item.type === "storage") {
-      return (
-        <StorageBookingCard
-          booking={item}
-          onPress={() =>
-            navigation.navigate("StorageBookingDetails", {
-              bookingId: item.bookingReference,
-            })
-          }
-        />
-      );
-    }
+if (item.type === "storage") {
+  return (
+    <StorageBookingCard
+      booking={item}
+      onPress={() =>
+        navigation.navigate("StorageBookingDetails", {
+          booking: JSON.stringify(item), // stringify here
+        })
+      }
+    />
+  );
+}
 
     return null;
   };

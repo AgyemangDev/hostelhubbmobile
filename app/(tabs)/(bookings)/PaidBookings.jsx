@@ -10,35 +10,43 @@ const PaidBookings = ({ navigation }) => {
   const [paidBookings, setPaidBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (contextLoading) return;
+// app/(tabs)/(bookings)/PaidBookings.jsx
+useEffect(() => {
+  if (contextLoading) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      if (!bookings || bookings.length === 0) {
-        setPaidBookings([]);
-        return;
-      }
-
-      // ✅ Only PAID bookings
-      const filtered = bookings
-        .filter((booking) => booking.payment_status === true)
-        .map((booking) => ({
-          ...booking,
-          payment_option: booking.payment_option
-            ? parseFloat(booking.payment_option) * 1.05
-            : 0,
-        }));
-
-      setPaidBookings(filtered);
-    } catch (err) {
-      console.error("Error processing paid bookings:", err);
+  try {
+    if (!bookings || bookings.length === 0) {
       setPaidBookings([]);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [bookings, contextLoading]);
+
+    const filtered = bookings
+      .filter((booking) => {
+        if (booking.type === "storage") return true;
+        return booking.payment_status === true;
+      })
+      .map((booking) => {
+        if (booking.type === "accommodation") {
+          return {
+            ...booking,
+            payment_option: booking.payment_option
+              ? parseFloat(booking.payment_option) * 1.05
+              : 0,
+          };
+        }
+        return booking;
+      });
+
+    setPaidBookings(filtered);
+  } catch (err) {
+    console.error("Error processing paid bookings:", err);
+    setPaidBookings([]);
+  } finally {
+    setLoading(false);
+  }
+}, [bookings, contextLoading]);
 
   if (contextLoading || loading) {
     return (
@@ -55,7 +63,7 @@ const PaidBookings = ({ navigation }) => {
     return (
       <View style={[styles.container, styles.centered]}>
         <Text style={{ color: "red" }}>
-          Error fetching bookings: {error}
+          Error fetching bookings: We are currently facing errors fetching your bookings. If it persist, kindly contact customer care.
         </Text>
       </View>
     );

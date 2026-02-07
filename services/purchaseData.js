@@ -56,7 +56,7 @@ export const purchaseData = async ({
     );
 
     // Wait 5 seconds before sending push notification
-    await delay(10000);
+    await delay(5000);
 
     // Send push notification about purchase
     await sendPushNotification({

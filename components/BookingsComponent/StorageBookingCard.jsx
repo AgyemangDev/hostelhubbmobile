@@ -1,234 +1,207 @@
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+// StorageBookingCard.jsx
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { getStatusMeta } from "../../utils/bookingStatus";
+import COLORS from "../../constants/Colors";
 
-const StudentCard = ({ booking }) => {
-  const router = useRouter();
+const StorageBookingCard = ({ booking, onPress }) => {
+  const statusMeta = getStatusMeta(booking.pickup_status, booking.delivery_status);
 
-  // ---------- FORMAT DATE ----------
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+  const isPickupPending = booking.pickup_status === "pending";
+  const isPickupCompleted = booking.pickup_status === "picked_up" || booking.pickup_status === "completed";
+  const isDelivered = booking.delivery_status === "completed" || booking.delivery_status === "delivered";
 
-    if (
-      dateString.includes("Day") ||
-      dateString.includes("Monday") ||
-      dateString.includes("Saturday") ||
-      dateString.includes("Sunday")
-    ) {
-      return dateString;
+  // Determine status text and location
+  let statusText = "";
+  let locationIcon = "";
+
+  if (isPickupPending) {
+    // Items awaiting pick up at location
+    statusText = `Items awaiting pick up at ${booking.pickup_info?.area || "Pending"}`;
+    locationIcon = "cube-outline";
+  } else if (isPickupCompleted && !isDelivered) {
+    // Items picked up at location, to be delivered at location
+    statusText = `Items picked up at ${booking.pickup_info?.area || "Unknown"}`;
+    locationIcon = "checkmark-done-outline";
+  } else if (isDelivered) {
+    // Items delivered at location
+    statusText = `Items delivered at ${booking.delivery_info?.area || "Unknown"}`;
+    locationIcon = "checkmark-circle-outline";
+  } else {
+    statusText = "Status unknown";
+    locationIcon = "help-circle-outline";
+  }
+
+  // Add delivery destination if picked up but not delivered
+  let deliveryDestText = "";
+  if (isPickupCompleted && !isDelivered && booking.delivery_info?.area) {
+    deliveryDestText = `Items to be delivered at ${booking.delivery_info.area}`;
+  }
+
+  // Calculate diffDays if delivery info exists
+  let diffDays = null;
+  let deliveryNote = "";
+
+  if (booking.delivery_info?.date && !isDelivered) {
+    const deliveryDate = new Date(booking.delivery_info.date);
+    const now = new Date();
+    const diffTime = deliveryDate - now;
+    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // Show note only if not delivered
+    if (diffDays >= 14) {
+      deliveryNote = "Delivery info can still be updated.";
+    } else if (diffDays >= 0) {
+      deliveryNote = "Cannot change delivery info. Contact Customer Service.";
     }
-
-    let date;
-    if (dateString.includes("/")) {
-      const [day, month, year] = dateString.split("/");
-      date = new Date(year, month - 1, day);
-    } else {
-      date = new Date(dateString);
-    }
-
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-    });
-  };
-
-  const statusMeta = getStatusMeta(booking.status);
-
-  const handleCardPress = () => {
-    router.push({
-      pathname: "/StorageEdit",
-      params: { booking: JSON.stringify(booking) },
-    });
-  };
+  }
 
   return (
-    <TouchableOpacity
-      onPress={handleCardPress}
-      style={styles.card}
-      activeOpacity={0.95}
-    >
-      {/* ---------- HEADER ---------- */}
-      <View style={styles.header}>
-        <MaterialCommunityIcons name="locker" size={20} color="#4A6FA5" />
-
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.95}>
+      {/* ---------- IMAGE + HEADER ---------- */}
+      <View style={styles.topRow}>
+        <Image source={{ uri: booking.image_url }} style={styles.image} />
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>Storage Booking</Text>
-          <Text style={styles.reference}>#{booking.bookingReference}</Text>
-        </View>
-
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>
-            ₵{Number(booking.totalPrice).toFixed(2)}
-          </Text>
+          <View style={styles.nameAndId}>
+            <Text style={styles.title}>Storage Booking</Text>
+            <Text style={styles.ref}>#{booking.id.slice(0, 13)}</Text>
+          </View>
+          <Text style={styles.price}>GH₵{booking.price.toFixed(2)}</Text>
         </View>
       </View>
 
       {/* ---------- STATUS BADGE ---------- */}
-      <View
-        style={[
-          styles.statusBadge,
-          {
-            backgroundColor: statusMeta.bg,
-            borderColor: statusMeta.border,
-          },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name={statusMeta.icon}
-          size={14}
-          color={statusMeta.color}
-        />
-        <Text style={[styles.statusText, { color: statusMeta.color }]}>
-          {statusMeta.label}
+      <View style={[styles.status, { backgroundColor: statusMeta.bg, borderColor: statusMeta.border }]}>
+        <Ionicons name={statusMeta.icon} size={14} color={statusMeta.color} />
+        <Text style={[styles.statusText, { color: statusMeta.color }]}>{statusMeta.label}</Text>
+      </View>
+
+      {/* ---------- PICKUP/DELIVERY STATUS TEXT ---------- */}
+      <View style={styles.statusTextRow}>
+        <Ionicons name={locationIcon} size={16} color="#6B7280" />
+        <Text style={styles.statusDescription} numberOfLines={2}>
+          {statusText}
         </Text>
       </View>
 
-      <View style={styles.divider} />
-
-      {/* ---------- INFO SECTION ---------- */}
-      <View style={styles.infoSection}>
-        <View style={styles.locationRow}>
-          <Ionicons name="location-sharp" size={14} color="#6B7280" />
-          <Text style={styles.locationText} numberOfLines={1}>
-            {booking.deliveryLocation || "Yet to be provided"}
+      {/* ---------- DELIVERY DESTINATION (if picked up but not delivered) ---------- */}
+      {deliveryDestText ? (
+        <View style={styles.statusTextRow}>
+          <Ionicons name="location-outline" size={16} color="#6B7280" />
+          <Text style={styles.statusDescription} numberOfLines={2}>
+            {deliveryDestText}
           </Text>
         </View>
+      ) : null}
 
-        <View style={styles.datesRow}>
-          <View style={styles.dateItem}>
-            <Text style={styles.dateLabel}>Booked</Text>
-            <Text style={styles.dateValue}>
-              {formatDate(booking.bookingDate)}
-            </Text>
-          </View>
-
-          <View style={styles.dateItem}>
-            <Text style={styles.dateLabel}>Pickup</Text>
-            <Text style={styles.dateValue}>
-              {formatDate(booking.pickupDate)}
-            </Text>
-          </View>
-
-          <View style={styles.dateItem}>
-            <Text style={styles.dateLabel}>Delivery</Text>
-            <Text style={styles.dateValue} numberOfLines={1}>
-              {formatDate(booking.deliveryDate)}
-            </Text>
-          </View>
+      {/* ---------- DELIVERY NOTE ---------- */}
+      {deliveryNote ? (
+        <View style={styles.noteContainer}>
+          <Ionicons
+            name={diffDays >= 14 ? "information-circle-outline" : "alert-circle-outline"}
+            size={14}
+            color={diffDays >= 14 ? "#3B82F6" : "#EF4444"}
+          />
+          <Text style={[styles.note, { color: diffDays >= 14 ? "#3B82F6" : "#EF4444" }]}>
+            {deliveryNote}
+          </Text>
         </View>
-      </View>
+      ) : null}
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
+    padding: 14,
     borderRadius: 12,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    overflow: "hidden",
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  header: {
+  topRow: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: "#F3F4F6",
   },
   headerInfo: {
     flex: 1,
     marginLeft: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  nameAndId: {
+    flex: 1,
   },
   title: {
-    fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: 18,
     color: "#1F2937",
+    marginBottom: 4,
   },
-  reference: {
-    fontSize: 12,
-    color: "#6B7280",
+  ref: {
+    fontSize: 13,
+    color: "#333538",
     fontFamily: "monospace",
   },
-  priceContainer: {
-    backgroundColor: "#F0FDF4",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#BBF7D0",
-  },
   price: {
-    fontSize: 15,
     fontWeight: "700",
-    color: "#047857",
+    color: COLORS.background,
+    fontSize: 16,
   },
-  statusBadge: {
+  status: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    marginLeft: 16,
-    marginBottom: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     borderWidth: 1,
+    marginBottom: 8,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: "600",
     marginLeft: 6,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#F3F4F6",
-  },
-  infoSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  locationText: {
-    fontSize: 13,
-    color: "#6B7280",
-    marginLeft: 6,
-    flex: 1,
-  },
-  datesRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  dateItem: {
-    flex: 1,
-  },
-  dateLabel: {
-    fontSize: 10,
-    color: "#9CA3AF",
-    textTransform: "uppercase",
-    fontWeight: "600",
-    marginBottom: 3,
-  },
-  dateValue: {
     fontSize: 12,
     fontWeight: "600",
+  },
+  statusTextRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 6,
+  },
+  statusDescription: {
+    fontSize: 13,
+    marginLeft: 6,
     color: "#374151",
+    flex: 1,
+    lineHeight: 18,
+  },
+  noteContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
+    backgroundColor: "#F9FAFB",
+    padding: 8,
+    borderRadius: 6,
+  },
+  note: {
+    fontSize: 12,
+    marginLeft: 6,
+    flex: 1,
   },
 });
 
-export default StudentCard;
+export default StorageBookingCard;

@@ -19,7 +19,12 @@ export default function ReviewPay() {
   const { user,userInfo } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
 
-  const totalAmount = reservation?.totalAmount || 0;
+  const totalAmount = reservation.items.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
+
+
 
 const hasInsufficientBalance = userInfo?.balance < totalAmount;
 
@@ -28,6 +33,8 @@ const confirmAndPay = async () => {
     Alert.alert("Error", "No logged-in user found.");
     return;
   }
+  console.log(hasInsufficientBalance)
+  console.log(totalAmount)
 
   if (hasInsufficientBalance) {
     Alert.alert(

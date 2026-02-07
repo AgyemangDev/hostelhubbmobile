@@ -1,11 +1,12 @@
 import { Stack } from "expo-router";
-import { View, Text, StyleSheet,Platform } from "react-native";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import COLORS from "../../../constants/Colors";
 
-const CustomHeader = () => {
+// ✅ CustomHeader accepts a title prop
+const CustomHeader = ({ title }) => {
   return (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>Hostel & Storage Bookings</Text>
+      <Text style={styles.headerTitle}>{title}</Text>
     </View>
   );
 };
@@ -16,24 +17,51 @@ const _layout = () => {
       initialRouteName="index"
       screenOptions={{
         headerShown: true,
-        header: () => <CustomHeader />, // Use the custom header
       }}
     >
-      <Stack.Screen name="index" />
-            <Stack.Screen
-        name="PayNow"
+      {/* Example of passing a custom title */}
+      <Stack.Screen
+        name="index"
         options={{
-          headerShown: false, 
+          header: () => <CustomHeader title="Hostel & Storage Bookings" />,
         }}
       />
-      <Stack.Screen name="PaidBookings" />
-      <Stack.Screen name="PaidBookingDetails" />
-      <Stack.Screen name="PaymentCompleted" 
-  
-      options={{
-        gestureEnabled:false,
-          headerShown: false, 
-        }}/>
+
+      <Stack.Screen
+        name="PayNow"
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="StorageBookingDetails"
+        options={{
+          header: () => <CustomHeader title="Storage Booking Details" />,
+        }}
+      />
+
+      <Stack.Screen
+        name="PaidBookings"
+        options={{
+          header: () => <CustomHeader title="Paid Bookings" />,
+        }}
+      />
+
+      <Stack.Screen
+        name="PaidBookingDetails"
+        options={{
+          header: () => <CustomHeader title="Booking Details" />,
+        }}
+      />
+
+      <Stack.Screen
+        name="PaymentCompleted"
+        options={{
+          gestureEnabled: false,
+          headerShown: false,
+        }}
+      />
     </Stack>
   );
 };

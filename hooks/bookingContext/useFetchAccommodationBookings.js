@@ -17,7 +17,7 @@ export const useFetchAccommodationBookings = () => {
 
     try {
       const token = await user.getIdToken(false);
-      const res = await fetch(`${API_BASE_URL}/api/bookings/fetch`, {
+      const res = await fetch(`${API_BASE_URL}/bookings/accommodation/fetch`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
