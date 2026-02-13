@@ -2,12 +2,10 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
 const TransactionCard = ({
-  id,
   method,
   amount,
   created_at,
   status,
-  hostel_name,
   formatDate,
 }) => {
   const amountColor = status === "pending" ? "red" : "green";
@@ -27,6 +25,8 @@ const TransactionCard = ({
         return "Shop Purchase";
       case "Withdrawal":
         return "Withdrawal from Wallet";
+      case "Subscription":
+        return "6 Months Subscription";       
       default:
         return "Referral Bonus";
     }

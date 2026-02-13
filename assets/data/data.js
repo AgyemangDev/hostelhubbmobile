@@ -11,32 +11,32 @@ export const institutions = [
   },
   {
     value: "University of Cape Coast",
-    label: "University of Cape Coast",
+    label: "UCC",
     logo: require("../images/ucc.png"),
   },
   {
     value: "University of Education, Winneba",
-    label: "University of Education, Winneba",
+    label: "UEW",
     logo: require("../images/uew.png"),
   },
   {
     value: "Ashesi University",
-    label: "Ashesi University",
+    label: "Ashesi ",
     logo: require("../images/ashesi.png"),
   },
   {
     value: "University of Developmental Sciences",
-    label: "University of Developmental Sciences",
+    label: "UDS",
     logo: require("../images/uds.png"),
   },
   {
     value: "University of Mines And Technology",
-    label: "University of Mines And Technology",
+    label: "UMaT",
     logo: require("../images/umat.png"),
   },
   {
     value: "University of Energy and Natural Resources",
-    label: "University of Energy and Natural Resources",
+    label: "UeNR",
     logo: require("../images/uenr.png"),
   },
   {
@@ -46,12 +46,12 @@ export const institutions = [
   },
   {
     value: "University of Health and Allied Sciences",
-    label: "University of Health and Allied Sciences",
+    label: "UHAS",
     logo: require("../images/uhas.png"),
   },
   {
     value: "Garden City University",
-    label: "Garden City University",
+    label: "GCU",
     logo: require("../images/Gc.png"),
   },
   

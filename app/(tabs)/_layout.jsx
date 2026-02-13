@@ -29,9 +29,9 @@ const Layout = () => {
 
         {/* Agents Tab */}
         <Tabs.Screen
-          name="(agent)"
+          name="(Hubclipps)"
           options={{
-            title: 'HubbClips',
+            title: 'Hubclipps',
             headerShown: false,
             tabBarIcon: ({ color, size }) => (
               <Octicons name="video" size={size} color={color} />

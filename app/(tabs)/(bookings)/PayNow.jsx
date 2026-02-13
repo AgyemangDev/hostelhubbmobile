@@ -25,21 +25,21 @@ const PayNow = () => {
 
   if (!bookingData || !userInfo) return null;
 
-  const {
-    accommodation,
-    owner,
-    room_type,
-    payment_option,
-    status,
-    booking_date,
-  } = bookingData;
+  // ✅ Determine type-specific accommodation info
+  const accommodationInfo =
+    bookingData.type === "hubclip"
+      ? bookingData.hubclip
+      : bookingData.accommodation;
+
+  const ownerInfo = bookingData.owner || null;
+
+  const { room_type, payment_option, status, booking_date } = bookingData;
 
   const baseAmount = Number(payment_option || 0);
   const totalAmount = useMemo(() => baseAmount * 1.05, [baseAmount]);
 
   const userBalance = Number(userInfo.balance || 0);
 
-  // 🔒 GUARD FLAG
   const hasInsufficientBalance = userBalance < totalAmount;
 
   const handlePayment = async () => {
@@ -48,7 +48,6 @@ const PayNow = () => {
       return;
     }
 
-    // 🛑 HARD GUARD (MAIN REQUIREMENT)
     if (hasInsufficientBalance) {
       Alert.alert(
         "Insufficient Balance",
@@ -56,18 +55,16 @@ const PayNow = () => {
         [
           {
             text: "Top Up Balance",
-            onPress: () =>
-              router.replace("(ProfileScreens)/transactions"),
+            onPress: () => router.replace("(ProfileScreens)/transactions"),
           },
           { text: "Cancel", style: "cancel" },
         ]
       );
-      return; // ⛔ STOP HERE
+      return;
     }
 
     try {
       setLoading(true);
-
       const token = await user.getIdToken(false);
 
       const {
@@ -89,10 +86,7 @@ const PayNow = () => {
       }
     } catch (error) {
       console.error("Payment error:", error);
-      Alert.alert(
-        "Payment Error",
-        "Something went wrong. Please try again."
-      );
+      Alert.alert("Payment Error", "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -104,22 +98,18 @@ const PayNow = () => {
 
       <ScrollView>
         <BookingDetailsCard
-          accommodation={accommodation}
+          accommodation={accommodationInfo}
           room_type={room_type}
           status={status}
           totalAmount={totalAmount}
           booking_date={booking_date}
         />
 
-        <OwnerInfoCard owner={owner} />
+        <OwnerInfoCard owner={ownerInfo} />
 
         <View style={styles.buttonContainer}>
           <Button
-            buttonText={
-              hasInsufficientBalance
-                ?  `Pay GHS ${totalAmount.toFixed(2)}`
-                : `Pay GHS ${totalAmount.toFixed(2)}`
-            }
+            buttonText={`Pay GHS ${totalAmount.toFixed(2)}`}
             onPressFunction={handlePayment}
             variant={hasInsufficientBalance ? "disabled" : "default"}
             disabled={hasInsufficientBalance || loading}

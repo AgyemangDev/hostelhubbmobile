@@ -1,48 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import {EXPECTED_PRICES} from "../../assets/data/DisplayPrices"
 
 
 const PackageCard = ({ data_volume, price, netprovider, onPress }) => {
   const provider = netprovider.toLowerCase();
-
-  const getBonus = (volume) => {
-    const gb = parseInt(volume);
-    return null;
-  };
-
-  const bonus = getBonus(data_volume);
-
-const getPercentageOff = (provider, volume, displayPrice) => {
-  const normalizedProvider = provider.toUpperCase();
-  const normalizedVolume = String(volume);
-  const normalizedPrice = Number(displayPrice);
-
-  const expected =
-    EXPECTED_PRICES?.[normalizedProvider]?.[normalizedVolume];
-
-  if (!expected || !normalizedPrice) return null;
-
-  if (normalizedPrice >= expected) return null;
-
-  const percentage = Math.round(
-    ((expected - normalizedPrice) / expected) * 100
-  );
-
-  return percentage > 0 ? `${percentage}% OFF` : null;
-};
-console.log({
-  provider,
-  volume: String(data_volume),
-  price: Number(price),
-  expected: EXPECTED_PRICES?.[provider.toUpperCase()]?.[String(data_volume)]
-});
-
-const discount = getPercentageOff(
-  netprovider,
-  data_volume,
-  price
-);
 
   const stylesMap = {
     mtn: { backgroundColor: "#FACC15", borderColor: "#FBBF24" },
@@ -64,22 +25,6 @@ const discount = getPercentageOff(
   <View style={styles.label}>
     <Text style={styles.labelText}>non expiry</Text>
   </View>
-
-  {discount && (
-    <View style={[styles.label, { backgroundColor: "#16A34A" }]}>
-      <Text style={[styles.labelText, { color: "#fff" }]}>
-        {discount}
-      </Text>
-    </View>
-  )}
-
-  {bonus && (
-    <View style={[styles.label, { backgroundColor: "#22C55E" }]}>
-      <Text style={[styles.labelText, { color: "#fff" }]}>
-        {bonus}
-      </Text>
-    </View>
-  )}
 </View>
 
       </View>

@@ -23,7 +23,6 @@ const PersonalInfo = () => {
   const saveChanges = async () => {
     setLoading(true);
     try {
-      // TODO: Save to Supabase or your backend here
       console.log("Saving changes:", editedInfo);
       setEditable(false);
     } catch (err) {

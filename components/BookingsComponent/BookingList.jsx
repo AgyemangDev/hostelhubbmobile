@@ -1,38 +1,23 @@
-// components/BookingsComponent/BookingList.jsx
 import React from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import BookingCard from "./BookingCard";
-import StorageBookingCard from "./StorageBookingCard";
 
 const BookingList = ({ userBookings, navigation }) => {
-  const renderBookingItem = ({ item }) => {
-    if (item.type === "accommodation") {
-      return (
-        <BookingCard
-          booking={item}
-          onPress={() =>
-            navigation.navigate("BookingDetails", { bookingData: item })
-          }
-        />
-      );
-    }
+  // Filter only accommodation or hubclip bookings
+  const accommodationBookings = userBookings.filter(
+    (b) => b.type === "accommodation" || b.type === "hubclip"
+  );
 
-    if (item.type === "storage") {
-      return (
-        <StorageBookingCard
-          booking={item}
-          onPress={() =>
-            navigation.navigate("StorageBookingDetails", { bookingData: item })
-          }
-        />
-      );
-    }
+  const renderBookingItem = ({ item }) => (
+    <BookingCard
+      booking={item}
+      onPress={() =>
+        navigation.navigate("BookingDetails", { bookingData: item })
+      }
+    />
+  );
 
-    console.warn("No matching type for booking:", item.id, item.type);
-    return null;
-  };
-
-  if (!userBookings || userBookings.length === 0) {
+  if (!accommodationBookings || accommodationBookings.length === 0) {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>No bookings available.</Text>
@@ -42,10 +27,12 @@ const BookingList = ({ userBookings, navigation }) => {
 
   return (
     <FlatList
-      data={userBookings}
+      data={accommodationBookings}
       renderItem={renderBookingItem}
       keyExtractor={(item, index) =>
-        item.type === "storage" ? item.bookingReference : item.id || `booking-${index}`
+        item.type === "storage"
+          ? item.bookingReference
+          : item.id || `booking-${index}`
       }
       contentContainerStyle={styles.listContainer}
       ListEmptyComponent={

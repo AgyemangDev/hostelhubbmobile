@@ -5,7 +5,7 @@ import { View, StyleSheet } from "react-native";
 import { AccommodationContext } from "../context/AccommodationContext";
 import CardListScreen from "../components/Cards/VerticalScroll/CardListScreen";
 import SearchBar from "../components/SearchComponents/SearchInput";
-import EmptyState from "../components/BookingsComponent/EmptyState";
+import EmptyFeedState from "../components/hubclipps/EmptyFeedState"
 import FilterSheet from "../components/FilterComponents/FilterSheet";
 import FilterButton from "../components/FilterComponents/FilterButton";
 import { useState } from "react";
@@ -50,7 +50,7 @@ const SearchScreen = () => {
 
       {/* RESULTS */}
       {dataToShow.length === 0 && !isLoading ? (
-        <EmptyState message="No accommodation found matching your search." />
+        <EmptyFeedState />
       ) : (
         <View style={styles.listContainer}>
           <CardListScreen

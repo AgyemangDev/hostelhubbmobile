@@ -18,6 +18,9 @@
       "android": {
         "buildType": "apk",
         "channel": "production"
+      },
+      "ios": {
+        "channel": "production"
       }
     },
     "development": {

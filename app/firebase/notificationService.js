@@ -1,71 +1,52 @@
 import * as Notifications from 'expo-notifications';
-import { supabase } from './supabaseConfig';
-import { Alert, Linking, Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
 const notificationService = {
-  // Check if user has notification token stored
-  checkUserHasToken: async (userId) => {
-    if (!userId) return false;
-    
-    try {
-      const { data, error } = await supabase
-        .from('Student_Users')
-        .select('expo_token')
-        .eq('id', userId)
-        .single();
-      
-      if (error) throw error;
-      
-      return !!data?.expo_token;
-    } catch (error) {
-      console.error('Error checking token:', error);
-      return false;
-    }
-  },
-
-  // Register for push notifications and store token
   registerForPushNotifications: async (userId) => {
     if (!Device.isDevice) {
+      console.log('⚠️ Not a physical device, skipping notification registration');
       return null;
     }
     
     if (!userId) {
-      console.warn('User ID required to register notifications');
+      console.warn('⚠️ User ID required to register notifications');
       return null;
     }
     
     try {
+      console.log('📱 Checking notification permissions...');
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
       
+      console.log('Current permission status:', existingStatus);
+      
       if (existingStatus !== 'granted') {
+        console.log('🔐 Requesting notification permissions...');
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+        console.log('New permission status:', status);
       }
       
       if (finalStatus !== 'granted') {
+        console.log('❌ Notification permission denied');
         return null;
       }
       
+      console.log('✅ Getting Expo push token...');
       const token = await Notifications.getExpoPushTokenAsync({
         projectId: Constants.expoConfig?.extra?.eas?.projectId,
       });
       
-      // Store token in Supabase
-      const { error } = await supabase
-        .from('Student_Users')
-        .update({ expo_token: token.data })
-        .eq('id', userId);
+      console.log('✅ Expo push token obtained:', token.data);
       
-      if (error) throw error;
-      
+      // Return token - backend will store it via patchUserData
       return token.data;
     } catch (error) {
-      console.error('Error registering notifications:', error);
+      console.error('❌ Error registering notifications:', error);
       return null;
     }
   },
@@ -98,7 +79,6 @@ const notificationService = {
     try {
       console.log('Handling notification navigation:', data);
 
-      // Add a small delay to ensure app is fully loaded
       setTimeout(() => {
         try {
           switch (data.type) {
@@ -135,10 +115,9 @@ const notificationService = {
           }
         } catch (navError) {
           console.error('Navigation error:', navError);
-          // Fallback to home if navigation fails
           router.push('/');
         }
-      }, 100); // Small delay for iOS stability
+      }, 100);
     } catch (error) {
       console.error('Error in handleNotificationNavigation:', error);
     }
@@ -182,7 +161,6 @@ const notificationService = {
         notificationService.handleNotificationNavigation(data);
       } catch (error) {
         console.error('Error handling notification tap:', error);
-        // Fallback to home on error
         setTimeout(() => {
           try {
             router.push('/');

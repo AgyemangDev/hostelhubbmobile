@@ -1,5 +1,5 @@
 // app/(tabs)/(bookings)/AllBookings.jsx
-import React, { useEffect, useState,useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
 import BookingList from "../../../components/BookingsComponent/BookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";

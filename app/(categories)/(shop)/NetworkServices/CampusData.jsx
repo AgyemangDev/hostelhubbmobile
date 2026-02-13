@@ -4,33 +4,45 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import PackageCard from "../../../../components/Cards/PackageCard";
 import DataPurchasingModal from "../../../../components/modals/DataPurchasingModal";
-import { DISPLAY_PRICES } from "../../../../assets/data/DisplayPrices";
+import API_BASE_URL from "../../../../utils/api/api";
 
 const CampusData = () => {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-const { network } = useLocalSearchParams();
+  const { network } = useLocalSearchParams();
 
   const [packages, setPackages] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
 
-  useEffect(() => {
-    if (!network || !DISPLAY_PRICES[network.toUpperCase()]) {
-      // fallback if no network provided
+useEffect(() => {
+  if (!network) return;
+
+  const fetchBundles = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/display-prices/${network}`);
+      const data = await response.json();
+
+      if (!data.success) {
+        router.back();
+        return;
+      }
+
+      const formattedPackages = Object.entries(data.bundles).map(([volume, price]) => ({
+        data_volume: volume,
+        price,
+        netprovider: network.toUpperCase(),
+      }));
+
+      setPackages(formattedPackages);
+    } catch (err) {
+      console.error("Failed to fetch bundles:", err);
       router.back();
-      return;
     }
+  };
 
-    const providerBundles = DISPLAY_PRICES[network.toUpperCase()];
-    const formattedPackages = Object.entries(providerBundles).map(([volume, price]) => ({
-      data_volume: volume,
-      price,
-      netprovider: network.toUpperCase(),
-    }));
-
-    setPackages(formattedPackages);
-  }, [network]);
+  fetchBundles();
+}, [network]);
 
   const handleCardPress = (pkg) => {
     setSelectedPackage(pkg);

@@ -1,7 +1,6 @@
 // File: utils/providers.jsx
 import React from "react";
 import { UserProvider } from "../context/UserContext";
-import { HostelsProvider } from "../context/HostelsContext";
 import { AccommodationProvider } from "../context/AccommodationContext";
 import { BookingsProvider } from "../context/BookingsContext";
 import { ReviewsProvider } from "../context/ReviewsContext";
@@ -17,7 +16,6 @@ export const setupProviders = () => {
   // Creates a component that applies all providers in the correct nesting order
   const ProvidersWrapper = ({ children }) => (
     <UserProvider>
-      <HostelsProvider>
         <AccommodationProvider>
         <BookingsProvider>
             <ReviewsProvider>
@@ -29,7 +27,6 @@ export const setupProviders = () => {
             </ReviewsProvider>
         </BookingsProvider>
         </AccommodationProvider>
-      </HostelsProvider>
     </UserProvider>
   );
 

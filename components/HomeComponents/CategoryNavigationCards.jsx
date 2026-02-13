@@ -7,7 +7,7 @@ const cardWidth = screenWidth / 4 - 16;
 
 const categories = [
   { name: "Hostels", image: require("../../assets/images/hostel.png"), route: "/(categories)/(hostels)" },
-  { name: "Storage", image: require("../../assets/images/storage.png"), route: "/(StorageForm)" },
+  { name: "Storage", image: require("../../assets/images/storagebox.png"), route: "/(StorageForm)" },
   { name: "Shop", image: require("../../assets/images/shop.png"), route: "/(categories)/(shop)" },
   { name: "Transport", image: require("../../assets/images/transport.png"), route: "/(categories)/(transport)" },
 ];

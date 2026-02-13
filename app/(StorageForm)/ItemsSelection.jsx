@@ -1,16 +1,30 @@
 "use client";
-import React from "react";
-import { View, ScrollView, Alert, StyleSheet, Text } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, ScrollView, Alert, StyleSheet, Text, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 
-import { STORAGE_ITEMS } from "../../assets/data/storageItems";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import ItemCard from "../../components/Storage/ItemCard";
 import BottomButton from "../../components/ButtonComponents/BottomButton";
 
+import { fetchStorageItems } from "../../utils/storageItems";
+
 export default function ItemsSelection() {
   const router = useRouter();
   const { reservation, upsertItem, removeItem } = useStorageReservation();
+
+  const [storageItems, setStorageItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch storage items from backend
+  useEffect(() => {
+    const getItems = async () => {
+      const items = await fetchStorageItems();
+      setStorageItems(items);
+      setLoading(false);
+    };
+    getItems();
+  }, []);
 
   const getSelectedItem = (id) =>
     reservation.items.find((i) => i.id === id);
@@ -34,7 +48,7 @@ export default function ItemsSelection() {
   // Calculate total price
   const calculateTotal = () => {
     return reservation.items.reduce((sum, item) => {
-      return sum + (item.price * item.quantity);
+      return sum + item.price * item.quantity;
     }, 0);
   };
 
@@ -50,10 +64,19 @@ export default function ItemsSelection() {
     router.push("PickupDeliveryInfo");
   };
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#b20000" />
+        <Text style={{ marginTop: 10 }}>Loading items...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {STORAGE_ITEMS.map((item) => {
+        {storageItems.map((item) => {
           const selectedItem = getSelectedItem(item.id);
 
           return (

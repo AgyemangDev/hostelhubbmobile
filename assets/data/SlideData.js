@@ -3,42 +3,42 @@ export const benefits = [
     icon: "Payment",
     title: "Secure Payments",
     description:
-      "Pay your way—securely through HostelHubb, mobile money, or bank transfer.",
+      "Make safe payments through HostelHubb using mobile money or bank transfer.",
   },
+  {
+  icon: "Car",
+  title: "Easy Transport",
+  description:
+    "Book reliable transport services for vacation and resuming dates.",
+},
   {
     icon: "Location",
     title: "Prime Locations",
     description:
-      "Stay closer to campus with verified hostel options.",
+      "Find verified hostels located close to campus for easier daily movement.",
   },
   {
     icon: "Storage",
     title: "Storage Facilities",
     description:
-      "Can't move your items home? No problem! We offer secure storage solutions for your belongings.",
+      "Store your belongings safely during breaks when moving home isn’t possible.",
   },
   {
     icon: "Security",
     title: "Safety First",
     description:
-      "Hostels vetted with top-notch security to keep you and your stuff safe.",
+      "All hostels are vetted to ensure strong security for students and property.",
   },
   {
     icon: "Support",
     title: "24/7 Support",
     description:
-      "We're here around the clock to help you with anything, anytime.",
+      "Access reliable support anytime you need help before or after booking.",
   },
   {
     icon: "Downloads",
     title: "Loved by Students",
     description:
-      "Over 5K downloads and 5-star ratings from students we've proudly served.",
-  },
-  {
-    icon: "Agent",
-    title: "Verified Student Agents",
-    description:
-      "Get help finding hostels through trained student agents—and earn money by becoming an agent too!",
-  },
+      "Trusted by thousands of students with top ratings and growing downloads.",
+  }
 ];

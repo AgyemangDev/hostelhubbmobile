@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { AccommodationContext } from "../../context/AccommodationContext";
-import isEqual from "lodash.isequal"; // small helper to deeply compare arrays
+import isEqual from "lodash.isequal";
 
 export const useFavoriteAccommodations = (accommodationIds = []) => {
   const { fetchByIds } = useContext(AccommodationContext);
@@ -9,19 +9,18 @@ export const useFavoriteAccommodations = (accommodationIds = []) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Keep track of previous IDs
   const prevIdsRef = useRef([]);
 
   const fetchAccommodations = useCallback(async () => {
+    // Compare with previous IDs
+    if (isEqual(prevIdsRef.current, accommodationIds)) return;
+
+    prevIdsRef.current = accommodationIds;
+
     if (!accommodationIds || accommodationIds.length === 0) {
       setAccommodations([]);
       return;
     }
-
-    // Only fetch if IDs actually changed
-    if (isEqual(prevIdsRef.current, accommodationIds)) return;
-
-    prevIdsRef.current = accommodationIds;
 
     try {
       setLoading(true);
@@ -35,8 +34,9 @@ export const useFavoriteAccommodations = (accommodationIds = []) => {
     } finally {
       setLoading(false);
     }
-  }, [accommodationIds, fetchByIds]);
+  }, [fetchByIds, accommodationIds]);
 
+  // ✅ Only run once per render OR when IDs actually change
   useEffect(() => {
     fetchAccommodations();
   }, [fetchAccommodations]);

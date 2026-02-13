@@ -1,6 +1,6 @@
 // components/BookingsComponent/ShortListCardList.jsx - ADD REFETCH
 
-import React, { useEffect } from "react";
+import React, { useEffect,useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -14,7 +14,8 @@ const ShortListCardList = () => {
   const router = useRouter();
   const { getFavoriteIds, isLoading: favoritesLoading } = useFavorites();
 
-  const favoriteIds = getFavoriteIds();
+  const favoriteIds = useMemo(() => getFavoriteIds(), [getFavoriteIds]);
+
 
   const { 
     accommodations: favoriteHostels, 

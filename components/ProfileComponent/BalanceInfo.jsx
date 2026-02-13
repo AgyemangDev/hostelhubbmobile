@@ -5,7 +5,6 @@ import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import COLORS from "../../constants/Colors";
 import { UserContext } from "../../context/UserContext";
 import DepositInstruction from "./DepositInstruction";
-import SubscribeButton from "./SubscribeButton";
 import API_BASE_URL from "../../utils/api/api";
 
 const AccountBalanceInfo = () => {
@@ -93,7 +92,6 @@ const handleDeposit = async () => {
           </>
         )}
       </Pressable>
-      <SubscribeButton/>
       <DepositInstruction/>
     </View>
   );

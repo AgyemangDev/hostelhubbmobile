@@ -6,8 +6,8 @@ import { useRouter } from "expo-router";
 const BookingCard = ({ booking }) => {
   const router = useRouter();
 
-  const hostelName = booking.accommodation?.accommodation_name || "Unknown Hostel";
-  const imageUri = booking.accommodation?.front_image || null;
+const hostelName = booking.accommodation?.accommodation_name || booking.hubclip?.accommodation_name || "Unknown Hostel";
+const imageUri = booking.accommodation?.front_image || booking.hubclip?.front_image || null;
 
   const formatRoomType = (roomType) => {
     if (!roomType) return "N/A";

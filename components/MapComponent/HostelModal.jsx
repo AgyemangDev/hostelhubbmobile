@@ -1,161 +1,169 @@
-import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, Image, TouchableOpacity, Linking, Platform } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { LinearGradient } from 'expo-linear-gradient';
+import COLORS from "../../constants/Colors";
 
-const HostelModal = ({ hostel, onClose, onDirectMe, showStopDirectionsButton, onStopDirections }) => {
+const HostelModal = ({ hostel, onClose }) => {
   const router = useRouter();
-  const hostelId = hostel.id;
-  
+
+  const openInMaps = () => {
+    const { latitude, longitude, hostelName } = hostel;
+    if (!latitude || !longitude) return;
+
+    const label = encodeURIComponent(hostelName || "Location");
+    const url = Platform.select({
+      default: `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`,
+    });
+
+    Linking.openURL(url);
+  };
+
   return (
-    <View style={styles.modalContainer}>
-      <View style={styles.modal}>
-        {/* Image with gradient overlay */}
-        <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: hostel.frontImage }} 
-            style={styles.image} 
-            resizeMode="cover" 
+    <View style={styles.overlay}>
+      {/* Backdrop */}
+      <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
+      
+      {/* Modal Card */}
+      <View style={styles.card}>
+        {/* Drag Handle */}
+        <View style={styles.handle} />
+
+        {/* Image with Gradient Overlay */}
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: hostel.frontImage }}
+            style={styles.image}
+            resizeMode="cover"
           />
-          <View style={styles.imageOverlay} />
-          <Text style={styles.hostelName}>{hostel.hostelName}</Text>
-        </View>
-        
-        {/* Close button */}
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <MaterialIcons name="close" size={22} color="#333" />
-        </TouchableOpacity>
-        
-        {/* Content area */}
-        <View style={styles.contentContainer}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, showStopDirectionsButton ? styles.stopButton : styles.directButton]}
-              onPress={showStopDirectionsButton ? onStopDirections : onDirectMe}
-            >
-              <MaterialIcons
-                name={showStopDirectionsButton ? "cancel" : "directions"}
-                size={20}
-                color="white"
-              />
-              <Text style={styles.buttonText}>
-                {showStopDirectionsButton ? "Stop" : "Direct Me"}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.button, styles.detailsButton]} 
-              onPress={() => router.push({
-                pathname: '/(Details)/[id]', // The dynamic route pattern
-                params: { hostelId: hostelId }, // Pass the hostelId as a query parameter
-              })}
-            >
-              <MaterialIcons name="info-outline" size={20} color="white" />
-              <Text style={styles.buttonText}>View More</Text>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.7)']}
+            style={styles.gradient}
+          />
+          <View style={styles.imageContent}>
+            <Text style={styles.name}>{hostel.hostelName}</Text>
+            <TouchableOpacity style={styles.locationBtn} onPress={openInMaps}>
+              <MaterialIcons name="location-on" size={16} color="#fff" />
+              <Text style={styles.locationText}>View on map</Text>
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Action Button */}
+        <TouchableOpacity
+          style={styles.detailsBtn}
+          onPress={() =>
+            router.push({
+              pathname: "/(Details)/[id]",
+              params: { hostelId: hostel.id },
+            })
+          }
+        >
+          <Text style={styles.detailsBtnText}>Explore This Place</Text>
+          <MaterialIcons name="arrow-forward" size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  overlay: {
     position: "absolute",
-    bottom: 0,
+    top: 0,
     left: 0,
     right: 0,
-    height: "32%",
-    backgroundColor: "transparent",
+    bottom: 0,
+    justifyContent: "flex-end",
   },
-  modal: {
-    backgroundColor: "white",
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
+  card: {
+    backgroundColor: "#fff",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    paddingBottom: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    height: "100%",
-    overflow: "hidden",
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 16,
   },
-  imageContainer: {
-    position: "relative",
-    height: 180,
+  handle: {
+    width: 40,
+    height: 4,
+    backgroundColor: "#E5E7EB",
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  imageWrapper: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    height: 200,
   },
   image: {
     width: "100%",
     height: "100%",
   },
-  imageOverlay: {
+  gradient: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.2)",
   },
-  hostelName: {
+  imageContent: {
     position: "absolute",
-    bottom: 20,
-    left: 20,
+    bottom: 16,
+    left: 16,
+    right: 16,
+  },
+  name: {
     fontSize: 24,
     fontWeight: "700",
-    color: "white",
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    color: "#fff",
+    marginBottom: 8,
+    textShadowColor: "rgba(0,0,0,0.3)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
   },
-  closeButton: {
-    position: "absolute",
-    top: 16,
-    right: 16,
-    zIndex: 10,
-    backgroundColor: "white",
+  locationBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.25)",
+    paddingVertical: 1,
+    paddingHorizontal: 12,
     borderRadius: 20,
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
+    gap: 4,
+    backdropFilter: "blur(10px)",
   },
-  contentContainer: {
-    padding: 5,
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 16,
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    flex: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  directButton: {
-    backgroundColor: "#4F46E5",
-  },
-  stopButton: {
-    backgroundColor: "#EF4444",
-  },
-  detailsButton: {
-    backgroundColor: "#18181B",
-  },
-  buttonText: {
-    color: "white",
+  locationText: {
+    color: "#fff",
+    fontSize: 13,
     fontWeight: "600",
+  },
+  detailsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.background,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: "#6366F1",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  detailsBtnText: {
+    color: "#fff",
     fontSize: 16,
-    marginLeft: 8,
+    fontWeight: "600",
   },
 });
 

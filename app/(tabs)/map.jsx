@@ -1,31 +1,32 @@
-import { useState, useEffect, useRef,useContext } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { StyleSheet, View, Dimensions } from "react-native";
 import MapView from "react-native-maps";
 import * as Location from "expo-location";
-import { UserContext } from "../../context/UserContext";
+import { AccommodationContext } from "../../context/AccommodationContext";
 
 import HostelMarkers from "../../components/MapComponent/HostelMarkers";
 import UserLocationMarker from "../../components/MapComponent/UserLocationMarker";
 import HostelModal from "../../components/MapComponent/HostelModal";
-import DirectionsLine from "../../components/MapComponent/DirectionsLine";
 import CategoryTabs from "../../components/MapComponent/CategoryTabs";
-import { useHostels } from "../../context/HostelsContext";
 
 const MapScreen = () => {
-    const { userInfo } = useContext(UserContext);
-  const [activeCategory, setActiveCategory] = useState('All');
-  const { hostels, loading } = useHostels();
+  const [activeCategory, setActiveCategory] = useState("All");
+  const { cachedHostels } = useContext(AccommodationContext);
   const [selectedHostel, setSelectedHostel] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
-  const [showDirections, setShowDirections] = useState(false);
-  const [currentRoutingHostel, setCurrentRoutingHostel] = useState(null);
+
   const mapRef = useRef(null);
   const locationSubscription = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
-  const filteredHostels = activeCategory === 'All'
-    ? hostels
-    : hostels.filter((item) => item.category?.toLowerCase() === activeCategory.toLowerCase());
+  // Filter cached hostels by category
+  const filteredHostels =
+    activeCategory === "All"
+      ? cachedHostels
+      : cachedHostels.filter(
+          (item) =>
+            item.category?.toLowerCase() === activeCategory.toLowerCase()
+        );
 
   // Initialize and track user location
   useEffect(() => {
@@ -37,14 +38,11 @@ const MapScreen = () => {
       }
 
       const location = await Location.getCurrentPositionAsync({});
-      const initialUserLocation = {
+      setUserLocation({
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
-      };
+      });
 
-      setUserLocation(initialUserLocation);
-
-      // Set up continuous location tracking
       locationSubscription.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
@@ -53,12 +51,10 @@ const MapScreen = () => {
           mayShowUserSettingsDialog: true,
         },
         (newLocation) => {
-          const updatedUserLocation = {
+          setUserLocation({
             latitude: newLocation.coords.latitude,
             longitude: newLocation.coords.longitude,
-          };
-      
-          setUserLocation(updatedUserLocation);
+          });
         }
       );
     })();
@@ -70,24 +66,21 @@ const MapScreen = () => {
     };
   }, []);
 
+  // Log cache info for debugging
+  useEffect(() => {
+    console.log('🗺️ Map using cached hostels:', {
+      total: cachedHostels.length,
+      filtered: filteredHostels.length,
+      category: activeCategory
+    });
+  }, [cachedHostels, filteredHostels, activeCategory]);
+
   const handleMarkerPress = (hostel) => {
     setSelectedHostel(hostel);
   };
 
   const handleCloseModal = () => {
     setSelectedHostel(null);
-  };
-
-  const handleDirectMe = () => {
-    if (selectedHostel && userLocation) {
-      setShowDirections(true);
-      setCurrentRoutingHostel(selectedHostel);
-    }
-  };
-
-  const handleStopDirections = () => {
-    setShowDirections(false);
-    setCurrentRoutingHostel(null);
   };
 
   const handleCategoryChange = (category) => {
@@ -107,42 +100,32 @@ const MapScreen = () => {
             longitudeDelta: 0.0042,
           }}
           showsUserLocation={false}
-          showsMyLocationButton={true}
-          showsCompass={true}
+          showsMyLocationButton
+          showsCompass
           onMapReady={() => setMapReady(true)}
-          zoomEnabled={true}
-          scrollEnabled={true}
+          zoomEnabled
+          scrollEnabled
         >
           <UserLocationMarker location={userLocation} />
-          <HostelMarkers hostels={filteredHostels} onMarkerPress={handleMarkerPress} />
-          {showDirections && currentRoutingHostel && (
-            <DirectionsLine
-              origin={userLocation}
-              destination={{
-                latitude: currentRoutingHostel.latitude,
-                longitude: currentRoutingHostel.longitude,
-              }}
-            />
-          )}
+          <HostelMarkers
+            hostels={filteredHostels}
+            onMarkerPress={handleMarkerPress}
+          />
         </MapView>
       )}
 
-      {/* Category tabs overlay on the map */}
-      <View style={styles.tabsOverlay}>
-        <CategoryTabs 
-          activeCategory={activeCategory} 
-          onCategoryChange={handleCategoryChange} 
+      {/* Category tabs overlay */}
+      {/* <View style={styles.tabsOverlay}>
+        <CategoryTabs
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
         />
-      </View>
+      </View> */}
 
       {selectedHostel && (
         <HostelModal
           hostel={selectedHostel}
           onClose={handleCloseModal}
-          onDirectMe={handleDirectMe}
-          onRoute={() => console.log("Route button pressed")}
-          showStopDirectionsButton={showDirections && currentRoutingHostel?.id === selectedHostel.id}
-          onStopDirections={handleStopDirections}
         />
       )}
     </View>
@@ -159,13 +142,13 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height,
   },
   tabsOverlay: {
-    position: 'absolute',
-    top: 50, // Adjust based on your status bar height
+    position: "absolute",
+    top: 50,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 999,
-  }
+  },
 });
 
 export default MapScreen;

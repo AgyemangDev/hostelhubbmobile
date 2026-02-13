@@ -64,36 +64,6 @@ const NetworkSelection = () => {
             </View>
           </ImageBackground>
         </TouchableOpacity>
-
-        {/* TELECEL */}
-        {/* <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => handleSelectNetwork("TELECEL")}
-        >
-          <ImageBackground
-            source={{
-              uri: "https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/9B1D/production/_120690793_phones.jpg",
-            }}
-            style={styles.card}
-            imageStyle={styles.image}
-          >
-            <View style={styles.overlay} />
-
-            <View style={styles.cardContent}>
-              <Text style={styles.cardTitle}>Campus Data</Text>
-              <Text style={styles.cardDesc}>
-                Affordable long-validity data designed for students.
-              </Text>
-
-              <View style={styles.cardButton}>
-                <Text style={styles.cardButtonText}>
-                  Continue with Telecel
-                </Text>
-                <Feather name="arrow-right" size={14} color="#fff" />
-              </View>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity> */}
       </View>
     </ScrollView>
   );

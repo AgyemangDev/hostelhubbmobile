@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, ActivityIndicator, FlatList, SafeAreaView, Stat
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../../../../context/UserContext';
 import DataOrderCard from '../../../../components/Cards/DataOrderCard';
+import API_BASE_URL from '../../../../utils/api/api';
 
 const DataOrders = () => {
   const { user, isLoading } = useContext(UserContext);
@@ -13,7 +14,7 @@ const DataOrders = () => {
     try {
       setLoadingOrders(true);
       const response = await fetch(
-        `https://hostelhubbbackend.onrender.com/api/data-orders/${user.uid}`
+        `${API_BASE_URL}/api/data-orders/${user.uid}`
       );
 
       const data = await response.json();
