@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Linking, Alert } from "react-native";
 import COLORS from "../../../constants/Colors";
-import { ExternalLink } from "@/components/ExternalLink";
-import { MaterialIcons } from "@expo/vector-icons";
 import styles from "../../../assets/Styles/ReportAConcernStyles";
 
 const ReportAConcern = () => {
@@ -71,17 +69,6 @@ const ReportAConcern = () => {
       >
         <Text style={styles.buttonText}>Send a Report</Text>
       </TouchableOpacity>
-      <View style={styles.linkContainer}>
-        <Text style={styles.infoText}>
-          Not getting responses from our developers? Our customer service and AI are on standby 24/7. Reach out to us anytime!
-        </Text>
-        <ExternalLink href="https://tawk.to/chat/671fd5354304e3196ad9a21d/1iba5hmlc">
-          <View style={styles.linkDetailsButton}>
-            <MaterialIcons name="support-agent" size={24} color="#fff" />
-            <Text style={styles.linkText}>Connect with Customer Care & AI Assistance for immediate response</Text>
-          </View>
-        </ExternalLink>
-      </View>
     </View>
   );
 };

@@ -2,9 +2,8 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "3.6.0",
+    "version": "3.7.0",
     "scheme": "hostelhubb",
-    "deepLinking": true,
     "platforms": [
       "ios",
       "web",
@@ -21,8 +20,8 @@
     },
     "ios": {
       "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
-      "buildNumber": "33",
-      "version": "3.6.0",
+      "buildNumber": "34",
+      "version": "3.7.0",
       "supportsTablet": false,
       "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
@@ -41,7 +40,7 @@
     },
     "android": {
       "package": "com.Hostelhubb.Hostelhubb",
-      "versionCode": 33,
+      "versionCode": 34,
       "targetSdkVersion": 35,
       "googleServicesFile": "./google-services.json",
       "pushNotifications": {
@@ -90,8 +89,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "expo-video"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -130,7 +128,7 @@
       "url": "https://u.expo.dev/08c63846-777e-4efa-b66c-cd905718a34c",
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 2000
+      "fallbackToCacheTimeout": 1000
     }
   }
 }

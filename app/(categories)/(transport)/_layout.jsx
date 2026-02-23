@@ -1,26 +1,20 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { TouchableOpacity } from "react-native";
-import { FontAwesome } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 const _layout = () => {
   const router = useRouter();
 
+  // Custom back button component
   const CustomBackButton = () => (
     <TouchableOpacity
-      onPress={() => router.replace("(tabs)/(index)")}
-      style={{
-        width: 30,
-        height: 30,
-        borderRadius: 12,
-        backgroundColor: "rgba(255, 255, 255, 0.15)",
-        alignItems: "center",
-        justifyContent: "center",
-        marginLeft: 8,
-      }}
+      onPress={() => router.back()}
+      style={{ marginLeft: 8, padding: 4 }}
+      activeOpacity={0.7}
     >
-      <FontAwesome name="arrow-left" size={20} color="#fff" />
+      <Ionicons name="arrow-back" size={24} color="#fff" />
     </TouchableOpacity>
   );
 
@@ -33,16 +27,45 @@ const _layout = () => {
         headerTitleStyle: { fontWeight: "600", fontSize: 18, color: "#fff" },
         headerShadowVisible: false,
         headerBackTitleVisible: false,
-        headerLeft: () => <CustomBackButton />,
         headerTitleAlign: "center",
-        gestureEnabled: false, // ✅ disable swipe back gesture
+        gestureEnabled: false,
+        headerLeft: () => <CustomBackButton />, // ✅ Custom back button for all screens
       }}
     >
       <Stack.Screen
         name="index"
         options={{
           headerShown: true,
-          title: "Board Make we Move", // ✅ custom title
+          title: "Board Make we Move",
+          headerLeft: () => null, // ✅ No back button on first screen
+        }}
+      />
+      <Stack.Screen
+        name="BusSelection"
+        options={{
+          headerShown: true,
+          title: "Select Your Bus",
+        }}
+      />
+      <Stack.Screen
+        name="SeatSelection"
+        options={{
+          headerShown: false,
+          title: "Board Make we Move",
+        }}
+      />
+      <Stack.Screen
+        name="StorageCompartment"
+        options={{
+          headerShown: true,
+          title: "Storage Compartment",
+        }}
+      />
+      <Stack.Screen
+        name="PaymentScreen"
+        options={{
+          headerShown: true,
+          title: "Pay to Confirm",
         }}
       />
     </Stack>

@@ -47,7 +47,7 @@ const DataBannerCard = () => {
 
             <Pressable style={styles.button} onPress={handlePress}>
               <Text style={styles.buttonText}>Buy Now</Text>
-              <Feather name="arrow-right" size={14} color="#fff" />
+              {/* <Feather name="arrow-right" size={14} color="#fff" /> */}
             </Pressable>
           </View>
         </BlurView>

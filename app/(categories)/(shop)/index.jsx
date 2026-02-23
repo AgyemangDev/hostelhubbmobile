@@ -21,7 +21,7 @@ const Index = () => {
 
   const renderItem = ({ item }) => (
     <View style={styles.cardWrapper}>
-      <ProductCard product={item} />
+      {/* <ProductCard product={item} /> */}
     </View>
   );
 
