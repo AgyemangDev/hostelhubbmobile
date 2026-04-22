@@ -34,7 +34,7 @@ export default [
     type: "accommodation", // accommodation type
     name: "Hostelhubb Student Accommodation",
     imageUrl:
-      "https://d25ijadbgagzx3.cloudfront.net/wp-content/uploads/2024/02/28121531/student-accommodation-banner2.png",
+      "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/8b/80/2f/agoo-hostel.jpg?w=700&h=-1&s=1",
     description:
       "Comfortable, affordable, and secure accommodation options specifically for students.",
     location: "Kumasi, KNUST",

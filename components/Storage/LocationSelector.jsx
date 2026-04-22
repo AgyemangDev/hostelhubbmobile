@@ -6,6 +6,7 @@ import COLORS from "../../constants/Colors";
 import FloatingLabelInput from "../InputFields/FormInput";
 
 const ON_CAMPUS = [
+  "Gaza",
   "Republic Hall",
   "Katanga Hall",
   "Africa Hall",

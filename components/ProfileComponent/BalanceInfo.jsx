@@ -51,9 +51,22 @@ const handleDeposit = async () => {
     const data = await response.json();
     Linking.openURL(data.authorization_url);
   } catch (error) {
-    Alert.alert("Error", "Could not initiate deposit. Please try again.");
-    console.error("Deposit error:", error);
-  } finally {
+  Alert.alert(
+    "Buy Data Instead",
+    "Buy Data straight from the website.\n\nAffordableDataGH offers affordable data plans with seamless access. Click OK to visit our website and explore our data packages.",
+    [
+      {
+        text: "OK",
+         onPress: () => Linking.openURL("https://affordabledatagh.com/signup/customer?ref=HOSTov4n8h41"),
+      },
+        {
+        text: "Buy Data",
+        onPress: () => Linking.openURL("https://affordabledatagh.com/signup/customer?ref=HOSTov4n8h41"),
+      },
+    ]
+  );
+  console.error("Deposit error:", error);
+} finally {
     setLoading(false);
     setAmount("");
   }

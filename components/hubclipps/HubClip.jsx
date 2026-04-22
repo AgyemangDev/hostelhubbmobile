@@ -104,7 +104,7 @@ const handleReserve = async () => {
       </View>
 
       <View style={[styles.bottom, { bottom: TAB_BAR_HEIGHT + 10 }]}>
-       <ReservationButton onPress={handleReserve} />
+       <ReservationButton onPress={handleReserve}price={item.price}/>
       </View>
     </View>
   );

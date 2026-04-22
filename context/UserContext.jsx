@@ -90,6 +90,24 @@ const patchUserData = useCallback(async (updates) => {
   }
 }, [user]);
 
+
+// ADD this function inside UserProvider, alongside patchUserData:
+const refreshUserInfo = useCallback(async () => {
+  if (!user) return;
+  try {
+    const token = await user.getIdToken(false);
+    const response = await fetch(`${API_BASE_URL}/api/students/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) throw new Error('Failed to refresh user info');
+    const freshData = await response.json();
+    setUserInfo(freshData);
+    await saveCache(freshData);       // keep cache in sync too
+  } catch (err) {
+    console.error('refreshUserInfo failed:', err);
+  }
+}, [user]);
+
   /* ------------------ SSE Connection ------------------ */
 
 // UserContext.jsx - FIX quota exceeded issue
@@ -223,6 +241,7 @@ const connectToStream = useCallback(async (firebaseUser) => {
     userInfo,
     isLoading: loading,
      patchUserData, 
+     refreshUserInfo, 
     logoutCleanup: async () => {
       disconnectStream();
       setUserInfo(null);

@@ -22,7 +22,7 @@ const PaymentScreen = () => {
     storageTotalPrice,
   } = useLocalSearchParams();
 
-  const { user, userInfo } = useContext(UserContext);
+  const { user, userInfo,refreshUserInfo } = useContext(UserContext);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -115,6 +115,7 @@ const PaymentScreen = () => {
 
       // Success!
       console.log("✅ Booking successful:", data.reference);
+      await refreshUserInfo();
 
       Alert.alert(
         "Booking Confirmed! 🎉",

@@ -12,7 +12,8 @@
       "ios": {
         "distribution": "store",
         "channel": "production"
-      }
+      },
+      "channel": "production"
     },
     "apk": {
       "android": {
@@ -21,14 +22,19 @@
       },
       "ios": {
         "channel": "production"
-      }
+      },
+      "channel": "apk"
     },
     "development": {
       "android": {
         "buildType": "apk",
         "channel": "development",
         "developmentClient": false
-      }
+      },
+      "ios": {
+        "channel": "development"
+      },
+      "channel": "development"
     }
   },
   "submit": {

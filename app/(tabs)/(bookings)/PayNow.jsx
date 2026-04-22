@@ -36,7 +36,7 @@ const PayNow = () => {
   const { room_type, payment_option, status, booking_date } = bookingData;
 
   const baseAmount = Number(payment_option || 0);
-  const totalAmount = useMemo(() => baseAmount * 1.05, [baseAmount]);
+  const totalAmount = useMemo(() => baseAmount * 1.019, [baseAmount]);
 
   const userBalance = Number(userInfo.balance || 0);
 

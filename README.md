@@ -1,52 +1,28 @@
 # Hostelhubb
-# eas update --branch production --message "2.0.3 OTA update" for update for same uapp
 
-# for update, don't forget to add the extra for the hold build
-#    "extra": {
-    "minimumAppVersion": "3.4.0", this should be the new version
-#       "eas": {
-#         "projectId": "08c63846-777e-4efa-b66c-cd905718a34c"
-#       },
-
-# This targets users on runtime version 3.4.0 - This is done on the old build
-eas update --branch production --message "Critical update - please upgrade" \
-  --json='{"extra":{"minimumAppVersion":"3.5.0"}}'
+## OTA Updates (JS only — no native changes)
+eas update --branch production --message "description of change" --platform ios
 
 
-# OTA update for android
-eas update --branch production --message "2.0.3 OTA update" --platform android
+# Always push both platforms together (no --platform flag)
 
-
-# OTA update for ios
-eas update --branch production --message "2.0.3 OTA update" --platform ios
-
-
-
-
-# Ios Build
+## Native Builds (when you change native code, version, or permissions)
+# iOS (builds + auto submits to App Store)
 eas build --platform ios --profile production --non-interactive --auto-submit
 
-# Production AAB
+# Android AAB (Google Play)
 eas build --platform android --profile production
 
-# Production APK
+# Android APK (direct install)
 eas build --platform android --profile apk
 
-# don't forget to change the build and version number back to 22 and 1.9.0 when doing 
+## Current Build Numbers
+# android  buildNumber=34  version=3.7.0
+# ios      buildNumber=34  version=3.7.0
 
-# android  new 29 3.2.0
-# ios  new 29 3.2.0
+## Rule: bump version + buildNumber in app.json before every native build
+## Rule: minimumAppVersion in app.json extra must be updated before native build if forcing upgrades
 
-
-# android  old 25 2.0.3
-# ios  old 26 2.0.4
-
-# commonds
+## Dev
 npx expo run:ios
-
-#installations
-npm install lucide-react-native
-
-npm install @supabase/supabase-js
-
-
+npx expo run:android

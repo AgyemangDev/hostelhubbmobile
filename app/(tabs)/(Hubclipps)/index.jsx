@@ -5,6 +5,7 @@ import FilterOverlay from "../../../components/hubclipps/FilterOverlay";
 import AddAccommodationButton from "../../../components/ButtonComponents/AddAccommodationButton";
 import EmptyFeedState from "../../../components/hubclipps/EmptyFeedState";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
+import HubClipSkeleton from "../../../components/EmptyStates/HubClipSkeleton";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -43,6 +44,16 @@ export default function HubClippsFeed() {
     if (loading || !hasMore) return;
     loadMore();
   }, [loading, hasMore, loadMore]);
+
+  // Loading state
+  if (loading && hubclipps.length === 0) {
+  return (
+    <>
+      <StatusBar hidden />
+      <HubClipSkeleton />
+    </>
+  );
+}
 
   // ─── Empty State ──────────────────────────────────────────────────────────────
   if (!loading && hubclipps.length === 0) {

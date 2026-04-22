@@ -20,6 +20,7 @@ import { useNotificationPermission } from "../../hooks/notification/useNotificat
 const providerPrefixes = {
   MTN: ["024", "025", "053", "054", "055", "059"],
   TELECEL: ["020", "050"],
+  AT: ["026", "027", "056", "057"]
 };
 
 const getProviderColor = (provider) => {
@@ -28,13 +29,15 @@ const getProviderColor = (provider) => {
       return "#FBBF24";
     case "TELECEL":
       return "#EF4444";
+    case "AT PREMIUM":
+      return "#3B82F6";
     default:
       return "#111";
   }
 };
 
 const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
-  const { userInfo, user } = useContext(UserContext);
+  const { userInfo, user,refreshUserInfo } = useContext(UserContext);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -118,6 +121,7 @@ const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
         );
         setPhoneNumber("");
         onClose();
+        await refreshUserInfo();
       } else {
         Alert.alert("Error", result.message);
       }

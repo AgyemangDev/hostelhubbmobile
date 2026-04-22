@@ -67,7 +67,7 @@ const getStatusConfig = () => {
           </Text>
 
           <Text style={styles.price}>
-            GHS {(booking.payment_option ? parseFloat(booking.payment_option) * 1.05 : 0).toFixed(2)}
+            GHS { parseFloat(booking.payment_option)}
           </Text>
         </View>
       </View>

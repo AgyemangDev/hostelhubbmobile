@@ -19,7 +19,7 @@ const DataBannerCard = () => {
     const router = useRouter();
 
   const handlePress = () => {
-    router.push("(shop)/NetworkServices/NetworkSelection");
+    router.push("(shop)/NetworkServices/CampusData");
   };
 
   return (
@@ -42,7 +42,7 @@ const DataBannerCard = () => {
           <View style={styles.contentContainer}>
             <Text style={styles.title}>Buy Cheapest Campus Data 🚀</Text>
             <Text style={styles.description} numberOfLines={2}>
-                Get affordable student internet packages to support your hostel and academic life.
+                Get affordable student internet packages to support your hostel and academic life on all network.
             </Text>
 
             <Pressable style={styles.button} onPress={handlePress}>

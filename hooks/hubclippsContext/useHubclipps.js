@@ -5,6 +5,16 @@ import API_BASE_URL from "../../utils/api/api";
 
 const PAGE_SIZE = 10;
 
+const shuffleArray = (array) => {
+  const shuffled = [...array]; // avoid mutating original
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+
 const INITIAL_FILTERS = {
   institution: null,       // overrides the user's institution when set
   accommodationType: null, // maps to ?category=
@@ -67,7 +77,7 @@ export const useHubclipps = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const json = await res.json();
-        const data = json.data || [];
+        const data = shuffleArray(json.data || []);
 
         setHubclipps((prev) => (replace ? data : [...prev, ...data]));
         pageRef.current = pageNumber;

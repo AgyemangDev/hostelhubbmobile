@@ -82,7 +82,7 @@ const DataOrders = () => {
 renderItem={({ item }) => (
   <DataOrderCard
     bundle={item.bundle}
-    delivered={item.delivered}
+    orderStatus={item.orderStatus}  
     customer_phone={item.customer_phone}
   />
 )}

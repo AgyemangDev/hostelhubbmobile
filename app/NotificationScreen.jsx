@@ -50,33 +50,6 @@ const NotificationsScreen = () => {
       read: false,
     },
     {
-      id: "6",
-      type: "info",
-      title: "Book Your Hostel Safely with Hostelhubb",
-      message:
-        "Hostelhubb helps you book your hostel. Book through our platform online or offline by contacting our receptionist on our official WhatsApp channel. Don't pay money directly into any MoMo account.",
-      time: "Today",
-      read: false,
-    },
-    {
-      id: "4",
-      type: "info",
-      title: "🤝 Verified Hostel Agents At Your Service",
-      message:
-        "Our certified agents are here to help you find your preferred and budget-friendly accommodation on or near campus. Fast, affordable, and 100% legit — no risk of being duped.",
-      time: "Few minutes ago",
-      read: false,
-    },
-    {
-      id: "7",
-      type: "info",
-      title: "🛒 Shop Now at Hostelhubb",
-      message:
-        "Shop now on Hostelhubb and have it delivered to you — no stress!",
-      time: "Just now",
-      read: false,
-    },
-    {
       id: "8",
       type: "info",
       title: "🚌 Transport Coming Soon",

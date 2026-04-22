@@ -1,5 +1,6 @@
 import { useFonts } from "expo-font";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useRef } from "react";
 import Toast from "react-native-toast-message";
 import { setupProviders } from "../utils/providers";
 import { checkForAppUpdates } from "../utils/update";
@@ -8,7 +9,6 @@ import ReviewPromptWrapper from "../Global/ReviewPromptWrapper";
 import notificationService from "./firebase/notificationService";
 import * as SplashScreen from "expo-splash-screen";
 import { AppState } from "react-native";
-import UpdateRequiredScreen from "../components/UpdateRequiredScreen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,69 +16,55 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  
-  const [updateStatus, setUpdateStatus] = useState({
-    checked: false,
-    requiresNativeUpdate: false,
-    minimumVersion: null
-  });
-  
+
+  const [updateChecked, setUpdateChecked] = useState(false);
   const appState = useRef(AppState.currentState);
 
   useEffect(() => {
     if (!loaded) return;
-    
+
     const initializeApp = async () => {
-      // Check for updates FIRST
-      const updateResult = await checkForAppUpdates();
+      // Update check BLOCKS everything — splash screen stays visible
+      await checkForAppUpdates();
+      // If an update was found, reloadAsync() was called above
+      // and we never reach this line. App restarts fresh with new code.
       
-      setUpdateStatus({
-        checked: true,
-        requiresNativeUpdate: updateResult.requiresNativeUpdate,
-        minimumVersion: updateResult.minimumVersion
-      });
-      
-      if (!updateResult.requiresNativeUpdate) {
-        SplashScreen.hideAsync();
-        
-        // Set up notification listeners
-        const notificationCleanup = notificationService.listenToNotifications();
-        notificationService.resetBadgeCount();
-        
-        // Watch app state
-        const appStateSubscription = AppState.addEventListener(
-          "change", 
-          async (nextAppState) => {
-            if (
-              appState.current.match(/inactive|background/) &&
-              nextAppState === "active"
-            ) {
-              notificationService.resetBadgeCount();
-            }
-            appState.current = nextAppState;
+      // No update found (or check failed) — continue normal startup
+      setUpdateChecked(true);
+
+      await SplashScreen.hideAsync();
+
+      // Notifications setup
+      const notificationCleanup = notificationService.listenToNotifications();
+      notificationService.resetBadgeCount();
+
+      const appStateSubscription = AppState.addEventListener(
+        "change",
+        async (nextAppState) => {
+          if (
+            appState.current.match(/inactive|background/) &&
+            nextAppState === "active"
+          ) {
+            notificationService.resetBadgeCount();
           }
-        );
-        
-        // Cleanup
-        return () => {
-          appStateSubscription.remove();
-          if (notificationCleanup) notificationCleanup();
-        };
-      } else {
-        SplashScreen.hideAsync();
-      }
+          appState.current = nextAppState;
+        }
+      );
+
+      return () => {
+        appStateSubscription.remove();
+        if (notificationCleanup) notificationCleanup();
+      };
     };
-    
+
     initializeApp();
   }, [loaded]);
-  
-  if (!loaded || !updateStatus.checked) return null;
-  if (updateStatus.requiresNativeUpdate) {
-    return <UpdateRequiredScreen minimumVersion={updateStatus.minimumVersion} />;
-  }
-  
+
+  // Keep splash screen up until fonts + update check are both done
+  if (!loaded || !updateChecked) return null;
+
   const ProvidersWrapper = setupProviders();
-  
+
   return (
     <ProvidersWrapper>
       <MainLayout />

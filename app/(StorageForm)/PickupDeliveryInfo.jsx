@@ -53,8 +53,8 @@ export default function PickupDeliveryInfo() {
             <DateSelector
               placeholder="Select your pickup date"
               value={reservation.pickupInfo?.date}
-              minDate={new Date("2026-04-22")}
-              maxDate={new Date("2026-04-26")}
+              minDate={new Date("2026-04-24")}
+              maxDate={new Date("2026-04-25")}
               onChange={(date) =>
                 updateReservation({
                   pickupInfo: {

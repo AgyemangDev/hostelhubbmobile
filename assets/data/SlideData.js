@@ -15,7 +15,7 @@ export const benefits = [
     icon: "Location",
     title: "Prime Locations",
     description:
-      "Find verified hostels located close to campus for easier daily movement.",
+      "Find verified accommodation located close to campus for easier daily movement.",
   },
   {
     icon: "Storage",
@@ -27,7 +27,7 @@ export const benefits = [
     icon: "Security",
     title: "Safety First",
     description:
-      "All hostels are vetted to ensure strong security for students and property.",
+      "All accommodation are vetted to ensure strong security for students and property.",
   },
   {
     icon: "Support",

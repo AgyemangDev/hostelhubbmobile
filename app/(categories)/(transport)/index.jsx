@@ -42,7 +42,7 @@ const TransportLanding = () => {
       <Animated.View style={[styles.hero, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
         <View style={styles.heroContent}>
           <Text style={styles.heroTitle}>
-            {/* Your Journey{'\n'} */}
+            Your Journey{'\n'}
             <Text style={styles.heroTitleAccent}>Starts Here</Text>
           </Text>
           <Text style={styles.heroSubtitle}>

@@ -2,13 +2,10 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "3.7.0",
+    "version": "4.0.1",
     "scheme": "hostelhubb",
-    "platforms": [
-      "ios",
-      "web",
-      "android"
-    ],
+    "deepLinking": true,
+    "platforms": ["ios", "web", "android"],
     "orientation": "portrait",
     "newArchEnabled": true,
     "icon": "./assets/images/icon.png",
@@ -19,37 +16,31 @@
       "backgroundColor": "#b20000"
     },
     "ios": {
-      "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
-      "buildNumber": "34",
-      "version": "3.7.0",
-      "supportsTablet": false,
-      "googleServicesFile": "./GoogleService-Info.plist",
       "config": {
         "googleMapsApiKey": "AIzaSyAbLuhuszsrZAUNH31HH3pc1T9P7rl9UHM"
       },
+      "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "buildNumber": "38",
+      "version": "4.0.1",
       "pushNotifications": {
         "backgroundMode": true
       },
+      "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
-        "NSPhotoLibraryUsageDescription": "Hostelhubb needs access to your photo library to allow you to upload images.",
-        "NSPhotoLibraryAddUsageDescription": "Hostelhubb needs permission to save photos you capture.",
-        "NSCameraUsageDescription": "Hostelhubb needs access to your camera to allow you to take photos.",
+        "NSPhotoLibraryUsageDescription": "Hostelhubb needs access to your photo library to allow you to upload images of your receipt",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "package": "com.Hostelhubb.Hostelhubb",
-      "versionCode": 34,
-      "targetSdkVersion": 35,
-      "googleServicesFile": "./google-services.json",
       "pushNotifications": {
         "backgroundMode": true
       },
+      "targetSdkVersion": 35,
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
-        "CAMERA"
+        "ACCESS_COARSE_LOCATION"
       ],
       "config": {
         "googleMaps": {
@@ -60,6 +51,9 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
+      "package": "com.Hostelhubb.Hostelhubb",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 38,
       "intentFilters": [
         {
           "action": "VIEW",
@@ -75,10 +69,7 @@
               "host": "*"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -95,7 +86,6 @@
       "typedRoutes": true
     },
     "extra": {
-
       "eas": {
         "projectId": "08c63846-777e-4efa-b66c-cd905718a34c"
       },
@@ -122,8 +112,8 @@
       }
     },
     "runtimeVersion": {
-  "policy": "appVersion"
-},
+      "policy": "fingerprint"
+    },
     "updates": {
       "url": "https://u.expo.dev/08c63846-777e-4efa-b66c-cd905718a34c",
       "enabled": true,
