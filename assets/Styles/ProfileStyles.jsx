@@ -138,6 +138,13 @@ avatarLetter: {
   fontSize: 20,
   fontWeight: "bold",
 },
+buttonRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  marginTop: 20,
+  marginBottom: 8,
+},
 });
 
 export default styles;

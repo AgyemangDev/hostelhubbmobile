@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ImageBackground, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 
 const screenWidth = Dimensions.get("window").width;
-const cardWidth = screenWidth / 4 - 16;
+const cardWidth = (screenWidth - 48) / 4;
 
 const categories = [
   { name: "Hostels", image: require("../../assets/images/hostel.png"), route: "/(categories)/(hostels)" },
@@ -23,8 +23,6 @@ const shuffleArray = (array) => {
 
 const CategoryNavigationCards = () => {
   const router = useRouter();
-
-  // Shuffle categories on every render/mount
   const randomizedCategories = useMemo(() => shuffleArray(categories), []);
 
   return (
@@ -34,11 +32,18 @@ const CategoryNavigationCards = () => {
           key={item.name}
           style={[styles.card, { width: cardWidth }]}
           onPress={() => router.push(item.route)}
+          activeOpacity={0.85}
         >
-          <View style={styles.imageWrapper}>
-            <Image source={item.image} style={styles.image} resizeMode="contain" />
-          </View>
-          <Text style={styles.label}>{item.name}</Text>
+          <ImageBackground
+            source={item.image}
+            style={styles.imageBackground}
+            imageStyle={styles.imageStyle}
+            resizeMode="cover"
+          >
+            {/* dark gradient overlay so text is always readable */}
+            <View style={styles.overlay} />
+            <Text style={styles.label}>{item.name}</Text>
+          </ImageBackground>
         </TouchableOpacity>
       ))}
     </View>
@@ -49,36 +54,43 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
+    paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 4,
-    paddingHorizontal: 16,
   },
   card: {
-    backgroundColor: "#F7FAFC",
-    borderRadius: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 6,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 2,
+    borderRadius: 14,
+    overflow: "hidden",
+    height: 90,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
-  imageWrapper: {
-    width: 36,
-    height: 36,
-    marginBottom: 8,
+  imageBackground: {
+    flex: 1,
+    justifyContent: "flex-end",
   },
-  image: {
-    width: "100%",
-    height: "100%",
+  imageStyle: {
+    borderRadius: 14,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.38)",
+    borderRadius: 14,
   },
   label: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#1A202C",
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
     textAlign: "center",
+    paddingBottom: 8,
+    paddingHorizontal: 4,
+    letterSpacing: 0.2,
+    textShadowColor: "rgba(0,0,0,0.6)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
 });
 

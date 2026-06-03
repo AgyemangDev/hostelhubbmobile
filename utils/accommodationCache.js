@@ -12,7 +12,6 @@ export const getCachedAccommodation = async () => {
     if (!cached) return {};
     
     const hostels = JSON.parse(cached);
-    console.log('📦 Loaded cached hostels:', Object.keys(hostels).length);
     return hostels;
   } catch (error) {
     console.error('❌ Error loading cache:', error);

@@ -19,59 +19,85 @@ const FloatingLabelInput = ({
   isPasswordInput = false,
   isPasswordVisible,
   togglePasswordVisibility,
-  disabled = false, // Changed default to false
+  disabled = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  // Animated value for label
   const labelAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
+  const barAnim = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
-    Animated.timing(labelAnim, {
-      toValue: isFocused || value ? 1 : 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
+    const active = isFocused || !!value;
+    Animated.parallel([
+      Animated.timing(labelAnim, {
+        toValue: active ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(barAnim, {
+        toValue: active ? 1 : 0,
+        duration: 250,
+        useNativeDriver: false,
+      }),
+    ]).start();
   }, [isFocused, value]);
-
-  // Label style interpolation
-  const labelStyle = {
-    position: "absolute",
-    left: 16,
-    top: labelAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [18, -8],
-    }),
-    fontSize: labelAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 12],
-    }),
-    color: labelAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [COLORS.placeholder, COLORS.background],
-    }),
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 4,
-  };
-
-  const inputProps = {
-    value,
-    onChangeText,
-    secureTextEntry: isPasswordInput ? !isPasswordVisible : secureTextEntry,
-    keyboardType,
-    editable: !disabled,
-    onFocus: () => setIsFocused(true),
-    onBlur: () => setIsFocused(false),
-    style: [
-      styles.input,
-      { paddingLeft: 16, paddingRight: isPasswordInput ? 40 : 16 },
-    ],
-  };
 
   return (
     <View style={styles.container}>
-      <Animated.Text style={labelStyle}>{placeholder}</Animated.Text>
-      <TextInput {...inputProps} />
+      {/* Floating label */}
+      <Animated.Text
+        style={[
+          styles.label,
+          {
+            top: labelAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [14, 0],
+            }),
+            fontSize: labelAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [16, 11],
+            }),
+            color: labelAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [COLORS.placeholder, COLORS.background],
+            }),
+          },
+        ]}
+      >
+        {placeholder}
+      </Animated.Text>
+
+      {/* Input */}
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={isPasswordInput ? !isPasswordVisible : secureTextEntry}
+        keyboardType={keyboardType}
+        editable={!disabled}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        style={[
+          styles.input,
+          { paddingRight: isPasswordInput ? 36 : 0 },
+        ]}
+      />
+
+      {/* Animated underline bar */}
+      <View style={styles.barTrack}>
+        <Animated.View
+          style={[
+            styles.barFill,
+            {
+              width: barAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["0%", "100%"],
+              }),
+            },
+          ]}
+        />
+      </View>
+
+      {/* Eye toggle */}
       {isPasswordInput && (
         <TouchableOpacity
           onPress={togglePasswordVisibility}
@@ -79,7 +105,7 @@ const FloatingLabelInput = ({
         >
           <Entypo
             name={isPasswordVisible ? "eye" : "eye-with-line"}
-            size={22}
+            size={20}
             color={COLORS.textMuted}
           />
         </TouchableOpacity>
@@ -93,23 +119,33 @@ export default FloatingLabelInput;
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 54,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: COLORS.background,
-    marginBottom: 16,
-    backgroundColor: COLORS.white,
-    justifyContent: "center",
+    paddingTop: 16,
+    marginBottom: 24,
+  },
+  label: {
+    position: "absolute",
+    left: 0,
   },
   input: {
     fontSize: 16,
     color: COLORS.textDark,
-    flex: 1,
-    height: "100%",
+    paddingVertical: 6,
+    paddingLeft: 0,
+    borderWidth: 0,
+    backgroundColor: "transparent",
+  },
+  barTrack: {
+    height: 1.5,
+    backgroundColor: COLORS.placeholder,
+    width: "100%",
+  },
+  barFill: {
+    height: 1.5,
+    backgroundColor: COLORS.background,
   },
   iconWrapper: {
     position: "absolute",
-    right: 12,
-    top: 14,
+    right: 0,
+    bottom: 10,
   },
 });

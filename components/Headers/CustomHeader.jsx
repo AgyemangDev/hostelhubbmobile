@@ -23,10 +23,11 @@ const CustomHeader = () => {
 
         {/* fixed icons */}
         <View style={styles.iconsContainer}>
-<FavoriteIcon onPress={() => Router.push('/Shortlist')} />
-<NotificationBell onPress={() => Router.push('/NotificationScreen')} />
+          <FavoriteIcon onPress={() => Router.push('/Shortlist')} />
+          <NotificationBell onPress={() => Router.push('/NotificationScreen')} />
         </View>
       </View>
+
     </View>
   );
 };
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderBottomLeftRadius: 15,
     borderBottomRightRadius: 15,
-    paddingBottom:10
+    paddingBottom: 10,
   },
 
   statusBarSpace: {
@@ -53,8 +54,8 @@ const styles = StyleSheet.create({
   },
 
   searchWrap: {
-    flex: 1,              // 👈 takes remaining width only
-    marginRight: 8,       // 👈 spacing instead of space-between
+    flex: 1,
+    marginRight: 8,
   },
 
   iconsContainer: {

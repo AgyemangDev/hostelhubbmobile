@@ -1,4 +1,4 @@
-export const ACCESS_FEE = 30;
+export const ACCESS_FEE = Number(process.env.EXPO_PUBLIC_ACCESS_FEE);
 export const ACCESS_DURATION_MONTHS = 6;
 
 export const BOOKING_MESSAGES = {

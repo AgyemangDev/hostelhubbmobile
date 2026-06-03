@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Signing in...</title></head>
+<body>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code  = params.get("code");
+    const error = params.get("error");
+
+    if (code) {
+      // Redirect back to app with the auth code
+      window.location.href = `hostelhubb://auth?code=${code}`;
+    } else if (error) {
+      document.body.innerText = "Sign in failed: " + error;
+    } else {
+      document.body.innerText = "No code received.";
+    }
+  </script>
+  <p>Completing sign in...</p>
+</body>
+</html>

@@ -1,45 +1,24 @@
-// app/(tabs)/(bookings)/AllBookings.jsx
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
+import React, { useMemo } from "react";
+import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl } from "react-native";
 import BookingList from "../../../components/BookingsComponent/BookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 
-const AllBookings = ({ navigation }) => {
-  const { bookings, loading: contextLoading, error } = useBookingsContext();
-  const [processedBookings, setProcessedBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+const AllBookings = ({ navigation, refreshing, onRefresh }) => {
+  const { bookings, loading, error } = useBookingsContext();
 
-  useEffect(() => {
-    if (contextLoading) return;
+  // Derive processed bookings directly — no local state/effect needed
+  const processedBookings = useMemo(() => {
+    if (!bookings || bookings.length === 0) return [];
+    return bookings.map((booking) => ({
+      ...booking,
+      payment_option: booking.payment_option
+        ? parseFloat(booking.payment_option) * 1.05
+        : 0,
+    }));
+  }, [bookings]);
 
-    setLoading(true);
-
-    try {
-      if (!bookings || bookings.length === 0) {
-        setProcessedBookings([]);
-        setLoading(false);
-        return;
-      }
-
-      // Apply 5% increment to payment_option (price)
-      const updatedBookings = bookings.map((booking) => ({
-        ...booking,
-        payment_option: booking.payment_option
-          ? parseFloat(booking.payment_option) * 1.05
-          : 0,
-      }));
-
-      setProcessedBookings(updatedBookings);
-    } catch (err) {
-      console.error("Error processing bookings:", err);
-      setProcessedBookings([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [bookings, contextLoading]);
-
-  if (contextLoading || loading) {
+  if (loading && !refreshing) {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#e74c3c" />
@@ -56,26 +35,33 @@ const AllBookings = ({ navigation }) => {
     );
   }
 
+  if (processedBookings.length === 0) {
+    return (
+      <ScrollView
+        contentContainerStyle={styles.centered}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#e74c3c"]} />}
+        style={styles.container}
+      >
+        <EmptyState message="No Bookings Found." />
+      </ScrollView>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {processedBookings.length === 0 ? (
-        <EmptyState message="No Bookings Found." />
-      ) : (
-        <BookingList userBookings={processedBookings} navigation={navigation} />
-      )}
+      <BookingList
+        userBookings={processedBookings}
+        navigation={navigation}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 
 export default AllBookings;

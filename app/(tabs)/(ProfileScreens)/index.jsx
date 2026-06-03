@@ -1,10 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext,useState } from "react";
 import {
   SafeAreaView,
   Text,
   View,
   Image,
-  ScrollView,
+  ScrollView,Modal
 } from "react-native";
 import { UserContext } from "../../../context/UserContext";
 import { useNavigation } from "expo-router";
@@ -14,15 +14,19 @@ import styles from "../../../assets/Styles/ProfileStyles";
 import ProfileLinkItem from "../../../components/ProfileComponent/ProfileLinkItem";
 import * as Updates from "expo-updates";
 import Constants from "expo-constants";
+import NoAccountPrompt from "../../../components/Authentication/NoAccountPrompt";
 
 const Profile = () => {
   const { userInfo } = useContext(UserContext);
   const navigation = useNavigation();
 
-  const channel = Updates.channel 
-  ?? Constants.expoConfig?.extra?.updates?.channel  
-  ?? Constants.manifest2?.extra?.expoClient?.extra?.updates?.channel
-  ?? "production";
+if (!userInfo) {
+  return (
+    <View style={{ flex: 1 }}>
+      <NoAccountPrompt />
+    </View>
+  );
+}
   
 const formattedTimestamp = userInfo?.created_at
   ? `Joined Hostelhubb on ${new Date(userInfo.created_at).toLocaleDateString("en-US", {
@@ -111,11 +115,10 @@ const formattedTimestamp = userInfo?.created_at
   {/* Runtime: {Updates.runtimeVersion ?? "—"} · Channel: {channel} */}
 </Text>
 
-            {/* Logout and Delete Buttons */}
-            <LogoutButton />
-
-            {/* Show Delete button only when userInfo is loaded */}
-            {userInfo && <DeleteAccountButton userId={userInfo.id} />}
+          <View style={styles.buttonRow}>
+  <LogoutButton />
+  {userInfo && <DeleteAccountButton userId={userInfo.id} />}
+</View>
           </View>
         </View>
       </ScrollView>

@@ -30,8 +30,8 @@ export const useFilters = (initialPrice = [0, 100000]) => {
       const noAmenitiesFilter = filters.amenities.length === 0;
 
       const isDefaultPrice =
-        filters.priceRange[0] === 0 &&
-        filters.priceRange[1] === 30000;
+  filters.priceRange[0] === 0 &&
+  filters.priceRange[1] === 1000000; 
 
       const noFiltersActive =
         noRoomFilter && noBuildingFilter && noAmenitiesFilter && isDefaultPrice;

@@ -7,7 +7,7 @@ import COLORS from '../constants/Colors';
 import { router } from 'expo-router';
 
 const LogoutButton = () => {
-  const { clearUserSession } = useContext(UserContext);
+  const { logoutCleanup } = useContext(UserContext);
   const [loading, setLoading] = React.useState(false);
 
   const handleLogout = async () => {
@@ -22,19 +22,17 @@ const LogoutButton = () => {
         {
           text: "Yes",
           onPress: async () => {
-            try {
-              setLoading(true); // Start loading indicator
-              console.log("Clearing AsyncStorage...");
-              console.log("Signing out from Firebase...");
-              await auth.signOut(); // Firebase sign out
-              console.log("Firebase sign-out successful.");
-              clearUserSession(); // Clear context state
-              console.log("User session cleared.");
-              router.replace('(Client)'); // Navigate back to login
-            } catch (error) {
-              console.error("Logout Error:", error);
-              Alert.alert("Error", "There was an issue logging out. Please try again.");
-            } finally {
+           try {
+  setLoading(true);
+
+  await auth.signOut();
+
+  await logoutCleanup();
+
+} catch (error) {
+  console.error("Logout Error:", error);
+}
+finally {
               setLoading(false); // Stop loading indicator
             }
           },
@@ -44,36 +42,36 @@ const LogoutButton = () => {
       { cancelable: false }
     );
   };
-
-  return (
-    <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
-      {loading ? (
-        <ActivityIndicator size="small" color="white" />
-      ) : (
-        <>
-          <MaterialIcons name="swap-horiz" size={30} color="white" />
-          <Text style={styles.LogText}>Logout</Text>
-        </>
-      )}
-    </TouchableOpacity>
-  );
-};
+return (
+  <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={loading}>
+    {loading ? (
+      <ActivityIndicator size="small" color={COLORS.background} />
+    ) : (
+      <>
+        <MaterialIcons name="logout" size={14} color={COLORS.background} />
+        <Text style={styles.LogText}>Logout</Text>
+      </>
+    )}
+  </TouchableOpacity>
+);}
 
 const styles = StyleSheet.create({
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 10,
-    justifyContent: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',           // don't stretch full width
+    borderWidth: 1,
+    borderColor: COLORS.background,
+    backgroundColor: 'transparent',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
   },
   LogText: {
-    color: 'white',
-    marginLeft: 5,
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: COLORS.background,
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
 

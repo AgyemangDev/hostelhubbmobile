@@ -13,38 +13,29 @@ export const useAccommodationSearch = (searchQuery) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const searchAccommodations = async () => {
-      if (!selectedUniversity || !user || !searchQuery || searchQuery.trim() === '') {
+    const search = async () => {
+      if (!searchQuery || searchQuery.trim() === '') {
         setAccommodations([]);
         return;
       }
-
       setLoading(true);
       setError(null);
-
       try {
-        const idToken = await user.getIdToken(false);
+        const params = new URLSearchParams({ query: searchQuery });
+        if (selectedUniversity) params.append('institution', selectedUniversity);
 
-        const response = await fetch(
-          `${API_BASE_URL}/api/accommodations/search?institution=${encodeURIComponent(selectedUniversity)}&query=${encodeURIComponent(searchQuery)}`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${idToken}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to search accommodations');
+        const headers = { 'Content-Type': 'application/json' };
+        if (user) {
+          const idToken = await user.getIdToken(false);
+          headers['Authorization'] = `Bearer ${idToken}`;
         }
+
+        const response = await fetch(`${API_BASE_URL}/api/accommodations/search?${params}`, { headers });
+        if (!response.ok) throw new Error((await response.json()).error || 'Failed');
 
         const result = await response.json();
         setAccommodations(result.data || []);
       } catch (err) {
-        console.error("Search accommodations error:", err);
         setError(err.message);
         setAccommodations([]);
       } finally {
@@ -52,8 +43,8 @@ export const useAccommodationSearch = (searchQuery) => {
       }
     };
 
-    const debounceTimer = setTimeout(searchAccommodations, 300);
-    return () => clearTimeout(debounceTimer);
+    const timer = setTimeout(search, 300);
+    return () => clearTimeout(timer);
   }, [selectedUniversity, searchQuery, user]);
 
   return { accommodations, loading, error };

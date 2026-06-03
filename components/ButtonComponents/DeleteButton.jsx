@@ -67,39 +67,38 @@ const DeleteAccountButton = () => {
     );
   };
 
-  return (
-    <TouchableOpacity
-      style={styles.deleteButton}
-      onPress={handleDeleteAccount}
-      disabled={loading}
-    >
-      {loading ? (
-        <ActivityIndicator size="small" color="white" />
-      ) : (
-        <>
-          <MaterialIcons name="delete" size={30} color="red" />
-          <Text style={styles.deleteText}>Delete Account</Text>
-        </>
-      )}
-    </TouchableOpacity>
-  );
+ return (
+  <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteAccount} disabled={loading}>
+    {loading ? (
+      <ActivityIndicator size="small" color="#EF4444" />
+    ) : (
+      <>
+        <MaterialIcons name="delete-outline" size={14} color="#EF4444" />
+        <Text style={styles.deleteText}>Delete account</Text>
+      </>
+    )}
+  </TouchableOpacity>
+);
+
 };
 
 const styles = StyleSheet.create({
   deleteButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white', // Use red to indicate danger
-    padding: 15,
-    borderRadius: 5,
-    marginTop: 10,
-    justifyContent: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    backgroundColor: '#FEF2F2',
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
   },
   deleteText: {
-    color: 'red',
-    marginLeft: 5,
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '500',
   },
 });
 

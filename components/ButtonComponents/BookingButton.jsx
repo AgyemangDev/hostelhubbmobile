@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
 import COLORS from "../../constants/Colors";
 
-const BookingButton = ({ onPress }) => {
+const BookingButton = ({ onPress, disabled }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -23,9 +23,16 @@ const BookingButton = ({ onPress }) => {
   }, []);
 
   return (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.button, disabled && { opacity: 0.6 }]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.8}
+    >
       <Animated.View style={[styles.buttonContent, { transform: [{ scale: scaleAnim }] }]}>
-        <Text style={styles.buttonText}>Make a Reservation</Text>
+        <Text style={styles.buttonText}>
+          {disabled ? "Processing..." : "Make a Reservation"}
+        </Text>
       </Animated.View>
     </TouchableOpacity>
   );

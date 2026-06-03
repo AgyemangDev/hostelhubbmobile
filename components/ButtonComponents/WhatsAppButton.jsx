@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { TouchableOpacity, Linking,View, StyleSheet, Image, Animated } from 'react-native';
 import WhatsappImage from "../../assets/images/whatsapp.png";
-import DepositButton from './DepositButton';
 
 export const WhatsAppButton = ({ size = 56 }) => {
   const phoneNumber = "233245746198";
@@ -64,7 +63,6 @@ export const WhatsAppButton = ({ size = 56 }) => {
         />
       </TouchableOpacity>
     </Animated.View>
-    {/* <DepositButton/> */}
     </View>
   );
 };

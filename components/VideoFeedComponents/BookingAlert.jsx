@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../app/firebase/FirebaseConfig';
 
-const ACCESS_FEE = 30;
+const ACCESS_FEE = Number(process.env.EXPO_PUBLIC_ACCESS_FEE);
 
 export const showBookingAlert = async (hostel, onSuccess, userInfo, setUserInfo, router, setLoading) => {
   console.log(userInfo);

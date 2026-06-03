@@ -11,7 +11,7 @@ function SubscribeButton() {
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
-  const ACCESS_FEE = 30; // Subscription fee
+  const ACCESS_FEE = Number(process.env.EXPO_PUBLIC_ACCESS_FEE);
   const THREE_MONTHS_IN_MS = 3 * 30 * 24 * 60 * 60 * 1000; // 3 months in milliseconds
   const shouldCheckPaymentStatus = true; // Toggle for payment checks
 

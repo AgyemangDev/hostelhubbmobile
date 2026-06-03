@@ -1,84 +1,84 @@
-import { Stack } from "expo-router";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import { View, Text, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
 
-// ✅ CustomHeader accepts a title prop
-const CustomHeader = ({ title }) => {
+export const CustomHeader = ({ title, showBack = false }) => {
+  const router = useRouter();
+
   return (
     <View style={styles.header}>
-      <Text style={styles.headerTitle}>{title}</Text>
+      {showBack && (
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={22} color="#fff" />
+        </TouchableOpacity>
+      )}
+      <Text style={[styles.headerTitle, showBack && styles.headerTitleWithBack]}>
+        {title}
+      </Text>
     </View>
   );
 };
 
 const _layout = () => {
   return (
-    <Stack
-      initialRouteName="index"
-      screenOptions={{
-        headerShown: true,
-      }}
-    >
-      {/* Example of passing a custom title */}
+    <Stack initialRouteName="index" screenOptions={{ headerShown: true }}>
       <Stack.Screen
         name="index"
-        options={{
-          header: () => <CustomHeader title="Hostel & Storage Bookings" />,
-        }}
+        options={{ header: () => <CustomHeader title="My Bookings" /> }}
       />
-
       <Stack.Screen
         name="PayNow"
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
-
       <Stack.Screen
         name="StorageBookingDetails"
-        options={{
-          header: () => <CustomHeader title="Storage Booking Details" />,
-        }}
+        options={{ header: () => <CustomHeader title="Storage Details" showBack /> }}
       />
-
       <Stack.Screen
         name="PaidBookings"
-        options={{
-          header: () => <CustomHeader title="Paid Bookings" />,
-        }}
+        options={{ header: () => <CustomHeader title="Paid Bookings" showBack /> }}
       />
-
       <Stack.Screen
         name="PaidBookingDetails"
-        options={{
-          header: () => <CustomHeader title="Booking Details" />,
-        }}
+        options={{ header: () => <CustomHeader title="Booking Details" showBack /> }}
       />
-
       <Stack.Screen
         name="PaymentCompleted"
-        options={{
-          gestureEnabled: false,
-          headerShown: false,
-        }}
+        options={{ gestureEnabled: false, headerShown: false }}
       />
     </Stack>
   );
 };
 
-// Styles for the header
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: COLORS.background,
-    paddingTop: Platform.OS === "android" ? 20 : 50,
-    paddingBottom: 15,
-    paddingHorizontal: 0,
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "android" ? 44 : 56,
+    paddingBottom: 14,
+    paddingHorizontal: 16,
+    flexDirection: "row",
     alignItems: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#e8e8e8",
+  },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
   },
   headerTitle: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
+    color: "#1a1a1a",
+    fontSize: 17,
+    fontWeight: "600",
+    letterSpacing: -0.3,
+  },
+  headerTitleWithBack: {
+    marginRight: 0,
   },
 });
 

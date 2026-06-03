@@ -53,7 +53,7 @@ const FirstWelcomeScreen = () => {
     if (currentIndex < slides.length - 1) {
       slidesRef.current.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      router.push("/WelcomeScreen");
+      router.replace("/(tabs)/(index)");
     }
   };
 
@@ -99,7 +99,7 @@ const FirstWelcomeScreen = () => {
       {/* Full-width Button with spacing */}
       <View style={styles.buttonWrapper}>
         <Button
-          buttonText={currentIndex === slides.length - 1 ? "Sign Up" : "Next"}
+          buttonText={currentIndex === slides.length - 1 ? "Enjoy Hostelhubb" : "Next"}
           onPressFunction={handleNext}
         />
       </View>

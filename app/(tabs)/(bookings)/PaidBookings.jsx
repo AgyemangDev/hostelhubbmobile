@@ -1,28 +1,15 @@
-// app/(tabs)/(bookings)/PaidBookings.jsx
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
+import React, { useMemo } from "react";
+import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl } from "react-native";
 import PaidBookingList from "../../../components/BookingsComponent/PaidBookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 
-const PaidBookings = ({ navigation }) => {
-  const { bookings, loading: contextLoading, error } = useBookingsContext();
-  const [paidBookings, setPaidBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
+  const { bookings, loading, error } = useBookingsContext();
 
-// app/(tabs)/(bookings)/PaidBookings.jsx
-useEffect(() => {
-  if (contextLoading) return;
-
-  setLoading(true);
-
-  try {
-    if (!bookings || bookings.length === 0) {
-      setPaidBookings([]);
-      return;
-    }
-
-    const filtered = bookings
+  const paidBookings = useMemo(() => {
+    if (!bookings || bookings.length === 0) return [];
+    return bookings
       .filter((booking) => {
         if (booking.type === "storage") return true;
         return booking.payment_status === true;
@@ -38,23 +25,13 @@ useEffect(() => {
         }
         return booking;
       });
+  }, [bookings]);
 
-    setPaidBookings(filtered);
-  } catch (err) {
-    console.error("Error processing paid bookings:", err);
-    setPaidBookings([]);
-  } finally {
-    setLoading(false);
-  }
-}, [bookings, contextLoading]);
-
-  if (contextLoading || loading) {
+  if (loading && !refreshing) {
     return (
       <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#10B981" />
-        <Text style={{ marginTop: 10, color: "#666" }}>
-          Loading paid bookings...
-        </Text>
+        <Text style={{ marginTop: 10, color: "#666" }}>Loading paid bookings...</Text>
       </View>
     );
   }
@@ -63,35 +40,39 @@ useEffect(() => {
     return (
       <View style={[styles.container, styles.centered]}>
         <Text style={{ color: "red" }}>
-          Error fetching bookings: We are currently facing errors fetching your bookings. If it persist, kindly contact customer care.
+          Error fetching bookings: We are currently facing errors fetching your bookings. If it persists, kindly contact customer care.
         </Text>
       </View>
     );
   }
 
+  if (paidBookings.length === 0) {
+    return (
+      <ScrollView
+        contentContainerStyle={styles.centered}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#10B981"]} />}
+        style={styles.container}
+      >
+        <EmptyState message="No Paid Bookings Found." />
+      </ScrollView>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {paidBookings.length === 0 ? (
-        <EmptyState message="No Paid Bookings Found." />
-      ) : (
-        <PaidBookingList
-          userBookings={paidBookings}
-          navigation={navigation}
-        />
-      )}
+      <PaidBookingList
+        userBookings={paidBookings}
+        navigation={navigation}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 
 export default PaidBookings;

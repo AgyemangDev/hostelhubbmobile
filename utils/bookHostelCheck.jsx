@@ -19,7 +19,7 @@ export const bookHostelCheck = async ({
   const isPaymentRecent = timeDifference <= sixMonthsInMilliseconds;
 
   // Determine the access fee based on the platform
-  const ACCESS_FEE = 30;
+  const ACCESS_FEE = Number(process.env.EXPO_PUBLIC_ACCESS_FEE);
 
   if (isPaymentRecent) {
     onButtonPress();
@@ -32,7 +32,7 @@ export const bookHostelCheck = async ({
         "Unlock Full Access",
         `To unlock full access to our hostels and features, please complete a payment of GHC ${ACCESS_FEE} to HostelHubb as a subscription fee for 6 months. You can make a deposit by navigating to the Transactions section in your profile.`,
         [
-          { text: "Deposit Money", onPress: () => router.push("/transactions") }, // Navigate to the transaction screen
+          { text: "Deposit Money", onPress: () => router.push("/(Profilescreens)/transactions") }, // Navigate to the transaction screen
           { text: "Cancel", style: "cancel" },
         ]
       );

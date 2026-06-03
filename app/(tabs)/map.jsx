@@ -1,15 +1,32 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { StyleSheet, View, Dimensions } from "react-native";
+import { StyleSheet, View, Dimensions, Modal } from "react-native";
 import MapView from "react-native-maps";
 import * as Location from "expo-location";
 import { AccommodationContext } from "../../context/AccommodationContext";
+import { UserContext } from "../../context/UserContext";
+import ClientLogIn from "../(Client)/ClientLogIn";
 
 import HostelMarkers from "../../components/MapComponent/HostelMarkers";
 import UserLocationMarker from "../../components/MapComponent/UserLocationMarker";
 import HostelModal from "../../components/MapComponent/HostelModal";
 import CategoryTabs from "../../components/MapComponent/CategoryTabs";
 
+const GHANA_REGION = {
+  latitude: 7.9465,
+  longitude: -1.0232,
+  latitudeDelta: 8,
+  longitudeDelta: 8,
+};
+
+const isInsideGhana = (latitude, longitude) =>
+  latitude >= 4.5 &&
+  latitude <= 11.5 &&
+  longitude >= -3.5 &&
+  longitude <= 1.5;
+
 const MapScreen = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user, userInfo } = useContext(UserContext);
   const [activeCategory, setActiveCategory] = useState("All");
   const { cachedHostels } = useContext(AccommodationContext);
   const [selectedHostel, setSelectedHostel] = useState(null);
@@ -19,7 +36,6 @@ const MapScreen = () => {
   const locationSubscription = useRef(null);
   const [mapReady, setMapReady] = useState(false);
 
-  // Filter cached hostels by category
   const filteredHostels =
     activeCategory === "All"
       ? cachedHostels
@@ -28,7 +44,6 @@ const MapScreen = () => {
             item.category?.toLowerCase() === activeCategory.toLowerCase()
         );
 
-  // Initialize and track user location
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -66,68 +81,66 @@ const MapScreen = () => {
     };
   }, []);
 
-  // Log cache info for debugging
-  useEffect(() => {
-    console.log('🗺️ Map using cached hostels:', {
-      total: cachedHostels.length,
-      filtered: filteredHostels.length,
-      category: activeCategory
-    });
-  }, [cachedHostels, filteredHostels, activeCategory]);
-
   const handleMarkerPress = (hostel) => {
+    if (!user || !userInfo) {
+      setShowLoginModal(true);
+      return;
+    }
     setSelectedHostel(hostel);
   };
 
-  const handleCloseModal = () => {
-    setSelectedHostel(null);
-  };
+  const handleCloseModal = () => setSelectedHostel(null);
+  const handleCategoryChange = (category) => setActiveCategory(category);
 
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-  };
+  const initialRegion =
+    userLocation && isInsideGhana(userLocation.latitude, userLocation.longitude)
+      ? {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude,
+          latitudeDelta: 0.0092,
+          longitudeDelta: 0.0042,
+        }
+      : GHANA_REGION;
 
   return (
     <View style={styles.container}>
-      {userLocation && (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={{
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
-            latitudeDelta: 0.0092,
-            longitudeDelta: 0.0042,
-          }}
-          showsUserLocation={false}
-          showsMyLocationButton
-          showsCompass
-          onMapReady={() => setMapReady(true)}
-          zoomEnabled
-          scrollEnabled
-        >
-          <UserLocationMarker location={userLocation} />
-          <HostelMarkers
-            hostels={filteredHostels}
-            onMarkerPress={handleMarkerPress}
-          />
-        </MapView>
-      )}
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        initialRegion={initialRegion}
+        showsUserLocation={false}
+        showsMyLocationButton
+        showsCompass
+        onMapReady={() => setMapReady(true)}
+        zoomEnabled
+        scrollEnabled
+      >
+        {userLocation && <UserLocationMarker location={userLocation} />}
+        <HostelMarkers
+          hostels={filteredHostels}
+          onMarkerPress={handleMarkerPress}
+        />
+      </MapView>
 
-      {/* Category tabs overlay */}
-      {/* <View style={styles.tabsOverlay}>
+      <View style={styles.tabsOverlay}>
         <CategoryTabs
           activeCategory={activeCategory}
           onCategoryChange={handleCategoryChange}
         />
-      </View> */}
+      </View>
 
       {selectedHostel && (
-        <HostelModal
-          hostel={selectedHostel}
-          onClose={handleCloseModal}
-        />
+        <HostelModal hostel={selectedHostel} onClose={handleCloseModal} />
       )}
+
+      <Modal
+        visible={showLoginModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowLoginModal(false)}
+      >
+        <ClientLogIn onClose={() => setShowLoginModal(false)} />
+      </Modal>
     </View>
   );
 };

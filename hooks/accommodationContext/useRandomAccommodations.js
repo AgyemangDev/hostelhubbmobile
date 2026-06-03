@@ -12,28 +12,22 @@ export const useRandomAccommodations = (limit = 40) => {
 
   useEffect(() => {
     const fetchRandomAccommodations = async () => {
-      if (!selectedUniversity || !user) {
-        setAccommodations([]);
-        return;
-      }
-
       setLoading(true);
       setError(null);
 
       try {
-        // Get Firebase ID token from context user (with cache)
-        const idToken = await user.getIdToken(false);
+        const params = new URLSearchParams({ limit });
+        if (selectedUniversity) params.append('institution', selectedUniversity);
 
-        // Call backend API
+        const headers = { 'Content-Type': 'application/json' };
+        if (user) {
+          const idToken = await user.getIdToken(false);
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+
         const response = await fetch(
-          `${API_BASE_URL}/api/accommodations/random?institution=${encodeURIComponent(selectedUniversity)}&limit=${limit}`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${idToken}`,
-              'Content-Type': 'application/json',
-            },
-          }
+          `${API_BASE_URL}/api/accommodations/random?${params}`,
+          { method: 'GET', headers }
         );
 
         if (!response.ok) {
@@ -52,7 +46,7 @@ export const useRandomAccommodations = (limit = 40) => {
       }
     };
 
-    fetchRandomAccommodations();
+    fetchRandomAccommodations(); // no guard — runs for guests too
   }, [selectedUniversity, limit, user]);
 
   return { accommodations, loading, error };

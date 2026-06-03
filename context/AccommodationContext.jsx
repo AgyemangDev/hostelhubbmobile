@@ -28,7 +28,7 @@ export const AccommodationProvider = ({ children }) => {
     useAccommodationSearch(searchQuery);
 
   // Filters hook
-  const { filters, setFilters, clearFilters, applyFilters } = useFilters([0, 30000]);
+  const { filters, setFilters, clearFilters, applyFilters } = useFilters([0, 100000]);
 
   // Apply filters
   const filteredAccommodations = useMemo(
@@ -51,7 +51,6 @@ export const AccommodationProvider = ({ children }) => {
     const loadCache = async () => {
       const cached = await getCachedAccommodationArray();
       setCachedHostels(cached);
-      console.log('📦 Loaded cache on mount:', cached.length, 'hostels');
     };
     loadCache();
   }, []);
@@ -63,13 +62,6 @@ export const AccommodationProvider = ({ children }) => {
         await addToCache(accommodations);
         const updated = await getCachedAccommodationArray();
         setCachedHostels(updated);
-        console.log('📊 Paginated Accommodations:', {
-          total: accommodations.length,
-          filtered: filteredAccommodations.length,
-          loading,
-          hasMore,
-          cached: updated.length,
-        });
       }
     };
     cacheAndReload();
@@ -82,13 +74,6 @@ export const AccommodationProvider = ({ children }) => {
         await addToCache(randomAccommodationsRaw);
         const updated = await getCachedAccommodationArray();
         setCachedHostels(updated);
-        console.log('🎲 Random Accommodations:', {
-          total: randomAccommodationsRaw.length,
-          filtered: filteredRandomAccommodations.length,
-          loading: randomLoading,
-          error: randomError,
-          cached: updated.length,
-        });
       }
     };
     cacheAndReload();
@@ -162,53 +147,52 @@ export const AccommodationProvider = ({ children }) => {
     }
   };
 
-  const value = useMemo(
-    () => ({
-      accommodations: filteredAccommodations,
-      rawAccommodations: accommodations,
-      loading,
-      loadMore,
-      hasMore,
+// AccommodationContext.jsx
+const value = useMemo(
+  () => ({
+    accommodations: filteredAccommodations,
+    rawAccommodations: accommodations,
+    loading,
+    loadMore,
+    hasMore,
 
-      randomAccommodations: filteredRandomAccommodations,
-      randomLoading,
-      randomError,
+    randomAccommodations: randomAccommodationsRaw, // ← raw, not filtered
+    randomLoading,
+    randomError,
 
-      searchAccommodations: filteredSearchAccommodations,
-      searchLoading,
-      searchError,
-      searchQuery,
-      setSearchQuery,
+    searchAccommodations: filteredSearchAccommodations,
+    searchLoading,
+    searchError,
+    searchQuery,
+    setSearchQuery,
 
-      filters,
-      setFilters,
-      clearFilters,
-      
-      fetchByIds,
-      
-      // Cached hostels for map
-      cachedHostels,
-    }),
-    [
-      filteredAccommodations,
-      accommodations,
-      loading,
-      loadMore,
-      hasMore,
-      filteredRandomAccommodations,
-      randomLoading,
-      randomError,
-      filteredSearchAccommodations,
-      searchLoading,
-      searchError,
-      searchQuery,
-      filters,
-      setFilters,
-      clearFilters,
-      user,
-      cachedHostels,
-    ]
-  );
+    filters,
+    setFilters,
+    clearFilters,
+
+    fetchByIds,
+    cachedHostels,
+  }),
+  [
+    filteredAccommodations,
+    accommodations,
+    loading,
+    loadMore,
+    hasMore,
+    randomAccommodationsRaw, // ← update dependency too
+    randomLoading,
+    randomError,
+    filteredSearchAccommodations,
+    searchLoading,
+    searchError,
+    searchQuery,
+    filters,
+    setFilters,
+    clearFilters,
+    user,
+    cachedHostels,
+  ]
+);
 
   return (
     <AccommodationContext.Provider value={value}>

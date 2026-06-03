@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext } from "react";
+import React, { useRef, useEffect, useContext, useCallback } from "react";
 import { View, StyleSheet, Platform } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { AddHubclippsContext } from "../../context/AddHubclippsContext";
@@ -12,14 +12,13 @@ import LeftInfo from "./LeftInfo";
 import ReservationButton from "./ReservationButton";
 
 export default function HubClip({ item, height, isActive }) {
-
   const router = useRouter();
   const playerRef = useRef(null);
   const isFocused = useIsFocused();
   const { incrementView } = useContext(AddHubclippsContext);
 
-  const { user, userInfo, patchUserData, currentExpoToken } =
-  useContext(UserContext);
+  const { user, userInfo, patchUserData, refreshUserInfo, currentExpoToken } =
+    useContext(UserContext);
 
   const viewTimerRef = useRef(null);
   const hasCountedViewRef = useRef(false);
@@ -30,20 +29,16 @@ export default function HubClip({ item, height, isActive }) {
     if (isActive && isFocused) {
       playerRef.current.play();
 
-      // ⏱️ Start view timer
       if (!hasCountedViewRef.current) {
         viewTimerRef.current = setTimeout(() => {
           incrementView(item.id);
           hasCountedViewRef.current = true;
-        }, 5000); // 10 seconds
+        }, 5000);
       }
-
     } else {
-      // Pause + reset playback
       playerRef.current.pause();
       playerRef.current.currentTime = 0;
 
-      // ❌ Cancel timer if user scrolls away
       if (viewTimerRef.current) {
         clearTimeout(viewTimerRef.current);
         viewTimerRef.current = null;
@@ -60,31 +55,36 @@ export default function HubClip({ item, height, isActive }) {
 
   const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 83 : 60;
 
-const handleReserve = async () => {
-  try {
-    // ✅ Get fresh Firebase token inside async function
-    const firebaseToken = await user.getIdToken(true);
+  const handleReserve = async () => {
+    try {
+      const firebaseToken = await user.getIdToken(true);
 
-    await handleBookingProcess({
-      user,
-      userInfo,
-      formData: {
-        selectedRoomType: item.room_type,
-        selectedPayment: item.price,
-      },
-      hostelId: item.id,
-      bookingSource: "hubclip",
-      router,
-      patchUserData,
-      currentExpoToken,
-      firebaseToken, // 👈 pass it here
-      onSuccess: () => router.push("/bookings"),
-      onError: () => {},
-    });
-  } catch (err) {
-    console.error("Booking failed:", err);
-  }
-};
+      await handleBookingProcess({
+        user,
+        userInfo,
+        formData: {
+          selectedRoomType: item.room_type,
+          selectedPayment: item.price,
+        },
+        hostelId: item.id,
+        bookingSource: "hubclip",
+        router,
+        patchUserData,
+        currentExpoToken,
+        firebaseToken,
+        onSuccess: () => router.push("/(tabs)/(bookings)"),
+        onError: () => {},
+      });
+    } catch (err) {
+      console.error("Booking failed:", err);
+    }
+  };
+
+  // Called by ReservationButton after onPress resolves
+  // Forces a fresh /me fetch so noofbooking, balance, paymentstatus are current
+  const handleBookingComplete = useCallback(async () => {
+    await refreshUserInfo(true);
+  }, [refreshUserInfo]);
 
   return (
     <View style={[styles.container, { height }]}>
@@ -104,12 +104,15 @@ const handleReserve = async () => {
       </View>
 
       <View style={[styles.bottom, { bottom: TAB_BAR_HEIGHT + 10 }]}>
-       <ReservationButton onPress={handleReserve}price={item.price}/>
+        <ReservationButton
+          onPress={handleReserve}
+          price={item.price}
+          onBookingComplete={handleBookingComplete}
+        />
       </View>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

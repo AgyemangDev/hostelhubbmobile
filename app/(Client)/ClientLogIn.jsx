@@ -1,232 +1,277 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import {
   StyleSheet,
   Text,
   View,
-  Image,
   TouchableOpacity,
-  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { signInWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 
 import COLORS from "../../constants/Colors";
-import { auth } from "../firebase/FirebaseConfig";
 import FormInput from "../../components/InputFields/FormInput";
 import Button from "../../components/ButtonComponents/ButtonComponent";
+import SocialAuthButtons from "../../components/ButtonComponents/SocialAuthButtons";
+import { UserContext } from "../../context/UserContext";
+
+import { signInWithEmail, loadSavedCredentials } from "../../utils/auth/signInwithEmail";
+import { useGoogleAuth } from "../../utils/auth/signInWithGoogle";
+import { signInWithApple } from "../../utils/auth/signInWithApple";
+import TermsLink from "../../components/Links/TermsLink";
 
 const ClientLogIn = () => {
   const navigation = useNavigation();
+  const { setUserFromAuthResponse } = useContext(UserContext);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail]                     = useState("");
+  const [password, setPassword]               = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe]           = useState(false);
+  const [loading, setLoading]                 = useState(false);
+  const [appleLoading, setAppleLoading]       = useState(false);
+
+  const { signIn: googleSignIn, loading: googleLoading } = useGoogleAuth();
 
   useEffect(() => {
-    loadSavedCredentials();
+    loadSavedCredentials().then((saved) => {
+      if (saved) {
+        setEmail(saved.email);
+        setPassword(saved.password);
+        setRememberMe(true);
+      }
+    });
   }, []);
 
-  const loadSavedCredentials = async () => {
-    const saved = await AsyncStorage.getItem("rememberMeCredentials");
-    if (saved) {
-      const { email, password } = JSON.parse(saved);
-      setEmail(email);
-      setPassword(password);
-      setRememberMe(true);
-    }
-  };
 
-  const validateEmail = (value) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-  const handleLogIn = async () => {
-    if (!email || !password) {
-      Alert.alert("Credentials Needed", "Please fill all fields");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      Alert.alert("Error", "Enter a valid email address");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-
-      if (!user.emailVerified) {
-        Alert.alert(
-          "Email Verification Required",
-          "Please verify your email before logging in.",
-          [
-            {
-  text: "Resend Email",
-  onPress: async () => {
-    try {
-      await sendEmailVerification(user);
-      Alert.alert(
-        "Verification Email Sent",
-        "An email verification link has been sent. Please check your inbox and spam folder."
-      );
-    } catch (err) {
-      Alert.alert(
-        "Error",
-        "Could not resend verification email. Please try again."
-      );
-    }
-  },
-},
-            { text: "OK" },
-          ]
-        );
-        return;
-      }
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "(tabs)" }],
-      });
-    } catch {
-      Alert.alert("Error", "Invalid email or password");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <Image
-        source={require("../../assets/images/login.gif")}
-        style={styles.image}
-      />
-
-      {/* Shared width wrapper */}
-      <View style={styles.formArea}>
-        <FormInput
-          placeholder="Email"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-
-        <FormInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          isPasswordInput
-          isPasswordVisible={passwordVisible}
-          togglePasswordVisibility={() =>
-            setPasswordVisible(!passwordVisible)
-          }
-        />
-
-        {/* Remember me */}
-        <TouchableOpacity
-          style={styles.rememberRow}
-          onPress={() => setRememberMe(!rememberMe)}
-        >
-          <View
-            style={[
-              styles.checkbox,
-              rememberMe && styles.checkboxChecked,
-            ]}
-          >
-            {rememberMe && (
-              <Ionicons name="checkmark" size={14} color={COLORS.white} />
-            )}
-          </View>
-          <Text style={styles.rememberText}>
-            Remember me for next login
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("ForgotPassword")}
-        >
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        {/* Full-width button */}
-        <Button
-          buttonText={loading ? "Signing In..." : "Sign In"}
-          onPressFunction={handleLogIn}
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.signUpLink}
-        onPress={() => navigation.navigate("ClientSignUp")}
-      >
-        <Text style={styles.signUpText}>
-          Don’t have an account?{" "}
-          <Text style={styles.signUpAction}>Sign Up</Text>
-        </Text>
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
+const handleContinue = async () => {
+  setLoading(true);
+  await signInWithEmail(email, password, rememberMe, (student) => {
+    console.log("[LOGIN] Email auth student:", JSON.stringify(student, null, 2));
+    setUserFromAuthResponse(student);
+  });
+  setLoading(false);
 };
 
-export default ClientLogIn;
+const handleGoogleSignIn = () =>
+  googleSignIn((student) => {
+    console.log("[LOGIN] Google auth student:", JSON.stringify(student, null, 2));
+    setUserFromAuthResponse(student);
+  });
+
+const handleAppleSignIn = async () => {
+  setAppleLoading(true);
+  await signInWithApple((student) => {
+    console.log("[LOGIN] Apple auth student:", JSON.stringify(student, null, 2));
+    setUserFromAuthResponse(student);
+  });
+  setAppleLoading(false);
+};
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      {/* Drag handle */}
+      <View style={styles.handle} />
+
+      <ScrollView
+        contentContainerStyle={styles.inner}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.heading}>Welcome to Hostelhubb</Text>
+        <Text style={styles.subheading}>Sign in or create an account</Text>
+
+        <View style={styles.formArea}>
+          <FormInput
+            placeholder="Email"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          <FormInput
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            isPasswordInput
+            isPasswordVisible={passwordVisible}
+            togglePasswordVisibility={() => setPasswordVisible(!passwordVisible)}
+          />
+
+          <View style={styles.row}>
+            <TouchableOpacity
+              style={styles.rememberRow}
+              onPress={() => setRememberMe(!rememberMe)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
+              </View>
+              <Text style={styles.rememberText}>Remember me</Text>
+            </TouchableOpacity>
+
+            {/* <TouchableOpacity onPress={() => navigation.replace("(Client)/ForgotPassword")} activeOpacity={0.7}>
+              <Text style={styles.forgotPassword}>Forgot password?</Text>
+            </TouchableOpacity> */}
+          </View>
+
+          <Button
+            buttonText={loading ? "Please wait…" : "Continue"}
+            onPressFunction={handleContinue}
+            disabled={loading}
+          />
+
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or continue with</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          <SocialAuthButtons
+            onGooglePress={handleGoogleSignIn}
+            onApplePress={handleAppleSignIn}
+            googleLoading={googleLoading}
+            appleLoading={appleLoading}
+          />
+
+<View style={styles.termsContainer}>
+  <Text style={styles.terms}>
+    By continuing, you agree to our
+  </Text>
+
+  <View style={styles.linksRow}>
+    <TermsLink
+      text="Terms of Service"
+      link="https://hostelhubb.com/terms"
+      color="#1a1a1a"
+    />
+
+    <Text style={styles.andText}>and</Text>
+
+    <TermsLink
+      text="Privacy Policy"
+      link="https://hostelhubb.com/privacy-policy"
+      color="#1a1a1a"
+    />
+  </View>
+</View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  image: {
-    width: 260,
-    height: 260,
-    resizeMode: "contain",
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#e0e0e0",
+    alignSelf: "center",
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  inner: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 40,
+  },
+  heading: {
+    fontSize: 27,
+    paddingTop:100,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    letterSpacing: -0.5,
+    marginBottom: 4,
+  },
+  subheading: {
+    fontSize: 16,
+    color: "#888",
     marginBottom: 24,
   },
   formArea: {
     width: "100%",
-    paddingHorizontal: 24, // 👈 controls BOTH input & button width
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
   rememberRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
   },
   checkbox: {
     width: 18,
     height: 18,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: COLORS.background,
-    marginRight: 10,
+    borderRadius: 5,
+    borderWidth: 1.5,
+    borderColor: "#1a1a1a",
+    marginRight: 8,
     alignItems: "center",
     justifyContent: "center",
   },
   checkboxChecked: {
-    backgroundColor: COLORS.background,
+    backgroundColor: "#1a1a1a",
   },
   rememberText: {
-    fontSize: 14,
-    color: COLORS.background,
+    fontSize: 13,
+    color: "#1a1a1a",
   },
   forgotPassword: {
+    fontSize: 13,
     color: COLORS.link,
-    fontSize: 15,
-    marginBottom: 24,
   },
-  signUpLink: {
-    marginTop: 32,
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 20,
+    gap: 10,
   },
-  signUpText: {
-    fontSize: 15,
-    color: COLORS.textMuted,
+  dividerLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: "#e2e2e2",
   },
-  signUpAction: {
-    color: COLORS.background,
-    fontWeight: "600",
+  dividerText: {
+    fontSize: 12,
+    color: "#888",
   },
+  termsContainer: {
+  alignItems: "center",
+  marginTop: 20,
+},
+
+linksRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  flexWrap: "wrap",
+  justifyContent: "center",
+},
+
+andText: {
+  fontSize: 12,
+  color: "#aaa",
+},
+
+terms: {
+  fontSize: 12,
+  color: "#aaa",
+  textAlign: "center",
+},
 });
+
+export default ClientLogIn;

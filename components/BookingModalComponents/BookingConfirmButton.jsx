@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import COLORS from '../../constants/Colors';
+
 const BookingConfirmButton = ({ isFormComplete, onConfirm }) => {
   const handlePress = () => {
     if (isFormComplete()) {
@@ -12,12 +13,13 @@ const BookingConfirmButton = ({ isFormComplete, onConfirm }) => {
 
   return (
     <View style={styles.buttonContainer}>
-      <Text
+      <TouchableOpacity
         style={styles.confirmButton}
         onPress={handlePress}
+        activeOpacity={0.8}
       >
-        Confirm Booking
-      </Text>
+        <Text style={styles.confirmButtonText}>Confirm Booking</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -33,11 +35,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     backgroundColor: COLORS.button,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  confirmButtonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20
   },
 });
 

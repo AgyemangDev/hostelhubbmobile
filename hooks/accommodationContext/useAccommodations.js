@@ -5,108 +5,72 @@ import API_BASE_URL from "../../utils/api/api";
 const PAGE_SIZE = 20;
 
 export const useAccommodations = () => {
-  const { userInfo, user } = useContext(UserContext); // get user from context
-  const selectedUniversity = userInfo?.institution;
+  const { userInfo, user } = useContext(UserContext);
+  const selectedUniversity = userInfo?.institution; // optional now
 
   const [accommodations, setAccommodations] = useState([]);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
-
   const loadingRef = useRef(false);
 
-  const fetchPage = useCallback(
-    async (pageNumber = 0, replace = false) => {
-      if (!selectedUniversity || (!replace && loadingRef.current)) return;
-      if (!user) {
-        setError("User not authenticated");
-        return;
+  const fetchPage = useCallback(async (pageNumber = 0, replace = false) => {
+    if (!replace && loadingRef.current) return;
+
+    try {
+      loadingRef.current = true;
+      setLoading(true);
+      setError(null);
+
+      // Build URL — institution is optional
+      const params = new URLSearchParams({ page: pageNumber, pageSize: PAGE_SIZE });
+      if (selectedUniversity) params.append('institution', selectedUniversity);
+
+      // Auth header is optional — attach only if logged in
+      const headers = { 'Content-Type': 'application/json' };
+      if (user) {
+        const idToken = await user.getIdToken(false);
+        headers['Authorization'] = `Bearer ${idToken}`;
       }
 
-      try {
-        loadingRef.current = true;
-        setLoading(true);
-        setError(null);
+      const response = await fetch(`${API_BASE_URL}/api/accommodations?${params}`, { headers });
 
-        // Get Firebase ID token
-        const idToken = await user.getIdToken(false); // use cached token
-
-        // Call backend API
-        const response = await fetch(
-          `${API_BASE_URL}/api/accommodations?institution=${encodeURIComponent(
-            selectedUniversity
-          )}&page=${pageNumber}&pageSize=${PAGE_SIZE}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${idToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch accommodations");
-        }
-
-        const result = await response.json();
-        const data = result.data || [];
-
-        if (replace) {
-          setAccommodations(data);
-        } else {
-          setAccommodations((prev) => [...prev, ...data]);
-        }
-
-        setPage(pageNumber);
-        setHasMore(data.length === PAGE_SIZE); // if less than PAGE_SIZE, no more data
-      } catch (err) {
-        console.error("Accommodations fetch error:", err);
-        setError(err.message);
-      } finally {
-        loadingRef.current = false;
-        setLoading(false);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch accommodations');
       }
-    },
-    [selectedUniversity, user]
-  );
 
-  // Fetch first page when university changes
+      const result = await response.json();
+      const data = result.data || [];
+
+      replace ? setAccommodations(data) : setAccommodations(prev => [...prev, ...data]);
+      setPage(pageNumber);
+      setHasMore(data.length === PAGE_SIZE);
+    } catch (err) {
+      console.error('Accommodations fetch error:', err);
+      setError(err.message);
+    } finally {
+      loadingRef.current = false;
+      setLoading(false);
+    }
+  }, [selectedUniversity, user]);
+
   useEffect(() => {
     setAccommodations([]);
     setPage(0);
     setHasMore(true);
     setError(null);
-
-    if (selectedUniversity) {
-      fetchPage(0, true);
-    }
+    fetchPage(0, true); // fetch regardless of auth state
   }, [selectedUniversity, fetchPage]);
 
-  // Load next page
   const loadMore = useCallback(() => {
-    if (!loadingRef.current && hasMore) {
-      fetchPage(page + 1);
-    }
+    if (!loadingRef.current && hasMore) fetchPage(page + 1);
   }, [page, hasMore, fetchPage]);
 
-  // Refresh all data
   const refresh = useCallback(() => {
-    if (!loadingRef.current) {
-      setHasMore(true);
-      fetchPage(0, true);
-    }
+    if (!loadingRef.current) { setHasMore(true); fetchPage(0, true); }
   }, [fetchPage]);
 
-  return {
-    accommodations,
-    loading,
-    error,
-    hasMore,
-    loadMore,
-    refresh,
-    selectedUniversity,
-  };
+  return { accommodations, loading, error, hasMore, loadMore, refresh, selectedUniversity };
 };

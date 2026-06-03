@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useContext, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,12 +12,13 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
+import { handleBookingProcess } from "../../services/bookingServices";
 
 import { UserContext } from "../../context/UserContext";
 import COLORS from "../../constants/Colors";
 import { useAccommodationById } from "../../hooks/accommodationContext/useAccommodationById";
 
-// Components
 import HostelImageGallery from "../../components/HostelDetailsComponents/HostelImageGallery";
 import LoadingScreen from "../../components/HostelDetailsComponents/LoadingScreen";
 import HostelInfo from "../../components/HostelDetailsComponents/HostelInfo";
@@ -27,13 +28,13 @@ import BookingButton from "../../components/ButtonComponents/BookingButton";
 import ReviewsModal from "../../components/modals/ReviewsModal";
 import HostelDetailsHeader from "../../components/HostelDetailsComponents/HostelDetailsHeader";
 
-// Utils
 import { updateHostelViewCount } from "../../utils/hostelViewCountUtil";
 
 const DetailsScreen = () => {
   const { hostelId } = useLocalSearchParams();
   const { accommodation: hostel, loading } = useAccommodationById(hostelId);
-  const { userInfo } = useContext(UserContext);
+    const { user, userInfo, patchUserData, refreshUserInfo, currentExpoToken } =
+      useContext(UserContext);
   const navigation = useNavigation();
   const router = useRouter();
 
@@ -48,6 +49,14 @@ const DetailsScreen = () => {
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+
+  // Refresh user data every time the user comes back to this screen
+  // (e.g. returning from bookingModal after a completed or cancelled booking)
+  useFocusEffect(
+    useCallback(() => {
+      refreshUserInfo(true);
+    }, [refreshUserInfo])
+  );
 
   if (loading || !hostel) {
     return <LoadingScreen message="Loading hostel details..." />;
@@ -81,21 +90,31 @@ const DetailsScreen = () => {
     Linking.openURL(`tel:${phoneNumber}`);
   };
 
-  const handleBookingPress = () => {
-    if (!hostel.accommodation_availability) {
-      Alert.alert(
-        "Oops! Hostel Fully Booked",
-        "This hostel is currently full.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
+const handleBookingPress = async () => {
+  if (!hostel.accommodation_availability) {
+    Alert.alert("Oops! Hostel Fully Booked", "This hostel is currently full.", [{ text: "OK" }]);
+    return;
+  }
 
-    navigation.navigate("bookingModal", {
-      hostelId: hostel.id,
-      managerId: hostel.manager_id,
-    });
-  };
+  const firebaseToken = await user.getIdToken(true);
+
+  await handleBookingProcess({
+    user,
+    userInfo,
+    formData: {
+      selectedRoomType: hostel.room_types?.[0]?.room_type,
+      selectedPayment: hostel.room_types?.[0]?.price,
+    },
+    hostelId: hostel.id,
+    bookingSource: "details",
+    router,
+    patchUserData,
+    currentExpoToken,
+    firebaseToken,
+    onSuccess: () => router.push("/(tabs)/(bookings)"),
+    onError: () => {},
+  });
+};
 
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.y;
@@ -108,7 +127,6 @@ const DetailsScreen = () => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header with transition effect */}
       <HostelDetailsHeader hostel={hostel} hostelId={hostelId} scrolled={scrolled} />
 
       <ScrollView
@@ -155,7 +173,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingBottom: 120 },
   components: { marginHorizontal: 10 },
-
   reviewsButton: {
     flexDirection: "row",
     alignItems: "center",

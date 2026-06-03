@@ -4,250 +4,174 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
-  useRef,
-} from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../app/firebase/FirebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
-import API_BASE_URL from '../utils/api/api';
-import EventSource from 'react-native-sse'; // Add this import
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth } from "../app/firebase/FirebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import API_BASE_URL from "../utils/api/api";
 
 export const UserContext = createContext();
 
-const STORAGE_KEYS = {
-  userSession: 'userSession',
-};
+const STORAGE_KEY  = "userSession";
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export const UserProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user,    setUser]    = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const eventSourceRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
 
-  /* ------------------ Cache Helpers ------------------ */
+  // ─── Cache ─────────────────────────────────────────────────────────────────
 
   const saveCache = async (data) => {
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.userSession, JSON.stringify(data));
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ data, timestamp: Date.now() })
+      );
     } catch (e) {
-      console.error('Cache save error:', e);
+      console.error("Cache save error:", e);
+    }
+  };
+
+  const loadCache = async () => {
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const { data, timestamp } = JSON.parse(raw);
+      return { data, isStale: Date.now() - timestamp > CACHE_TTL_MS };
+    } catch {
+      return null;
     }
   };
 
   const clearCache = async () => {
-    try {
-      await AsyncStorage.removeItem(STORAGE_KEYS.userSession);
-    } catch (e) {
-      console.error('Cache clear error:', e);
-    }
+    try { await AsyncStorage.removeItem(STORAGE_KEY); } catch {}
   };
 
-  /* ------------------ Patch User Data ------------------ */
-// UserContext.jsx - ADD LOGS TO patchUserData
-// UserContext.jsx - FIX patchUserData to use cached token
+  // ─── Fetch profile from /me ────────────────────────────────────────────────
 
-const patchUserData = useCallback(async (updates) => {
-  if (!user) throw new Error("No user logged in");
+  const fetchUserInfo = useCallback(async (firebaseUser) => {
+    try {
+      const token    = await firebaseUser.getIdToken(false);
+      const response = await fetch(`${API_BASE_URL}/api/students/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const freshData = await response.json();
+      setUserInfo(freshData);
+      await saveCache(freshData);
+      return freshData;
+    } catch (err) {
+      console.error("[fetchUserInfo] error:", err);
+      return null;
+    }
+  }, []);
 
-  console.log('========================================');
-  console.log('PATCH REQUEST STARTING');
-  console.log('Updates:', JSON.stringify(updates, null, 2));
+  // ─── Called right after a successful auth response ─────────────────────────
+  // Pass the student object returned by the backend so we don't need
+  // an extra /me round-trip immediately after sign-in.
 
-  try {
-    // FIX: Use forceRefresh: false to avoid quota issues
-    const token = await user.getIdToken(false);
-    console.log('Token obtained:', token ? 'YES' : 'NO');
+  const setUserFromAuthResponse = useCallback(async (student) => {
+    if (!student) return;
+    setUserInfo(student);
+    await saveCache(student);
+  }, []);
 
-    const url = `${API_BASE_URL}/api/students/me`;
-    console.log('URL:', url);
+  // ─── Refresh ───────────────────────────────────────────────────────────────
 
-    const response = await fetch(url, {
-      method: "PATCH",
+  const refreshUserInfo = useCallback(async (forceRefresh = false) => {
+    if (!user) return;
+    try {
+      if (!forceRefresh) {
+        const cached = await loadCache();
+        if (cached && !cached.isStale) {
+          setUserInfo(cached.data);
+          return;
+        }
+      }
+      await fetchUserInfo(user);
+    } catch (err) {
+      console.error("refreshUserInfo error:", err);
+    }
+  }, [user, fetchUserInfo]);
+
+  // ─── Patch ─────────────────────────────────────────────────────────────────
+
+  const patchUserData = useCallback(async (updates) => {
+    if (!user) throw new Error("No user logged in");
+    const token    = await user.getIdToken(false);
+    const response = await fetch(`${API_BASE_URL}/api/students/me`, {
+      method:  "PATCH",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization:  `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(updates),
     });
-
-    console.log('Response status:', response.status);
-    console.log('Response ok:', response.ok);
-
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('❌ Response error:', errorData);
-      throw new Error(errorData.error || "Failed to update user data");
+      const err = await response.json();
+      throw new Error(err.error || "Failed to update user data");
     }
-
     const responseData = await response.json();
-    console.log('✅ Patch successful:', responseData);
-    console.log('========================================');
-  } catch (err) {
-    console.error('❌ Patch failed:', err);
-    console.log('========================================');
-    throw err;
-  }
-}, [user]);
-
-
-// ADD this function inside UserProvider, alongside patchUserData:
-const refreshUserInfo = useCallback(async () => {
-  if (!user) return;
-  try {
-    const token = await user.getIdToken(false);
-    const response = await fetch(`${API_BASE_URL}/api/students/me`, {
-      headers: { Authorization: `Bearer ${token}` },
+    setUserInfo((prev) => {
+      const merged = { ...prev, ...updates };
+      saveCache(merged);
+      return merged;
     });
-    if (!response.ok) throw new Error('Failed to refresh user info');
-    const freshData = await response.json();
-    setUserInfo(freshData);
-    await saveCache(freshData);       // keep cache in sync too
-  } catch (err) {
-    console.error('refreshUserInfo failed:', err);
-  }
-}, [user]);
+    return responseData;
+  }, [user]);
 
-  /* ------------------ SSE Connection ------------------ */
-
-// UserContext.jsx - FIX quota exceeded issue
-
-const connectToStream = useCallback(async (firebaseUser) => {
-  // Close existing connection
-  if (eventSourceRef.current) {
-    eventSourceRef.current.close();
-    eventSourceRef.current = null;
-  }
-
-  if (reconnectTimeoutRef.current) {
-    clearTimeout(reconnectTimeoutRef.current);
-    reconnectTimeoutRef.current = null;
-  }
-
-  try {
-    // FIX: Use forceRefresh: false to use cached token
-    const token = await firebaseUser.getIdToken(false);
-    
-    const es = new EventSource(
-      `${API_BASE_URL}/api/students/me/stream`,
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      }
-    );
-
-    es.addEventListener('message', async (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (!data.error) {
-          setUserInfo(data);
-          await saveCache(data);
-        }
-      } catch (err) {
-        console.error('Parse error:', err);
-      }
-    });
-
-    es.addEventListener('error', (error) => {
-      console.error('SSE error:', error);
-      
-      // FIX: Increase reconnect delay to 30 seconds
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (auth.currentUser) {
-          connectToStream(auth.currentUser);
-        }
-      }, 30000);
-    });
-
-    es.addEventListener('open', () => {
-      console.log('SSE connection opened');
-    });
-
-    eventSourceRef.current = es;
-  } catch (err) {
-    console.error('SSE connection error:', err);
-    
-    // FIX: Only retry if not quota exceeded
-    if (err.code !== 'auth/quota-exceeded') {
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (auth.currentUser) {
-          connectToStream(auth.currentUser);
-        }
-      }, 30000);
-    } else {
-      console.error('❌ Firebase quota exceeded - stopping reconnection attempts');
-    }
-  }
-}, []);
-
-  const disconnectStream = () => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
-      eventSourceRef.current = null;
-    }
-    
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-  };
-
-  /* ------------------ Load Cached User ------------------ */
-
-  useEffect(() => {
-    const loadCache = async () => {
-      try {
-        const cached = await AsyncStorage.getItem(STORAGE_KEYS.userSession);
-        if (cached) {
-          setUserInfo(JSON.parse(cached));
-        }
-      } catch (e) {
-        console.error('Cache load error:', e);
-      }
-    };
-
-    loadCache();
-  }, []);
-
-  /* ------------------ Auth Listener ------------------ */
+  // ─── Auth state listener ───────────────────────────────────────────────────
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
       if (!firebaseUser) {
-        disconnectStream();
         setUserInfo(null);
         await clearCache();
         setLoading(false);
         return;
       }
 
-      await connectToStream(firebaseUser);
+      // Show cached data immediately while we decide whether to re-fetch
+      const cached = await loadCache();
+      if (cached?.data) setUserInfo(cached.data);
+
+      // Only hit /me if cache is stale or empty
+      if (!cached || cached.isStale) {
+        await fetchUserInfo(firebaseUser);
+      }
+
       setLoading(false);
     });
 
-    return () => {
-      unsubscribe();
-      disconnectStream();
-    };
-  }, [connectToStream]);
+    return () => unsubscribe();
+  }, [fetchUserInfo]);
 
-  /* ------------------ Context Value ------------------ */
+  // ─── Context value ─────────────────────────────────────────────────────────
 
-  const value = useMemo(() => ({
-    user,
-    userInfo,
-    isLoading: loading,
-     patchUserData, 
-     refreshUserInfo, 
-    logoutCleanup: async () => {
-      disconnectStream();
-      setUserInfo(null);
-      await clearCache();
-    },
-  }), [user, userInfo, loading]);
+// ─── Profile completeness check ───────────────────────────────────────────
+
+const isProfileIncomplete = useMemo(() => {
+  if (!userInfo) return false; // not loaded yet, don't redirect prematurely
+  const { first_name, surname, phone_number } = userInfo;
+  return !first_name?.trim() || !surname?.trim() || !phone_number;
+}, [userInfo]);
+
+const value = useMemo(() => ({
+  user,
+  userInfo,
+  isLoading: loading,
+  isProfileIncomplete,          // ← new
+  patchUserData,
+  refreshUserInfo,
+  setUserFromAuthResponse,
+  logoutCleanup: async () => {
+    setUserInfo(null);
+    await clearCache();
+  },
+}), [user, userInfo, loading, isProfileIncomplete, patchUserData, refreshUserInfo, setUserFromAuthResponse]);
 
   return (
     <UserContext.Provider value={value}>

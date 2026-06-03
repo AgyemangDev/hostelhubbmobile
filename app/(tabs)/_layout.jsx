@@ -13,6 +13,7 @@ const Layout = () => {
           tabBarStyle: {
             backgroundColor: '#ffff',
           },
+          gestureEnabled: false,
         }}
       >
         {/* Explore Tab */}

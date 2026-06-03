@@ -1,100 +1,91 @@
-import React, { useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import COLORS from "../../constants/Colors";
+import React, { useState, useRef } from "react";
+import {
+  View, Text, Pressable, ScrollView,
+  StyleSheet, Animated, LayoutAnimation, Platform, UIManager,
+} from "react-native";
 
-/**
- * Reusable Tabs Component
- * @param {Array} tabs - Array of tab objects: { id: string, label: string, content: ReactNode }
- * @param {string} initialTab - Optional: default selected tab id
- */
+if (Platform.OS === "android") {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
+
+// ReusableTabs.jsx
 const ReusableTabs = ({ tabs, initialTab }) => {
   const [selectedTab, setSelectedTab] = useState(initialTab || tabs[0].id);
+
+  const handleSelect = (id) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setSelectedTab(id);
+  };
 
   const activeTabObj = tabs.find((tab) => tab.id === selectedTab);
 
   return (
     <View style={styles.container}>
-      {/* Tabs Header */}
-      <View style={styles.tabsWrapper}>
-        <View style={styles.tabsContainer}>
-          {tabs.map((tab) => (
+      {/* Tab bar */}
+      <View style={styles.tabBar}>
+        {tabs.map((tab) => {
+          const isActive = selectedTab === tab.id;
+          return (
             <Pressable
               key={tab.id}
-              style={[
-                styles.tabButton,
-                selectedTab === tab.id && styles.activeTabButton,
-              ]}
-              onPress={() => setSelectedTab(tab.id)}
+              style={styles.tabItem}
+              onPress={() => handleSelect(tab.id)}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  selectedTab === tab.id && styles.activeTabText,
-                ]}
-              >
+              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
                 {tab.label}
               </Text>
+              {isActive && <View style={styles.indicator} />}
             </Pressable>
-          ))}
-        </View>
+          );
+        })}
       </View>
 
-      {/* Tabs Content */}
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        scrollEnabled={true}
-        showsVerticalScrollIndicator={false}
-        showsHorizontalScrollIndicator={false}
-      >
+      {/* Content — flex:1 so children can fill remaining height */}
+      <View style={styles.content}>
         {activeTabObj?.content}
-      </ScrollView>
+      </View>
     </View>
   );
 };
 
-export default ReusableTabs;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  tabsWrapper: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  tabsContainer: {
-    flexDirection: "row",
-    backgroundColor: "#f8f8f8",
-    borderRadius: 12,
-    padding: 4,
-  },
-  tabButton: {
+  container: {
     flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
+    backgroundColor: "#fff",
   },
-  activeTabButton: {
-    backgroundColor: COLORS.background,
-    shadowColor: "#610b0c",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+  tabBar: {
+    flexDirection: "row",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#e8e8e8",
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 14,
+    position: "relative",
   },
   tabText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#666",
+    color: "#bbb",
   },
-  activeTabText: {
-    color: "#fff",
+  tabTextActive: {
+    color: "#1a1a1a",
     fontWeight: "600",
   },
-  scrollContainer: {
-    paddingBottom: 20,
+  indicator: {
+    position: "absolute",
+    bottom: 0,
+    left: "20%",
+    right: "20%",
+    height: 2,
+    borderRadius: 2,
+    backgroundColor: "#1a1a1a",
+  },
+  // ✅ replaces scrollContainer
+  content: {
+    flex: 1,
   },
 });
+
+export default ReusableTabs;

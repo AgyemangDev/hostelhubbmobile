@@ -6,60 +6,32 @@ const ClientLayout = () => {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="index"
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="WelcomeScreen"
-        options={{
-          headerShown: false,
-          gestureEnabled: false, // This should disable swipe back
-        }}
-      />
-       <Stack.Screen
         name="EmailVerificationScreen"
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ClientLogIn"
         options={{
           headerShown: false,
+          presentation: "modal",        // ← modal slide up
+          gestureEnabled: true,         // ← swipe down to dismiss
+          animation: "slide_from_bottom",
         }}
       />
       <Stack.Screen
-        name="ClientSignUp"
-        options={{
-          headerShown: false,
-        }}
-      />
-       <Stack.Screen
         name="FirstWelcomeScreen"
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ForgotPassword"
-        options={{
-          headerShown: false,
-        }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PersonalInfo"
-        options={{
-          headerShown: false,
-          gestureEnabled: true, // This should disable swipe back
-        }}
-      />
-      <Stack.Screen
-        name="locSelection"
-        options={{
-          headerShown: false,
-          gestureEnabled: true, // This should disable swipe back
-        }}
+        options={{ headerShown: false, gestureEnabled: true }}
       />
     </Stack>
   );

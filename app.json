@@ -2,30 +2,24 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "scheme": "hostelhubb",
-    "deepLinking": true,
-    "platforms": ["ios", "web", "android"],
+    "platforms": [
+      "ios",
+      "web",
+      "android"
+    ],
     "orientation": "portrait",
-    "newArchEnabled": true,
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#b20000"
-    },
     "ios": {
       "config": {
         "googleMapsApiKey": "AIzaSyAbLuhuszsrZAUNH31HH3pc1T9P7rl9UHM"
       },
       "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "38",
-      "version": "4.0.1",
-      "pushNotifications": {
-        "backgroundMode": true
-      },
+      "buildNumber": "39",
+      "version": "4.0.2",
       "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
@@ -34,10 +28,6 @@
       }
     },
     "android": {
-      "pushNotifications": {
-        "backgroundMode": true
-      },
-      "targetSdkVersion": 35,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
@@ -53,7 +43,7 @@
       },
       "package": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 38,
+      "versionCode": 39,
       "intentFilters": [
         {
           "action": "VIEW",
@@ -69,7 +59,10 @@
               "host": "*"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -80,7 +73,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

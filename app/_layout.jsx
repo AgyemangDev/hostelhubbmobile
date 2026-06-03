@@ -1,16 +1,12 @@
 import { useFonts } from "expo-font";
-import { useEffect, useState } from "react";
-import { useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Toast from "react-native-toast-message";
 import { setupProviders } from "../utils/providers";
 import { checkForAppUpdates } from "../utils/update";
 import MainLayout from "../components/MainLayout";
 import ReviewPromptWrapper from "../Global/ReviewPromptWrapper";
 import notificationService from "./firebase/notificationService";
-import * as SplashScreen from "expo-splash-screen";
 import { AppState } from "react-native";
-
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -24,18 +20,13 @@ export default function RootLayout() {
     if (!loaded) return;
 
     const initializeApp = async () => {
-      // Update check BLOCKS everything — splash screen stays visible
       await checkForAppUpdates();
-      // If an update was found, reloadAsync() was called above
-      // and we never reach this line. App restarts fresh with new code.
-      
-      // No update found (or check failed) — continue normal startup
+
       setUpdateChecked(true);
 
-      await SplashScreen.hideAsync();
+      const notificationCleanup =
+        notificationService.listenToNotifications();
 
-      // Notifications setup
-      const notificationCleanup = notificationService.listenToNotifications();
       notificationService.resetBadgeCount();
 
       const appStateSubscription = AppState.addEventListener(
@@ -60,7 +51,6 @@ export default function RootLayout() {
     initializeApp();
   }, [loaded]);
 
-  // Keep splash screen up until fonts + update check are both done
   if (!loaded || !updateChecked) return null;
 
   const ProvidersWrapper = setupProviders();

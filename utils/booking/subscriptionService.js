@@ -1,5 +1,6 @@
 import { Alert } from 'react-native';
 import { ACCESS_FEE, BOOKING_MESSAGES } from '../../constants/bookingConstants';
+console.log("ACCESS_FEE in subscriptionService:", ACCESS_FEE);
 
 /**
  * Handles subscription payment deduction with user consent
@@ -43,7 +44,7 @@ const promptInsufficientBalance = async (currentBalance, router) => {
       "You've used your free booking",
       `Insufficient balance. You need GHC ${ACCESS_FEE} to continue. Your current balance is GHC ${currentBalance.toFixed(
         2
-      )}. Subscribe to HostelHubb for unlimited hostel bookings.`,
+      )}. Subscribe to HostelHubb for unlimited hostel bookings for the academic year.`,
       [
         {
           text: 'Top Up Now',
