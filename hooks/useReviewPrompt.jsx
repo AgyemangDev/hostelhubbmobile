@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as StoreReview from "expo-store-review";
 import { Platform, Linking } from "react-native";
 
-const REVIEW_KEY = "isRated";
+const REVIEW_KEY = "isRated1";
 const FIRST_LAUNCH_KEY = "firstLaunchTime";
 
 // Replace with your actual store URLs

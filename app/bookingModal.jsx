@@ -6,10 +6,11 @@ import { UserContext } from "../context/UserContext";
 import { useAccommodationById } from "../hooks/accommodationContext/useAccommodationById";
 import { useBookingForm } from "../hooks/useBookingForm";
 import { useNotificationPermission } from "../hooks/notification/useNotificationPermission";
+import ProcessingState from "../components/BookingModalComponents/ProcessingState";
 import { handleBookingProcess } from "../services/bookingServices";
 
 import BookingStepper from "../components/BookingModalComponents/BookingStepper";
-import LoadingState from "../components/BookingModalComponents/LoadingState";
+import SkeletonLoader from "../components/BookingModalComponents/LoadingState";
 import StepBookingSuccessScreen from "../components/BookingModalComponents/StepBookingSuccessScreen";
 
 const BOOKING_STEPS = {
@@ -84,9 +85,19 @@ const BookingModal = () => {
     });
   };
 
-  if (loading) return <LoadingState message="Loading accommodation..." />;
-  if (currentStep === BOOKING_STEPS.PROCESSING)
-    return <LoadingState message="Finalizing your booking 📦" />;
+if (loading) return (
+  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SkeletonLoader />
+  </SafeAreaView>
+);
+
+if (currentStep === BOOKING_STEPS.PROCESSING)
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      <ProcessingState message="Finalizing your booking..." />
+    </SafeAreaView>
+  );
+
   if (currentStep === BOOKING_STEPS.SUCCESS)
     return (
       <StepBookingSuccessScreen

@@ -1,76 +1,106 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import StepSelectAccommodationScreen from './StepSelectAccommodationScreen';
-import COLORS from '../../constants/Colors';
 
-const BookingStepper = ({
-  hostelData,
-  formData,
-  handleSelectPaymentRange,
-  handleBooking,
-}) => {
+const TEAL = "#0F6E56";
 
-  const isBookingReady = () =>
-    formData.selectedPayment && formData.selectedRoomType;
+const BookingStepper = ({ hostelData, formData, handleSelectPaymentRange, handleBooking }) => {
+  const isReady = formData.selectedPayment && formData.selectedRoomType;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>
-        Reservation at {hostelData?.accommodation_name}
-      </Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>Reservation</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {hostelData?.accommodation_name}
+        </Text>
+      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-<StepSelectAccommodationScreen
-  hostelData={hostelData}
-  formData={formData} 
-  handleSelectPaymentRange={handleSelectPaymentRange}
-/>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <StepSelectAccommodationScreen
+          hostelData={hostelData}
+          formData={formData}
+          handleSelectPaymentRange={handleSelectPaymentRange}
+        />
       </ScrollView>
 
-      <TouchableOpacity
-        style={[
-          styles.button,
-          !isBookingReady() && { opacity: 0.5 }
-        ]}
-        disabled={!isBookingReady()}
-        onPress={handleBooking}
-      >
-        <Text style={styles.buttonText}>Confirm Booking</Text>
-      </TouchableOpacity>
+      {/* Confirm button */}
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.button, !isReady && styles.buttonDisabled]}
+          disabled={!isReady}
+          onPress={handleBooking}
+          activeOpacity={0.75}
+        >
+          {isReady && (
+            <Ionicons name="checkmark-circle-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
+          )}
+          <Text style={styles.buttonText}>
+            {isReady ? "Confirm booking" : "Select a room to continue"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-export default BookingStepper;
-
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContent: { padding: 20, paddingBottom: 100 },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  header: {
     paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#EFEFEF",
+  },
+  eyebrow: {
+    fontSize: 11,
+    color: "#999",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#222",
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 120,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderTopWidth: 0.5,
+    borderTopColor: "#EFEFEF",
   },
   button: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: COLORS.button,
-    paddingVertical: 15,
+    backgroundColor: TEAL,
     borderRadius: 10,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonDisabled: {
+    backgroundColor: "#E0E0E0",
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '600',
-    textAlign: 'center',
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500",
   },
 });
+
+export default BookingStepper;

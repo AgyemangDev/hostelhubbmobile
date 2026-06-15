@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "4.0.2",
+    "version": "4.0.3",
     "scheme": "hostelhubb",
     "platforms": [
       "ios",
@@ -18,8 +18,8 @@
       },
       "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "39",
-      "version": "4.0.2",
+      "buildNumber": "40",
+      "version": "4.0.3",
       "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
@@ -43,7 +43,7 @@
       },
       "package": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 39,
+      "versionCode": 40,
       "intentFilters": [
         {
           "action": "VIEW",

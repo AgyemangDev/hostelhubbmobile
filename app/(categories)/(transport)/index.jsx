@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,16 +6,26 @@ import {
   ScrollView,
   Animated,
   Dimensions,
+  Modal
 } from 'react-native';
 import COLORS from "../../../constants/Colors"
 import Button from "../../../components/ButtonComponents/ButtonComponent";
 import { useRouter } from 'expo-router';
+import { UserContext } from '../../../context/UserContext';
+import { auth } from '../../firebase/FirebaseConfig';
+import ClientLogIn from "../../(Client)/ClientLogIn";
 
 const { width, height } = Dimensions.get('window');
 
 const TransportLanding = () => {
 
-  const router = useRouter();
+    const router = useRouter();
+
+  const [showAuth, setShowAuth] = useState(false);
+
+  const { userInfo } = useContext(UserContext);
+  const user = auth.currentUser;
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
@@ -35,6 +45,15 @@ const TransportLanding = () => {
     { icon: '⚡', title: 'Quick Booking', desc: 'Reserve your seat in seconds' },
   ];
 
+  const handleBookBus = () => {
+  if (!user) {
+    setShowAuth(true);
+    return;
+  }
+
+  router.push('/(categories)/(transport)/BusSelection');
+};
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       
@@ -51,11 +70,11 @@ const TransportLanding = () => {
 
           {/* CTA Button */}
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-            <Button
-              buttonText="Book A Bus Now"
-              onPressFunction={() => router.push('/(categories)/(transport)/BusSelection')}
-              variant="default"
-            />
+ <Button
+  buttonText="Book A Bus Now"
+  onPressFunction={handleBookBus}
+  variant="default"
+/>
           </Animated.View>
         </View>
 
@@ -90,7 +109,14 @@ const TransportLanding = () => {
           ))}
         </View>
       </View>
-
+      <Modal
+  visible={showAuth}
+  animationType="slide"
+  presentationStyle="pageSheet"
+  onRequestClose={() => setShowAuth(false)}
+>
+  <ClientLogIn onClose={() => setShowAuth(false)} />
+</Modal>
     </ScrollView>
   );
 };

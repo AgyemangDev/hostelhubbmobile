@@ -2,21 +2,35 @@
 import {
   View,
   Text,
+  Modal,
   ScrollView,
-  Dimensions,
   ImageBackground,
   StatusBar,
 } from "react-native";
 import { useRouter } from "expo-router";
 import styles from "./Styles/Styles";
 import Button from "../../components/ButtonComponents/ButtonComponent";
+import React, { useState, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
+import { auth } from "../firebase/FirebaseConfig";
+import ClientLogIn from "../(Client)/ClientLogIn";
 
 export default function Index() {
-  const router = useRouter();
+    const router = useRouter();
 
-  const handleReservePress = () => {
-    router.push("ItemsSelection");
-  };
+  const [showAuth, setShowAuth] = useState(false);
+
+  const { userInfo, refreshUserInfo } = useContext(UserContext);
+  const user = auth.currentUser;
+
+const handleReservePress = () => {
+  if (!user) {
+    setShowAuth(true);
+    return;
+  }
+
+  router.push("ItemsSelection");
+};
 
   return (
     <>
@@ -159,6 +173,14 @@ export default function Index() {
           </Text>
         </View>
       </ScrollView>
+      <Modal
+  visible={showAuth}
+  animationType="slide"
+  presentationStyle="pageSheet"
+  onRequestClose={() => setShowAuth(false)}
+>
+  <ClientLogIn onClose={() => setShowAuth(false)} />
+</Modal>
     </>
   );
 }

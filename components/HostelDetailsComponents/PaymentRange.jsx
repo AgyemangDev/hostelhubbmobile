@@ -2,214 +2,160 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+const ROOM_CONFIG = {
+  Apartment:    { icon: "home-outline",          color: "#185FA5", bg: "#E6F1FB", popular: false },
+  OneInARoom:   { icon: "person-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
+  TwoInARoom:   { icon: "people-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
+  ThreeInARoom: { icon: "people-outline",        color: "#854F0B", bg: "#FAEEDA", popular: false },
+  FourInARoom:  { icon: "people-circle-outline", color: "#5F5E5A", bg: "#F1EFE8", popular: false },
+};
+
+const ROOM_ORDER = ["Apartment", "OneInARoom", "TwoInARoom", "ThreeInARoom", "FourInARoom"];
+
+const formatRoomName = (key) => key.replace(/([A-Z])/g, " $1").trim();
+
 const PaymentRange = ({ paymentRanges }) => {
-  // The desired order for the room types
-  const roomOrder = [
-    "Apartment",
-    "OneInARoom",
-    "TwoInARoom",
-    "ThreeInARoom",
-    "FourInARoom",
-  ];
-
-  // Function to format the room type (e.g., "ThreeInARoom" -> "Three In A Room")
-  const formatRoomType = (roomType) => {
-    return roomType.replace(/([A-Z])/g, " $1").trim();
-  };
-
-  // Get appropriate icon for room type
-  const getRoomIcon = (roomType) => {
-    const iconMap = {
-      'OneInARoom': 'person',
-      'TwoInARoom': 'people',
-      'ThreeInARoom': 'people-outline',
-      'FourInARoom': 'people-circle',
-      'Apartment': 'home',
-    };
-
-    return iconMap[roomType] || 'bed';
-  };
-
-  // Determine if a room type is popular (for highlighting)
-  const isPopular = (roomType) => {
-    return roomType === "ThreeInARoom" || roomType === "TwoInARoom";
-  };
-
-  // Function to get sorted payment options for a room type
-  const getSortedPaymentOptions = (roomType, options) => {
-    if (roomType === "OneInARoom") {
-      // Sort OneInARoom from highest to lowest price
-      return [...options].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-    }
-    // Return original order for other room types
-    return options;
-  };
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Accommodation Pricing</Text>
-      {roomOrder.map((roomType, roomIndex) => {
-        // Check if the room type exists in paymentRanges and has at least one entry
-        if (paymentRanges.hasOwnProperty(roomType) && paymentRanges[roomType].length > 0) {
-          const sortedOptions = getSortedPaymentOptions(roomType, paymentRanges[roomType]);
-          
-          return (
-            <View
-              key={roomIndex}
-              style={[
-                styles.roomTypeCard,
-                isPopular(roomType) && styles.popularCard
-              ]}
-            >
-              <View style={styles.roomTypeHeader}>
-                <View style={styles.roomTypeIconContainer}>
-                  <Ionicons name={getRoomIcon(roomType)} size={24} color="#610b0c" />
-                </View>
-                <Text style={styles.roomTypeName}>{formatRoomType(roomType)}</Text>
-                {isPopular(roomType) && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularText}>Popular</Text>
-                  </View>
-                )}
-              </View>
+      <Text style={styles.sectionLabel}>Accommodation pricing</Text>
 
-              {/* Map through all payment options for this room type */}
-              {sortedOptions.map((details, optionIndex) => (
-                <View key={optionIndex} style={styles.paymentOption}>
-                  <View style={styles.paymentDetailsRow}>
-                    <View style={styles.leftSection}>
-                      <Text style={styles.paymentDescription}>{details.description}</Text>
-                    </View>
-                    <View style={styles.rightSection}>
-                      <Text style={styles.priceLabel}>Per Year</Text>
-                      <Text style={styles.priceValue}>
-                        GHc {(parseFloat(details.price) * 1.05).toFixed(2)}
-                      </Text>
-                    </View>
+      {ROOM_ORDER.map((roomType) => {
+        const options = paymentRanges[roomType];
+        if (!options?.length) return null;
+
+        const config = ROOM_CONFIG[roomType] ?? {
+          icon: "bed-outline",
+          color: "#5F5E5A",
+          bg: "#F1EFE8",
+          popular: false,
+        };
+
+        return (
+          <View
+            key={roomType}
+            style={[styles.card, config.popular && styles.cardFeatured]}
+          >
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View style={[styles.iconWrap, { backgroundColor: config.bg }]}>
+                <Ionicons name={config.icon} size={18} color={config.color} />
+              </View>
+              <Text style={styles.roomName}>{formatRoomName(roomType)}</Text>
+              <View style={[
+                styles.badge,
+                config.popular ? styles.badgePopular : styles.badgeNeutral
+              ]}>
+                <Text style={[
+                  styles.badgeText,
+                  config.popular ? styles.badgeTextPopular : styles.badgeTextNeutral
+                ]}>
+                  {config.popular ? "Popular" : "Available"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Options */}
+            <View style={styles.optionsWrap}>
+              {options.map((opt, i) => (
+                <View key={i} style={styles.optionRow}>
+                  <View style={styles.optLeft}>
+                    <Text style={styles.optDesc}>{opt.description}</Text>
+                  </View>
+                  <View style={styles.optRight}>
+                    <Text style={styles.perLabel}>Per year</Text>
+                    <Text style={styles.priceVal}>
+                      GHc {(parseFloat(opt.price) * 1.05).toFixed(2)}
+                    </Text>
                   </View>
                 </View>
               ))}
             </View>
-          );
-        }
-        return null; // If the room type is not available, return null to not render anything
+          </View>
+        );
       })}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
+const TEAL = "#0F6E56";
+const TEAL_BG = "#E1F5EE";
 
+const styles = StyleSheet.create({
+  container: { marginVertical: 24 },
+
+  sectionLabel: {
+    fontSize: 11,
+    color: "#888",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 12,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 4,
-  },
-  roomTypeCard: {
+
+  card: {
     backgroundColor: "#fff",
     borderRadius: 12,
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#eee",
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    marginBottom: 10,
+    overflow: "hidden",
   },
-  popularCard: {
-    borderColor: "#610b0c",
+  cardFeatured: {
     borderWidth: 2,
+    borderColor: TEAL,
   },
-  roomTypeHeader: {
+
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    gap: 10,
+    padding: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#F0F0F0",
   },
-  roomTypeIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#f8f0f0",
+
+  iconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
   },
-  roomTypeName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+
+  roomName: {
     flex: 1,
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#222",
   },
-  popularBadge: {
-    backgroundColor: "#610b0c",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
   },
-  popularText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  paymentOption: {
-    marginTop: 8,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 8,
-  },
-  paymentDetailsRow: {
+  badgePopular: { backgroundColor: TEAL_BG },
+  badgeNeutral: { backgroundColor: "#F1F1F1" },
+  badgeText: { fontSize: 11, fontWeight: "500" },
+  badgeTextPopular: { color: TEAL },
+  badgeTextNeutral: { color: "#888" },
+
+  optionsWrap: { padding: 10, gap: 8 },
+
+  optionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  leftSection: {
-    flex: 1,
-    paddingRight: 12,
-  },
-  rightSection: {
-    alignItems: "flex-end",
-  },
-  paymentDescription: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#333",
-    marginBottom: 4,
-  },
-  availabilityText: {
-    fontSize: 14,
-    color: "#666",
-    fontStyle: "italic",
-  },
-  priceLabel: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 2,
-  },
-  priceValue: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#610b0c",
-  },
-  unavailableContainer: {
-    padding: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F8F8F8",
     borderRadius: 8,
+    padding: 10,
   },
-  unavailableText: {
-    color: "#999",
-    fontStyle: "italic",
-  },
+
+  optLeft: { flex: 1, paddingRight: 12 },
+  optDesc: { fontSize: 13, fontWeight: "500", color: "#222" },
+
+  optRight: { alignItems: "flex-end" },
+  perLabel: { fontSize: 10, color: "#999" },
+  priceVal: { fontSize: 16, fontWeight: "500", color: TEAL },
 });
 
 export default PaymentRange;

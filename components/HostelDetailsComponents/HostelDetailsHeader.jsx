@@ -1,64 +1,110 @@
 import React from "react";
-import { 
-  View, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Share, 
-  Alert, 
-  SafeAreaView, 
-  Platform, 
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Share,
+  Alert,
+  SafeAreaView,
+  Platform,
   StatusBar,
+  Animated,
+  Text,
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-const HostelDetailsHeader = ({ hostel, hostelId, scrolled }) => {
+const HostelDetailsHeader = ({ hostel, hostelId, scrollY }) => {
   const navigation = useNavigation();
 
   const handleShare = async () => {
     try {
-      const shareLink = `https://hostelhubb.com/hostel/${hostelId}`;
       await Share.share({
-        message: `Check out this hostel: ${hostel?.accommodation_name} on Hostelhubb!`,
-        url: shareLink,
+        message: `Check out ${hostel?.accommodation_name}`,
       });
     } catch (error) {
       Alert.alert("Sharing failed", error.message);
     }
   };
 
+  // Header background animation
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [80, 140],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+  // Title animation
+  const titleOpacity = scrollY.interpolate({
+    inputRange: [100, 160],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
+  const titleTranslate = scrollY.interpolate({
+    inputRange: [100, 160],
+    outputRange: [10, 0],
+    extrapolate: "clamp",
+  });
+
+  // Icon color animation trigger
+  const darkMode = scrollY.interpolate({
+    inputRange: [90, 120],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   return (
-    <View
-      style={[
-        styles.headerContainer,
-        scrolled && styles.headerScrolled,
-      ]}
-    >
+    <View style={styles.wrapper}>
+      {/* Animated background */}
+      <Animated.View
+        style={[
+          styles.background,
+          {
+            opacity: headerOpacity,
+          },
+        ]}
+      />
+
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
+          
+          {/* Back */}
           <TouchableOpacity
             style={styles.iconButton}
             onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
           >
-            <Ionicons 
-              name="arrow-back" 
-              size={22} 
-              color={scrolled ? "#333" : "#fff"} 
+            <Ionicons
+              name="arrow-back"
+              size={22}
+              color="#222"
             />
           </TouchableOpacity>
 
+          {/* Animated title */}
+          <Animated.View
+            style={{
+              opacity: titleOpacity,
+              transform: [{ translateY: titleTranslate }],
+            }}
+          >
+            <Text numberOfLines={1} style={styles.title}>
+              {hostel?.accommodation_name}
+            </Text>
+          </Animated.View>
+
+          {/* Share */}
           <TouchableOpacity
             style={styles.iconButton}
             onPress={handleShare}
-            activeOpacity={0.7}
           >
-            <Feather 
-              name="share-2" 
-              size={20} 
-              color={scrolled ? "#333" : "#fff"} 
+            <Feather
+              name="share"
+              size={20}
+              color="#222"
             />
           </TouchableOpacity>
+
         </View>
       </SafeAreaView>
     </View>
@@ -66,41 +112,47 @@ const HostelDetailsHeader = ({ hostel, hostelId, scrolled }) => {
 };
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  wrapper: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1000,
-    backgroundColor: "transparent",
-    transition: "all 0.3s ease",
   },
-  headerScrolled: {
+
+  background: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
   },
+
   safeArea: {
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    paddingTop: Platform.OS === "android"
+      ? StatusBar.currentHeight
+      : 0,
   },
+
   header: {
+    height: 56,
+    paddingHorizontal: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    height: Platform.OS === "ios" ? 45 : 54,
   },
+
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(0,0,0,0.3)",
+    width: 38,
+    height: 38,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.9)",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  title: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#222",
+    maxWidth: 180,
   },
 });
 

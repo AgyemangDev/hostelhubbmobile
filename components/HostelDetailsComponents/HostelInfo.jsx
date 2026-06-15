@@ -1,89 +1,98 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-import COLORS from "../../constants/Colors";
-
-
 const HostelInfo = ({ hostel, hostelDescription }) => {
-  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
-
-  const toggleDescription = () => {
-    setShowFullDescription(!showFullDescription);
-  };
+  const shortDescription =
+    hostelDescription?.length > 100
+      ? hostelDescription.slice(0, 100)
+      : hostelDescription;
 
   return (
-    <View style={styles.section}>
-      <Text style={styles.title}>{hostel?.accommodation_name || "Hostel Name"}</Text>
-      <Text style={styles.location}>
-        Location: {hostel?.location || "Unknown"}
+    <View style={styles.container}>
+      {/* Hostel Name */}
+      <Text style={styles.title}>
+        {hostel?.accommodation_name || "Hostel Name"}
       </Text>
 
-      <TouchableOpacity
-        onPress={toggleDescription}
-        style={styles.descriptionContainer}
-      >
-        <Text style={styles.description}>
-          {showFullDescription
-            ? hostelDescription
-            : `${hostelDescription.slice(0, 60)}...`}
+      {/* Location */}
+      <View style={styles.locationRow}>
+        <Ionicons name="location-outline" size={16} color="#717171" />
+        <Text style={styles.location}>
+          {hostel?.location || "Unknown location"}
         </Text>
-        <Ionicons
-          name={
-            showFullDescription ? "chevron-up-outline" : "chevron-down-outline"
-          }
-          size={20}
-          color="#7f8c8d"
-        />
-      </TouchableOpacity>
+      </View>
+
+      {/* Divider */}
+      <View style={styles.divider} />
+
+      {/* Description */}
+      <Text style={styles.description}>
+        {expanded ? hostelDescription : shortDescription}
+        {!expanded && hostelDescription?.length > 100 && "..."}
+      </Text>
+
+      {/* Toggle */}
+      {hostelDescription?.length > 100 && (
+        <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+          <Text style={styles.showMore}>
+            {expanded ? "Show less" : "Show more"}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  section: {
-    marginBottom: 10,
-    padding: 12,
-    backgroundColor: "#ffffff",
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 1,
+  container: {
+    backgroundColor: "#fff",
+    paddingVertical: 20,
+    paddingHorizontal: 4,
+    marginBottom: 20,
   },
+
   title: {
-    fontSize: 23,
-    fontWeight: "bold",
-    marginBottom: 4,
-    color: COLORS.background,
+    fontSize: 26,
+    fontWeight: "600",
+    color: "#222222",
+    marginBottom: 8,
+    letterSpacing: -0.4,
   },
+
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+
   location: {
-    fontSize: 16,
-    color: "#7f8c8d",
-    marginBottom: 12,
+    fontSize: 15,
+    color: "#717171",
+    marginLeft: 6,
+    fontWeight: "400",
   },
-  distanceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+
+  divider: {
+    height: 1,
+    backgroundColor: "#EBEBEB",
+    marginBottom: 18,
   },
-  distanceText: {
-    fontSize: 16,
-    color: COLORS.primary,
-    marginLeft: 8,
-    flex: 1,
-  },
-  descriptionContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+
   description: {
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 24,
-    color: "#34495e",
-    flex: 1,
+    color: "#484848",
+    marginBottom: 12,
+  },
+
+  showMore: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#222222",
+    textDecorationLine: "underline",
   },
 });
 

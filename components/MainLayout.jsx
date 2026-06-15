@@ -72,6 +72,7 @@ export default function MainLayout() {
         <Stack.Screen name="(StorageForm)" options={{ headerShown: false }} />
         <Stack.Screen name="Shortlist" options={{ headerShown: false }} />
         <Stack.Screen name="NotificationScreen" options={{ headerShown: false }} />
+         <Stack.Screen name="allPhotos" options={{ headerShown: false }} />
         <Stack.Screen
           name="bookingModal"
           options={{ title: "Booking", headerShown: false }}

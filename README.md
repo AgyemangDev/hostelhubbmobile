@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "description of change" --platform ios
+eas update --branch production --message "ui enhancement" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
@@ -10,11 +10,15 @@ eas update --branch production --message "description of change" --platform ios
 # iOS (builds + auto submits to App Store)
 eas build --platform ios --profile production --non-interactive --auto-submit
 
+## set eas build version
+eas build:version:set
+
 # Android AAB (Google Play)
 eas build --platform android --profile production
 
 # Android APK (direct install)
 eas build --platform android --profile apk
+eas build --profile apk --platform android
 
 ## Current Build Numbers
 # android  buildNumber=34  version=3.7.0

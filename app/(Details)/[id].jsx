@@ -7,7 +7,7 @@ import {
   Alert,
   Linking,
   StatusBar,
-  ScrollView,
+  Animated,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -39,7 +39,7 @@ const DetailsScreen = () => {
   const router = useRouter();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const scrollY = React.useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const timer = setTimeout(() => updateHostelViewCount(hostelId), 10000);
@@ -75,66 +75,47 @@ const DetailsScreen = () => {
       return acc;
     }, {});
 
-  const handleCall = (phoneNumber) => {
-    if (!userInfo.paymentStatus) {
-      Alert.alert(
-        "Support HostelHubb!",
-        "Please subscribe to access this feature.",
-        [
-          { text: "Support", onPress: () => router.push("/transactions") },
-          { text: "OK", style: "cancel" },
-        ]
-      );
-      return;
-    }
-    Linking.openURL(`tel:${phoneNumber}`);
-  };
 
-const handleBookingPress = async () => {
+const handleBookingPress = () => {
   if (!hostel.accommodation_availability) {
     Alert.alert("Oops! Hostel Fully Booked", "This hostel is currently full.", [{ text: "OK" }]);
     return;
   }
 
-  const firebaseToken = await user.getIdToken(true);
-
-  await handleBookingProcess({
-    user,
-    userInfo,
-    formData: {
-      selectedRoomType: hostel.room_types?.[0]?.room_type,
-      selectedPayment: hostel.room_types?.[0]?.price,
-    },
-    hostelId: hostel.id,
-    bookingSource: "details",
-    router,
-    patchUserData,
-    currentExpoToken,
-    firebaseToken,
-    onSuccess: () => router.push("/(tabs)/(bookings)"),
-    onError: () => {},
+  router.push({
+    pathname: "/bookingModal",
+    params: { hostelId: hostel.id }
   });
 };
-
-  const handleScroll = (event) => {
-    const scrollPosition = event.nativeEvent.contentOffset.y;
-    setScrolled(scrollPosition > 270);
-  };
 
   const paymentRanges = buildPaymentRanges(hostel?.room_types || []);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+<HostelDetailsHeader
+  hostel={hostel}
+  hostelId={hostelId}
+  scrollY={scrollY}
+/>
 
-      <HostelDetailsHeader hostel={hostel} hostelId={hostelId} scrolled={scrolled} />
-
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
+<Animated.ScrollView
+  contentContainerStyle={styles.scrollViewContent}
+  showsVerticalScrollIndicator={false}
+  scrollEventThrottle={16}
+  onScroll={Animated.event(
+    [
+      {
+        nativeEvent: {
+          contentOffset: {
+            y: scrollY,
+          },
+        },
+      },
+    ],
+    { useNativeDriver: true }
+  )}
+>
         <HostelImageGallery images={hostel?.images || []} />
 
         <View style={styles.components}>
@@ -143,13 +124,9 @@ const handleBookingPress = async () => {
             hostelDescription={hostel?.description || ""}
           />
 
-          <TouchableOpacity
-            style={styles.reviewsButton}
-            onPress={() => setIsModalVisible(true)}
-          >
-            <MaterialIcons name="rate-review" size={20} color="#fff" />
-            <Text style={styles.reviewsButtonText}>See All Reviews</Text>
-          </TouchableOpacity>
+<TouchableOpacity onPress={() => setIsModalVisible(true)}>
+  <Text style={styles.reviewsLink}>See all reviews</Text>
+</TouchableOpacity>
 
           <ReviewsModal
             visible={isModalVisible}
@@ -160,7 +137,7 @@ const handleBookingPress = async () => {
           <PaymentRange paymentRanges={paymentRanges} />
           <Amenities amenities={hostel?.amenities || []} />
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <View style={styles.fixedBookingButtonContainer}>
         <BookingButton onPress={handleBookingPress} />
@@ -173,27 +150,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingBottom: 120 },
   components: { marginHorizontal: 10 },
-  reviewsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.background,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
-    alignSelf: "center",
-    marginVertical: 20,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  reviewsButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
   fixedBookingButtonContainer: {
     position: "absolute",
     bottom: 0,
@@ -210,6 +166,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
+  reviewsLink: {
+  fontSize: 13,
+  color: "#888",
+  textDecorationLine: "underline",
+  marginTop: -26,
+  marginBottom: 16,
+},
 });
 
 export default DetailsScreen;

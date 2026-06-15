@@ -26,5 +26,5 @@ export const hasValidAccess = (userInfo) => {
  * @returns {boolean} - True if first-time booker
  */
 export const isFirstTimeBooker = (userInfo) => {
-  return !userInfo.noofbooking || userInfo.noofbooking < 1;
+  return !userInfo.noofbooking || userInfo.noofbooking < 5;
 };

@@ -1,76 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  LayoutAnimation,
-  UIManager,
-  Platform,
+  Modal,
+  ScrollView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { getAmenityIcon } from "../../assets/icons/amenityIcons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { formatAmenities, renderAmenityIcon } from "../../utils/amenityHelpers";
 
-const INITIAL_DISPLAY_COUNT = 5;
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+const INITIAL_COUNT = 6;
 
 const Amenities = ({ amenities }) => {
-  const [showAll, setShowAll] = useState(false);
+  console.log(amenities)
+  const [visible, setVisible] = useState(false);
+  const insets = useSafeAreaInsets();
 
-  const displayedAmenities = showAll
-    ? amenities
-    : amenities.slice(0, INITIAL_DISPLAY_COUNT);
+  const amenityData = formatAmenities(amenities);
+  const preview = amenityData.slice(0, INITIAL_COUNT);
 
-  const handleShowAll = () => {
-    // Smooth expand animation (fade + slide)
-    LayoutAnimation.configureNext(
-      LayoutAnimation.create(
-        300,
-        LayoutAnimation.Types.easeInEaseOut,
-        LayoutAnimation.Properties.opacity
-      )
-    );
-
-    setShowAll(true);
-  };
-
-  if (!amenities || amenities.length === 0) {
-    return null;
-  }
+  const renderItem = (item) => (
+    <View key={item.key} style={styles.row}>
+      {renderAmenityIcon(item.key)}
+      <Text style={styles.text}>{item.label}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>What this place offers</Text>
+      <Text style={styles.title}>What this place offers</Text>
 
-      <View style={styles.amenitiesContainer}>
-        {displayedAmenities.map((amenity, index) => (
-          <View key={index} style={styles.amenityItem}>
-            <View style={styles.iconContainer}>
-              {getAmenityIcon(amenity)}
-            </View>
-            <Text style={styles.amenityText} numberOfLines={1}>
-              {amenity}
-            </Text>
-          </View>
-        ))}
-      </View>
+      {preview.map(renderItem)}
 
-      {!showAll && amenities.length > INITIAL_DISPLAY_COUNT && (
-        <TouchableOpacity
-          style={styles.showAllButton}
-          onPress={handleShowAll}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.showAllText}>
-            Show all {amenities.length} amenities
-          </Text>
-          <Ionicons name="chevron-down" size={18} color="#666" />
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
+        <Text style={styles.buttonText}>
+          Show all {amenityData.length} amenities
+        </Text>
+      </TouchableOpacity>
+
+      <Modal visible={visible} animationType="slide">
+        <View style={[styles.modal, { paddingTop: insets.top + 16 }]}>
+          <Text style={styles.modalTitle}>What this place offers</Text>
+
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {amenityData.map(renderItem)}
+          </ScrollView>
+
+          {/* sits above home indicator / nav bar */}
+          <TouchableOpacity
+            style={[styles.close, { paddingBottom: insets.bottom + 12 }]}
+            onPress={() => setVisible(false)}
+          >
+            <Text style={styles.closeText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -78,55 +63,58 @@ const Amenities = ({ amenities }) => {
 export default Amenities;
 
 const styles = StyleSheet.create({
-  container: {
-    marginVertical: 20,
+  container: { marginVertical: 25 },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 20,
+    color: "#222",
+  },
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EBEBEB",
+  },
+
+  text: { marginLeft: 18, fontSize: 15, color: "#222" },
+
+  button: {
+    borderWidth: 1,
+    borderColor: "#222",
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 18,
+    alignItems: "center",
+  },
+
+  buttonText: { fontWeight: "500", color: "#222" },
+
+  modal: {
+    flex: 1,
+    paddingHorizontal: 22,
     backgroundColor: "#fff",
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 16,
-    color: "#1a1a1a",
-  },
-  amenitiesContainer: {
-    gap: 0,
-  },
-  amenityItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 9,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#f8f8f8",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  amenityText: {
-    flex: 1,
-    fontSize: 15,
-    color: "#333",
-    fontWeight: "500",
-  },
-  showAllButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f5f5f5",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginTop: 16,
-    gap: 6,
-  },
-  showAllText: {
-    fontSize: 15,
+
+  modalTitle: {
+    fontSize: 24,
     fontWeight: "600",
-    color: "#666",
+    marginBottom: 25,
+  },
+
+  close: {
+    borderTopWidth: 1,
+    borderTopColor: "#EBEBEB",
+    alignItems: "center",
+    paddingTop: 16,
+  },
+
+  closeText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#222",
   },
 });

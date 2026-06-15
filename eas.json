@@ -5,6 +5,12 @@
   },
   "build": {
     "production": {
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
+        "EXPO_PUBLIC_ACCESS_FEE": "30"
+      },
       "android": {
         "buildType": "app-bundle",
         "channel": "production"
@@ -16,6 +22,12 @@
       "channel": "production"
     },
     "apk": {
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
+        "EXPO_PUBLIC_ACCESS_FEE": "30"
+      },
       "android": {
         "buildType": "apk",
         "channel": "production"
@@ -26,6 +38,12 @@
       "channel": "apk"
     },
     "development": {
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
+        "EXPO_PUBLIC_ACCESS_FEE": "30"
+      },
       "android": {
         "buildType": "apk",
         "channel": "development",

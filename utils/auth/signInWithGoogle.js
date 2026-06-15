@@ -7,7 +7,7 @@ import API_BASE_URL from "../api/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const WEB_CLIENT_ID = "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com" || process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const APP_SCHEME    = "hostelhubb";
 const CALLBACK_URL  = "https://hostelhubbgh.web.app/auth/callback";
 

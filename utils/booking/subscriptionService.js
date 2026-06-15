@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import { ACCESS_FEE, BOOKING_MESSAGES } from '../../constants/bookingConstants';
+import { ACCESS_FEE, BOOKING_MESSAGES, ACCESS_DURATION_MONTHS } from '../../constants/bookingConstants';
 console.log("ACCESS_FEE in subscriptionService:", ACCESS_FEE);
 
 /**
@@ -41,10 +41,8 @@ export const handleSubscriptionPayment = async ({ userInfo, user, patchUserData,
 const promptInsufficientBalance = async (currentBalance, router) => {
   return await new Promise((resolve) => {
     Alert.alert(
-      "You've used your free booking",
-      `Insufficient balance. You need GHC ${ACCESS_FEE} to continue. Your current balance is GHC ${currentBalance.toFixed(
-        2
-      )}. Subscribe to HostelHubb for unlimited hostel bookings for the academic year.`,
+      "You've Used Your 5 Free Bookings",
+      `We're sorry you haven't found your perfect campus accommodation yet! To keep searching, we ask for a small commitment of GHC ${ACCESS_FEE} for ${ACCESS_DURATION_MONTHS} months of unlimited bookings.\n\nYour current balance is GHC ${currentBalance.toFixed(2)}, which isn't quite enough. Top up to continue your search!`,
       [
         {
           text: 'Top Up Now',
@@ -71,26 +69,22 @@ const promptInsufficientBalance = async (currentBalance, router) => {
 const requestPaymentConsent = async (currentBalance, newBalance, router) => {
   return await new Promise((resolve) => {
     Alert.alert(
-      'Booking Fee Required',
-      `To complete this booking, GHC ${ACCESS_FEE} will be deducted from your account.\n\nCurrent Balance: GHC ${currentBalance.toFixed(
-        2
-      )}\nNew Balance: GHC ${newBalance.toFixed(
-        2
-      )}\n\nDo you want to proceed?`,
+      'Show Your Commitment 🏠',
+      `We're sorry you haven't found your perfect campus accommodation yet!\n\nYou've used your 5 free bookings. To continue searching, we ask that you show a small commitment of GHC ${ACCESS_FEE} — this gives you unlimited bookings for ${ACCESS_DURATION_MONTHS} months.\n\nCurrent Balance: GHC ${currentBalance.toFixed(2)}\nAfter Commitment: GHC ${newBalance.toFixed(2)}\n\nReady to find your perfect place?`,
       [
         {
-          text: 'Yes, Proceed',
+          text: "Yes, I'm Committed!",
           onPress: () => resolve(true),
         },
         {
-          text: 'No, Top Up',
+          text: 'Top Up Balance',
           onPress: () => {
             router.push('/(ProfileScreens)/transactions');
             resolve(false);
           },
         },
         {
-          text: 'Cancel',
+          text: 'Not Now',
           style: 'cancel',
           onPress: () => resolve(false),
         },

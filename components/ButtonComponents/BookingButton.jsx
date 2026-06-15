@@ -1,60 +1,45 @@
-import React, { useRef, useEffect } from "react";
-import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
-import COLORS from "../../constants/Colors";
+import React from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+
+const TEAL = "#0F6E56";
 
 const BookingButton = ({ onPress, disabled }) => {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(scaleAnim, {
-          toValue: 1.05,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, []);
-
   return (
     <TouchableOpacity
-      style={[styles.button, disabled && { opacity: 0.6 }]}
+      style={[styles.button, disabled && styles.buttonDisabled]}
       onPress={onPress}
       disabled={disabled}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
     >
-      <Animated.View style={[styles.buttonContent, { transform: [{ scale: scaleAnim }] }]}>
-        <Text style={styles.buttonText}>
-          {disabled ? "Processing..." : "Make a Reservation"}
-        </Text>
-      </Animated.View>
+      <Text style={styles.buttonText}>
+        {disabled ? "Processing..." : "Make a Reservation"}
+      </Text>
     </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.button,
+    backgroundColor: TEAL,
     borderRadius: 10,
     paddingVertical: 15,
-    margin: 16,
+    marginHorizontal: 16,
+    marginVertical: 8,
     alignItems: "center",
     elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
   },
-  buttonContent: {
-    justifyContent: "center",
-    alignItems: "center",
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.3,
   },
 });
 
