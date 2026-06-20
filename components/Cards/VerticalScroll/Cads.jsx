@@ -24,12 +24,9 @@ const HostelCard = ({
   const handleCardPress = async () => {
     await addRecentlyViewedHostel(id);
     handleHostelCardPress({
-      userInfo,
-      user,
-      onCardPress,
-      transactionScreen,
+      userInfo, user, onCardPress, transactionScreen,
       showAuthModal: () => setShowAuth(true),
-       refreshUserInfo,
+      refreshUserInfo,
     });
   };
 
@@ -41,20 +38,20 @@ const HostelCard = ({
 
   return (
     <>
-      <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
-        <Pressable
-          onPress={handleCardPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          style={[styles.card, isLastItem && styles.lastCard]}
-        >
+      <Animated.View style={[styles.container, isLastItem && styles.lastCard, { transform: [{ scale: scaleAnim }] }]}>
+        <Pressable onPress={handleCardPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
           <View style={styles.imageContainer}>
-            <ImageSection ImageUrl={ImageUrl} setImageLoaded={setImageLoaded} />
-            <FavoriteButton accommodationId={id} style={styles.favoriteButton} />
+            <ImageSection ImageUrl={ImageUrl} setImageLoaded={setImageLoaded} availability={availability} />
+            <FavoriteButton accommodationId={id} />
           </View>
           <ContentSection
-            id={id} accommodation_name={accommodation_name} location={location}
-            institution={institution} reviewText={reviewText} views={views} availability={availability}
+            id={id}
+            accommodation_name={accommodation_name}
+            location={location}
+            institution={institution}
+            reviewText={reviewText}
+            views={views}
+            availability={availability}
           />
         </Pressable>
       </Animated.View>
@@ -67,15 +64,16 @@ const HostelCard = ({
 };
 
 const styles = StyleSheet.create({
-  container: { marginBottom: 20, borderRadius: 10, overflow: "hidden" },
-  card: {
-    backgroundColor: "#fff", elevation: 3, borderRadius: 12, overflow: "hidden",
-    shadowColor: "#000", shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, borderWidth: 1, borderColor: "#e0e0e0",
+  container: {
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderWidth: 0.5,
+    borderColor: '#e0e0e0',
   },
   lastCard: { marginBottom: 100 },
-  imageContainer: { position: "relative" },
-  favoriteButton: { position: 'absolute', top: 10, right: 10, zIndex: 10, elevation: 10 },
+  imageContainer: { position: 'relative' },
 });
 
 export default HostelCard;

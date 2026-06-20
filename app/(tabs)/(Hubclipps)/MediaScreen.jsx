@@ -65,11 +65,11 @@ export default function MediaScreen() {
       const videoAsset = result.assets[0];
       const duration = videoAsset.duration || 0;
 
-      if (duration > 35000) {
+      if (duration > 90000) {
         setVideoLoading(false);
         Alert.alert(
           "Video too long",
-          "Please select or edit a video that is 35 seconds or less."
+          "Please select or edit a video that is 1 minute 30 seconds or less."
         );
         return;
       }
@@ -138,7 +138,7 @@ export default function MediaScreen() {
           <View style={styles.tipBox}>
             <Ionicons name="bulb-outline" size={20} color="#717171" />
             <Text style={styles.tipText}>
-              Keep it under 35 seconds. Show all facilities and ensure the room is tidy and well-presented.
+              Keep it under 1 minute 30 seconds. Show all facilities and ensure the room is tidy and well-presented.
             </Text>
           </View>
 
@@ -151,7 +151,7 @@ export default function MediaScreen() {
             >
               <Ionicons name="videocam-outline" size={48} color="#DDDDDD" />
               <Text style={styles.uploadText}>{videoLoading ? "Loading..." : "Tap to upload video"}</Text>
-              <Text style={styles.uploadSubtext}>Maximum 35 seconds</Text>
+              <Text style={styles.uploadSubtext}>Maximum 1 minute 30 seconds</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.previewContainer}>

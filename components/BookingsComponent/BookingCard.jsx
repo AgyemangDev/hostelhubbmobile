@@ -67,7 +67,10 @@ const getStatusConfig = () => {
           </Text>
 
           <Text style={styles.price}>
-            GHS { parseFloat(booking.payment_option)}
+          GHS {Number(booking.payment_option || 0).toLocaleString("en-GH", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})}
           </Text>
         </View>
       </View>

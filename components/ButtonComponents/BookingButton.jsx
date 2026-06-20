@@ -1,7 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import COLORS from "../../constants/Colors";
 
-const TEAL = "#0F6E56";
 
 const BookingButton = ({ onPress, disabled }) => {
   return (
@@ -20,7 +20,7 @@ const BookingButton = ({ onPress, disabled }) => {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: TEAL,
+    backgroundColor: COLORS.teal,
     borderRadius: 10,
     paddingVertical: 15,
     marginHorizontal: 16,

@@ -6,9 +6,10 @@ const COLORS = {
   placeholder: "#d87071",
   primary: "#0364A5",
 
+  
   darkest: "#670708",
   gold: "#f2c94c",
-  teal: "#0c9a98",
+  teal: "#0F6E56",
   success: "#048547",
   link: "#0364A5",
 

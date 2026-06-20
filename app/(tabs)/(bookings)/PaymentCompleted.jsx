@@ -6,10 +6,22 @@ import COLORS from "../../../constants/Colors";
 import Button from "../../../components/ButtonComponents/ButtonComponent";
 import { useRouter } from "expo-router";
 
+const WHAT_NEXT = [
+  {
+    icon: "mail-outline",
+    title: "Check your email",
+    desc: "A payment confirmation receipt has been sent to your email address.",
+  },
+  {
+    icon: "call-outline",
+    title: "Expect a call from HostelHubb",
+    desc: "HostelHubb will send you your hostel receipt with your room number.",
+  },
+];
+
 const PaymentCompleted = () => {
   const animationRef = useRef(null);
-
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     let isMounted = true;
@@ -46,61 +58,72 @@ const PaymentCompleted = () => {
 
       {/* Success Message */}
       <View style={styles.successSection}>
-        <Text style={styles.title}>Payment Completed! 🎉</Text>
+        <Text style={styles.title}>Payment Completed!</Text>
         <Text style={styles.subtitle}>
           Your accommodation payment has been processed successfully.
         </Text>
       </View>
 
-      {/* What Happens Next */}
-      <View style={styles.infoCard}>
-        <View style={styles.iconHeader}>
-          <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} />
-          <Text style={styles.cardTitle}>What Happens Next</Text>
-        </View>
-        <View style={styles.infoContent}>
-          <InfoItem
-            icon="mail"
-            text="Payment confirmation receipt sent to your email"
-          />
-          <InfoItem
-            icon="call"
-            text="HostelHubb will send you your hostel receipt with your room number."
-          />
-        </View>
+      {/* What Happens Next — Timeline Card */}
+      <View style={styles.nextCard}>
+        <Text style={styles.sectionLabel}>What happens next</Text>
+
+        {WHAT_NEXT.map((step, i) => (
+          <View key={i} style={styles.nextRow}>
+            <View style={styles.nextLeft}>
+              <View style={styles.stepLine}>
+                <View style={styles.stepDot} />
+                {i < WHAT_NEXT.length - 1 && (
+                  <View style={styles.stepConnector} />
+                )}
+              </View>
+            </View>
+            <View style={styles.nextContent}>
+              <View style={styles.nextIconRow}>
+                <View style={styles.nextIconWrap}>
+                  <Ionicons name={step.icon} size={16} color={COLORS.primary} />
+                </View>
+                <Text style={styles.nextTitle}>{step.title}</Text>
+              </View>
+              <Text style={styles.nextDesc}>{step.desc}</Text>
+            </View>
+          </View>
+        ))}
       </View>
 
-      {/* Transport Service Ad */}
-      <View style={styles.transportSection}>
-        <View style={styles.sectionHeader}>
-          <Ionicons name="bus" size={20} color={COLORS.primary} />
-          <Text style={styles.sectionTitle}>Need Transport Back to School?</Text>
-        </View>
-        
-        <View style={styles.transportCard}>
-          <View style={styles.transportIconContainer}>
-            <Ionicons name="bus" size={32} color="#fff" />
+      {/* Transport Service */}
+      <View style={styles.servicesCard}>
+        <Text style={styles.sectionLabel}>While you wait</Text>
+
+        {/* Transport Row */}
+        <View style={styles.serviceRow}>
+          <View style={[styles.serviceIconWrap, { backgroundColor: COLORS.primaryLight || "#E1F5EE" }]}>
+            <Ionicons name="bus-outline" size={20} color={COLORS.primary} />
           </View>
-          
-          <View style={styles.transportContent}>
-            <Text style={styles.transportTitle}>
-              Book Your Bus Ride
+          <View style={styles.serviceText}>
+            <Text style={styles.serviceTitle}>Transport service</Text>
+            <Text style={styles.serviceDesc}>
+              Safe, affordable bus directly to campus
             </Text>
-            <Text style={styles.transportDescription}>
-              Don't stress at the station or worry about scams. Book a safe, 
-              affordable bus directly to campus.
+          </View>
+          <View style={styles.pillPopular}>
+            <Text style={styles.pillTextPrimary}>Popular</Text>
+          </View>
+        </View>
+
+        {/* Support Row */}
+        <View style={[styles.serviceRow, { marginBottom: 0 }]}>
+          <View style={[styles.serviceIconWrap, { backgroundColor: "#FEF3E2" }]}>
+            <Ionicons name="headset-outline" size={20} color="#854F0B" />
+          </View>
+          <View style={styles.serviceText}>
+            <Text style={styles.serviceTitle}>24/7 Support</Text>
+            <Text style={styles.serviceDesc}>
+              Reach us anytime for help with your stay
             </Text>
-            
-            <View style={styles.benefitsContainer}>
-              <Benefit icon="shield-checkmark" text="Safe & Verified" />
-              <Benefit icon="cash" text="Affordable Rates" />
-              <Benefit icon="time" text="Convenient Times" />
-            </View>
-            
-            <View style={styles.badge}>
-              <Ionicons name="star" size={14} color="#FFD700" />
-              <Text style={styles.badgeText}>Most Popular Service</Text>
-            </View>
+          </View>
+          <View style={styles.pillTrusted}>
+            <Text style={styles.pillTextTrusted}>Always on</Text>
           </View>
         </View>
       </View>
@@ -108,186 +131,178 @@ const PaymentCompleted = () => {
       {/* Action Button */}
       <Button
         buttonText="Go home"
-        onPressFunction={()=> router.replace("(tabs)/(index)")}
+        onPressFunction={() => router.replace("(tabs)/(index)")}
         customStyle={styles.doneButton}
       />
     </ScrollView>
   );
 };
 
-// Helper Components
-const InfoItem = ({ icon, text }) => (
-  <View style={styles.infoItem}>
-    <Ionicons name={icon} size={16} color={COLORS.primary} />
-    <Text style={styles.infoText}>{text}</Text>
-  </View>
-);
-
-const Benefit = ({ icon, text }) => (
-  <View style={styles.benefit}>
-    <Ionicons name={icon} size={14} color={COLORS.primary} />
-    <Text style={styles.benefitText}>{text}</Text>
-  </View>
-);
-
 export default PaymentCompleted;
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingVertical: 32,
     paddingHorizontal: 20,
+    paddingVertical: 32,
     backgroundColor: "#fff",
+    alignItems: "center",
   },
   animation: {
-    width: 200,
-    height: 200,
-    alignSelf: "center",
+    width: 160,
+    height: 160,
+    marginBottom: 8,
   },
-  
+
   // Success Section
   successSection: {
     alignItems: "center",
-    marginTop: 8,
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: COLORS.primary,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 22,
-  },
-
-  // Info Card
-  infoCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  iconHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    gap: 8,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-  },
-  infoContent: {
-    gap: 12,
-  },
-  infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  infoText: {
-    fontSize: 15,
-    color: "#555",
-    flex: 1,
-  },
-
-  // Transport Section
-  transportSection: {
     marginBottom: 28,
   },
-  sectionHeader: {
+  title: {
+    fontSize: 22,
+    fontWeight: "500",
+    color: "#111",
+    textAlign: "center",
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#888",
+    textAlign: "center",
+    lineHeight: 21,
+  },
+
+  // Next Steps Card
+  nextCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    padding: 16,
+    marginBottom: 14,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    color: "#999",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    marginBottom: 16,
+  },
+  nextRow: {
+    flexDirection: "row",
+    marginBottom: 4,
+  },
+  nextLeft: {
+    width: 24,
+    alignItems: "center",
+  },
+  stepLine: {
+    alignItems: "center",
+    flex: 1,
+  },
+  stepDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: COLORS.primary,
+    marginTop: 4,
+  },
+  stepConnector: {
+    width: 1.5,
+    flex: 1,
+    backgroundColor: "#E1F5EE",
+    marginVertical: 4,
+    minHeight: 28,
+  },
+  nextContent: {
+    flex: 1,
+    paddingLeft: 10,
+    paddingBottom: 20,
+  },
+  nextIconRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 4,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#333",
-  },
-  transportCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  transportIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: COLORS.primary,
+  nextIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    backgroundColor: "#E1F5EE",
     justifyContent: "center",
     alignItems: "center",
-    alignSelf: "center",
-    marginBottom: 16,
   },
-  transportContent: {
-    alignItems: "center",
-  },
-  transportTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  transportDescription: {
+  nextTitle: {
     fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-    textAlign: "center",
-    marginBottom: 16,
+    fontWeight: "500",
+    color: "#222",
   },
-  benefitsContainer: {
+  nextDesc: {
+    fontSize: 13,
+    color: "#999",
+    lineHeight: 19,
+  },
+
+  // Services Card
+  servicesCard: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    padding: 16,
+    marginBottom: 28,
+  },
+  serviceRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
+    alignItems: "center",
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 14,
   },
-  benefit: {
-    flexDirection: "row",
+  serviceIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
   },
-  benefitText: {
+  serviceText: {
+    flex: 1,
+  },
+  serviceTitle: {
     fontSize: 13,
-    fontWeight: "600",
-    color: "#555",
+    fontWeight: "500",
+    color: "#222",
+    marginBottom: 2,
   },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF9E6",
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 6,
+  serviceDesc: {
+    fontSize: 12,
+    color: "#999",
   },
-  badgeText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#B8860B",
+  pillPopular: {
+    backgroundColor: "#E1F5EE",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  pillTrusted: {
+    backgroundColor: "#EAF3DE",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  pillTextPrimary: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: COLORS.primary,
+  },
+  pillTextTrusted: {
+    fontSize: 10,
+    fontWeight: "500",
+    color: "#3B6D11",
   },
 
   // Button

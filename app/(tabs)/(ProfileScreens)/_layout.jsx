@@ -16,7 +16,11 @@ const ProfileLayout = () => {
         }}
       >
         <Stack.Screen name="index" />
-        <Stack.Screen name="howHostelHubbWorks" />
+        <Stack.Screen name="howHostelHubbWorks"
+         options={{
+            headerShown: true,
+            header: () => <CustomHeader title="How Hostelhubb Works" showBack />,
+          }} />
 
         <Stack.Screen
           name="personalInfo"

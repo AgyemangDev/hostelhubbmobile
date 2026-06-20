@@ -6,15 +6,13 @@ const globalTimeouts = {};
 const subscribers = {};
 
 const viewTexts = [
-  "other students viewed",
-  "students checked this accommodation",
-  "others showed interest",
-  "students viewed this already",
+  "students viewed this",
+  "students checked this out",
+  "students from your school viewed",
   "fellow students explored this",
-  "others liked this place",
-  "students recently visited",
-  "colleagues showed curiosity",
-  "from your shool viewed this",
+  "students showed interest",
+  "students recently viewed",
+  "students have checked this out",
 ];
 
 // Get consistent random text based on accommodation ID (not name, to avoid duplicates)

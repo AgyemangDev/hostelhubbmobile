@@ -1,590 +1,558 @@
+import React from "react";
 import {
+  ScrollView,
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  Image,
 } from "react-native";
-import React, { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import TermsLink from "../../../components/Links/TermsLink";
 import COLORS from "../../../constants/Colors";
-import { router, useRouter } from "expo-router";
 
-const terms = [
-  "Users must be at least 13 years old to create and use a HostelHubb account.",
-  "HostelHubb acts solely as a booking platform and does not own or manage any hostels.",
-  "All transactions must be made through approved payment methods within the app.",
-  "Refunds and cancellations are handled by individual hostels, not HostelHubb.",
-  "Users are responsible for maintaining the confidentiality of their account credentials.",
-  "HostelHubb is not liable for any disputes or issues between users and hostel managers.",
-  "HostelHubb may update these terms at any time. By continuing to use the platform, you accept any changes. We’ll notify you of major updates when possible.",
-  "By using the platform, users agree to these terms and the associated privacy and transaction policies.",
-];
+// ─── Icon placeholder ────────────────────────────────────────────────────────
+// Replace with your icon library, e.g. import { Ionicons } from "@expo/vector-icons"
+const Icon = ({ name, size = 20, color = COLORS.teal }) => (
+  <View
+    style={{
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      backgroundColor: COLORS.teal + "22",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  />
+);
 
-const AccordionItem = ({ title, icon, children }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter()
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-  return (
-    <View style={styles.accordionContainer}>
-      <TouchableOpacity
-        style={styles.accordionHeader}
-        onPress={() => setIsOpen(!isOpen)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.accordionTitleContainer}>
-          <View style={styles.iconContainer}>
-            <Ionicons name={icon} size={20} color="#fff" />
-          </View>
-          <Text style={styles.accordionTitle}>{title}</Text>
-        </View>
-        <Ionicons
-          name={isOpen ? "chevron-up" : "chevron-down"}
-          size={22}
-          color={COLORS.background}
-        />
-      </TouchableOpacity>
-
-      {isOpen && <View style={styles.accordionContent}>{children}</View>}
+const SectionLabel = ({ number, title }) => (
+  <View style={styles.sectionHeader}>
+    <View style={styles.sectionBadge}>
+      <Text style={styles.sectionBadgeText}>{number}</Text>
     </View>
-  );
-};
-
-const ProcessStep = ({ number, title, description, isLast }) => (
-  <View style={styles.processStepContainer}>
-    <View style={styles.processStepNumberContainer}>
-      <Text style={styles.processStepNumber}>{number}</Text>
-    </View>
-    <View style={styles.processStepContent}>
-      <Text style={styles.processStepTitle}>{title}</Text>
-      <Text style={styles.processStepDescription}>{description}</Text>
-    </View>
-    {!isLast && <View style={styles.processStepConnector} />}
+    <Text style={styles.sectionTitle}>{title}</Text>
   </View>
 );
 
-const IconTextItem = ({ icon, text }) => (
-  <View style={styles.iconTextItem}>
-    <Ionicons name={icon} size={18} color="#610b0c" />
-    <Text style={styles.iconText}>{text}</Text>
+const InfoNote = ({ children }) => (
+  <View style={styles.infoNote}>
+    <View style={styles.infoNoteDot} />
+    <Text style={styles.infoNoteText}>{children}</Text>
   </View>
 );
+
+const BookingStep = ({ icon, label, isLast }) => (
+  <View style={styles.stepWrapper}>
+    <View style={styles.stepDot}>
+      <Icon name={icon} size={16} color={COLORS.teal} />
+    </View>
+    {!isLast && <View style={styles.stepLine} />}
+    <Text style={styles.stepLabel}>{label}</Text>
+  </View>
+);
+
+const SmallCard = ({ icon, title, body }) => (
+  <View style={styles.smallCard}>
+    <View style={styles.smallCardIconWrap}>
+      <Icon name={icon} size={18} color={COLORS.teal} />
+    </View>
+    <Text style={styles.smallCardTitle}>{title}</Text>
+    <Text style={styles.smallCardBody}>{body}</Text>
+  </View>
+);
+
+const FeatureCard = ({ icon, title, body }) => (
+  <View style={styles.featureCard}>
+    <View style={styles.featureCardIconWrap}>
+      <Icon name={icon} size={20} color={COLORS.teal} />
+    </View>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.featureCardTitle}>{title}</Text>
+      <Text style={styles.featureCardBody}>{body}</Text>
+    </View>
+  </View>
+);
+
+// ─── Main screen ──────────────────────────────────────────────────────────────
 
 const HowHostelHubbWorks = () => {
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Hero Banner */}
-      <View style={styles.heroBanner}>
-        <View style={styles.heroOverlay}>
-          <Text style={styles.heroTitle}>How HostelHubb Works</Text>
-          <Text style={styles.heroSubtitle}>
-            Your complete guide to finding and booking student accommodations
-          </Text>
-        </View>
-      </View>
-
-      {/* Summary Card */}
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryText}>
-        HostelHubb helps students find quality accommodation near campus, 
-        with options for hostels, private stays, and storage for those who can't take everything home.
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* ── Hero ── */}
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>HOSTELHUBB · BUILT FOR STUDENTS</Text>
+        <Text style={styles.heroTitle}>
+          Three services.{"\n"}One app. Your campus{"\n"}life, handled.
+        </Text>
+        <Text style={styles.heroSub}>
+          From finding a room to storing your luggage over break and getting
+          home safely — HostelHubb takes care of the hard parts of student life
+          across Ghana's campuses.
         </Text>
       </View>
 
-      {/* Process Section */}
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Simple 4-Step Process</Text>
+      <View style={styles.divider} />
 
-        <View style={styles.processContainer}>
-          <ProcessStep
-            number="1"
-            title="Subscribe"
-            description="Pay a 6-month subscription fee to access all hostel listings and booking features."
-          />
-
-          <ProcessStep
-            number="2"
-            title="Browse & Request"
-            description="Book a hostel and follow up if there’s a delay—especially during busy times to avoid missing out."
-            />
-
-          <ProcessStep
-            number="3"
-            title="Confirm & Pay"
-            description="When approved, make secure payments to confirm your reservation."
-          />
-
-          <ProcessStep
-            number="4"
-            title="Move In"
-            description="Present your booking confirmation at check-in and enjoy your new accommodation."
-            isLast={true}
-          />
+      {/* ── Mission & Vision ── */}
+      <View style={styles.mvRow}>
+        <View style={[styles.mvCard, { marginRight: 6 }]}>
+          <Text style={styles.mvLabel}>OUR VISION</Text>
+          <Text style={styles.mvBody}>
+            A campus experience where no student spends extra time worrying
+            about accommodation, getting home, or storing their things.
+          </Text>
+        </View>
+        <View style={[styles.mvCard, { marginLeft: 6 }]}>
+          <Text style={styles.mvLabel}>OUR MISSION</Text>
+          <Text style={styles.mvBody}>
+            To make every aspect of student living easier — one trusted app for
+            accommodation, transport, and storage.
+          </Text>
         </View>
       </View>
 
-      {/* Accordion Sections */}
-      <View style={styles.accordionSection}>
-        <AccordionItem title="Platform Overview" icon="information-circle">
-          <Text style={styles.paragraphText}>
-            HostelHubb connects students with hostel managers, simplifying the
-            process of booking accommodations near campus. This platform makes
-            it easy to browse, book, and manage hostel arrangements remotely.
-          </Text>
+      <View style={styles.divider} />
 
-          <View style={styles.featureGrid}>
-            <View style={styles.featureItem}>
-              <Ionicons name="search" size={24} color={COLORS.background} />
-              <Text style={styles.featureText}>Find Hostels</Text>
-            </View>
+      {/* ════════════════════════════════
+          SERVICE 1 — ACCOMMODATION
+      ════════════════════════════════ */}
+      <SectionLabel number="1" title="Accommodation" />
 
-            <View style={styles.featureItem}>
-              <Ionicons name="business" size={24} color={COLORS.background} />
-              <Text style={styles.featureText}>View Details</Text>
-            </View>
-
-            <View style={styles.featureItem}>
-              <Ionicons
-                name="chatbubbles"
-                size={24}
-                color={COLORS.background}
-              />
-              <Text style={styles.featureText}>Contact Managers</Text>
-            </View>
-
-            <View style={styles.featureItem}>
-              <Ionicons name="calendar" size={24} color={COLORS.background} />
-              <Text style={styles.featureText}>Book Stays</Text>
-            </View>
-          </View>
-        </AccordionItem>
-
-        <AccordionItem title="Subscription Details" icon="card">
-          <View style={styles.infoBox}>
-            <View style={styles.infoRow}>
-              <IconTextItem
-                icon="time"
-                text="6-month access to booking system"
-              />
-            </View>
-            <View style={styles.infoRow}>
-              <IconTextItem
-                icon="checkmark-circle"
-                text="Multiple bookings allowed"
-              />
-            </View>
-            <View style={styles.infoRow}>
-              <IconTextItem icon="lock-closed" text="Secured account access" />
-            </View>
-          </View>
-
-          <Text style={styles.paragraphText}>
-            Students need to pay a subscription fee every six months to access
-            and book hostels listed on HostelHubb. Even after a subscription
-            expires, booked hostels remain accessible. Hostel managers must
-            accept each booking request before students can proceed to payment.
-          </Text>
-        </AccordionItem>
-
-        <AccordionItem title="Payment Process" icon="cash">
-          <Text style={styles.paragraphText}>
-            Once a hostel manager accepts a booking, students should pay
-            promptly to secure their spot. Payments are made directly to hostel
-            managers through HostelHubb's secure platform.
-          </Text>
-
-          <View style={styles.securityBoxContainer}>
-            <View style={styles.securityBox}>
-              <Ionicons name="shield-checkmark" size={28} color="#610b0c" />
-              <Text style={styles.securityBoxTitle}>Secure Payments</Text>
-              <Text style={styles.securityBoxText}>
-                All transactions are processed through our secure payment
-                gateway
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.noticeText}>
-            Remember: Always verify hostel manager credentials before making
-            payments
-          </Text>
-        </AccordionItem>
+      {/* Booking steps — vertical on mobile */}
+      <View style={styles.stepsContainer}>
+        <BookingStep icon="search" label="Browse rooms on your campus" />
+        <BookingStep icon="calendar" label="Select & send a booking" />
+        <BookingStep icon="bell" label="Manager confirms availability" />
+        <BookingStep icon="card" label="Pay in-app or via bank" />
+        <BookingStep icon="home" label="Room secured — it's yours" isLast />
       </View>
 
+      <InfoNote>
+        Payment locks in your room. Once you pay, it's confirmed — no
+        follow-up calls, no uncertainty.
+      </InfoNote>
 
-
-      {/* Terms Section */}
-      <View style={styles.termsContainer}>
-        <Text style={styles.termsSectionTitle}>Terms & Conditions</Text>
-
-        {terms.map((term, index) => (
-          <View key={index} style={styles.termItem}>
-            <View style={styles.termBullet} />
-            <Text style={styles.termText}>{term}</Text>
+      {/* HubClips */}
+      <View style={styles.hubclipsCard}>
+        <View style={styles.hubclipsHeader}>
+          <View style={styles.hubclipsIconWrap}>
+            <Icon name="videocam" size={20} color={COLORS.white} />
           </View>
-        ))}
+          <View style={{ flex: 1 }}>
+            <View style={styles.hubclipsTitleRow}>
+              <Text style={styles.hubclipsTitle}>HubClips</Text>
+              <View style={styles.newBadge}>
+                <Text style={styles.newBadgeText}>NEW</Text>
+              </View>
+            </View>
+            <Text style={styles.hubclipsSub}>Sell your room fast</Text>
+          </View>
+        </View>
+        <Text style={styles.hubclipsBody}>
+          Leaving campus and need to transfer your room? Film a short
+          walkthrough, submit it for quality review, and HostelHubb finds a
+          replacement student. Once everything is documented with your hostel
+          manager, you receive your money — clean and quick.
+        </Text>
+      </View>
 
-        <TermsLink
-          link={"https://hostelhubb.com/terms"}
-          text={"View Complete Terms"}
-          style={styles.termsLink}
+      {/* Referral */}
+      <View style={styles.referralCard}>
+        <View style={styles.referralIconWrap}>
+          <Icon name="people" size={20} color={COLORS.teal} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.referralTitle}>Refer a hostel, earn every time</Text>
+          <Text style={styles.referralBody}>
+            Know an accommodation that should be on HostelHubb? Refer the hostel
+            owner. Every time a student makes a paid booking there, you earn —
+            and you keep earning with every rebook. No cap, no expiry.
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      {/* ════════════════════════════════
+          SERVICE 2 — STORAGE
+      ════════════════════════════════ */}
+      <SectionLabel number="2" title="Storage" />
+
+      <InfoNote>
+        Heading home for a short break? Don't lug everything with you. We store
+        your belongings safely and bring them back when school resumes.
+      </InfoNote>
+
+      <View style={styles.smallCardRow}>
+        <SmallCard
+          icon="cube"
+          title="We pick up from you"
+          body="Schedule a pickup and we collect your luggage from your hostel."
+        />
+        <SmallCard
+          icon="lock"
+          title="Stored safely"
+          body="Your items are kept securely and tracked throughout the break."
+        />
+        <SmallCard
+          icon="location"
+          title="Delivered back"
+          body="We bring your things to your selected location when school resumes."
         />
       </View>
 
-      {/* CTA Footer */}
-      <TouchableOpacity style={styles.ctaButton} onPress={() => router.push("(tabs)/(index)")}>
-        <Text style={styles.ctaButtonText}>Start Finding Your Hostel</Text>
-        <Ionicons name="arrow-forward-circle" size={24} color="#fff" />
-      </TouchableOpacity>
+      <View style={styles.divider} />
+
+      {/* ════════════════════════════════
+          SERVICE 3 — TRANSPORT
+      ════════════════════════════════ */}
+      <SectionLabel number="3" title="Transport" />
+
+      <InfoNote>
+        We move students between campus and home at designated cities —
+        scheduled, reliable, and booked right from the app.
+      </InfoNote>
+
+      <FeatureCard
+        icon="business"
+        title="Campus → home"
+        body="End of semester or short break? Book your seat and travel without stress."
+      />
+      <FeatureCard
+        icon="school"
+        title="Home → campus"
+        body="Resume is near? We get you back on time — no last-minute scrambling for transport."
+      />
+      <FeatureCard
+        icon="map"
+        title="Designated cities"
+        body="Available across key cities in Ghana, with routes chosen around where students actually live."
+      />
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 };
 
+export default HowHostelHubbWorks;
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#F7F8FA",
   },
-  heroBanner: {
-    height: 180,
-    backgroundColor: COLORS.background,
-    justifyContent: "center",
-    alignItems: "center",
+  container: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
   },
-  heroOverlay: {
-    width: "100%",
-    alignItems: "center",
-    padding: 20,
+
+  // Hero
+  hero: {
+    marginBottom: 24,
+  },
+  eyebrow: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: COLORS.teal,
+    letterSpacing: 1.2,
+    marginBottom: 10,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 10,
-    textAlign: "center",
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#111",
+    lineHeight: 34,
+    marginBottom: 12,
   },
-  heroSubtitle: {
-    fontSize: 16,
-    color: "#fff",
-    opacity: 0.9,
-    textAlign: "center",
+  heroSub: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 22,
   },
-  summaryCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: -25,
-    borderRadius: 10,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+
+  divider: {
+    height: 0.5,
+    backgroundColor: "#E0E0E0",
+    marginVertical: 24,
   },
-  summaryText: {
-    fontSize: 16,
-    color: "#333",
-    lineHeight: 24,
-    textAlign: "center",
+
+  // Mission / Vision
+  mvRow: {
+    flexDirection: "row",
   },
-  sectionContainer: {
-    marginTop: 25,
-    marginHorizontal: 20,
+  mvCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+  },
+  mvLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: COLORS.teal,
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  mvBody: {
+    fontSize: 12,
+    color: "#555",
+    lineHeight: 18,
+  },
+
+  // Section header
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: COLORS.teal,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  sectionBadgeText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontWeight: "700",
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: COLORS.background,
-    marginBottom: 15,
-    textAlign: "center",
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#111",
   },
-  processContainer: {
-    marginTop: 10,
+
+  // Booking steps
+  stepsContainer: {
+    marginBottom: 16,
+    paddingLeft: 4,
   },
-  processStepContainer: {
+  stepWrapper: {
     flexDirection: "row",
-    marginBottom: 30,
-    position: "relative",
+    alignItems: "flex-start",
+    marginBottom: 0,
   },
-  processStepNumberContainer: {
+  stepDot: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: COLORS.background,
-    justifyContent: "center",
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.teal,
     alignItems: "center",
-    marginRight: 15,
+    justifyContent: "center",
+    zIndex: 1,
   },
-  processStepNumber: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  processStepContent: {
-    flex: 1,
-  },
-  processStepTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.background,
-    marginBottom: 5,
-  },
-  processStepDescription: {
-    fontSize: 15,
-    color: "#555",
-    lineHeight: 22,
-  },
-  processStepConnector: {
+  stepLine: {
     position: "absolute",
-    left: 18,
+    left: 17,
     top: 36,
     width: 2,
-    height: 30,
-    backgroundColor: "#610b0c",
+    height: 24,
+    backgroundColor: "#9FE1CB",
+    zIndex: 0,
   },
-  accordionSection: {
-    marginTop: 15,
-    marginHorizontal: 20,
-  },
-  accordionContainer: {
-    marginBottom: 15,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  accordionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 15,
-    backgroundColor: "#fff",
-  },
-  accordionTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#610b0c",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  accordionTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#333",
-  },
-  accordionContent: {
-    padding: 15,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  paragraphText: {
-    fontSize: 15,
-    color: "#555",
-    lineHeight: 22,
-    marginBottom: 15,
-  },
-  featureGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 10,
-    justifyContent: "space-between",
-  },
-  featureItem: {
-    width: "48%",
-    backgroundColor: "#f9f9f9",
-    padding: 15,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  featureText: {
-    fontSize: 14,
-    color: "#333",
-    marginTop: 8,
-    fontWeight: "500",
-  },
-  infoBox: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-  },
-  infoRow: {
-    marginBottom: 12,
-  },
-  iconTextItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconText: {
-    marginLeft: 10,
-    fontSize: 14,
+  stepLabel: {
+    fontSize: 13,
     color: "#444",
+    marginLeft: 12,
+    marginTop: 9,
+    marginBottom: 24,
+    flex: 1,
   },
-  subscribeButton: {
+
+  // Info note
+  infoNote: {
     flexDirection: "row",
-    backgroundColor: COLORS.background,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  subscribeButtonText: {
-    color: "#fff",
-    fontWeight: "600",
-    marginRight: 5,
-  },
-  securityBoxContainer: {
-    alignItems: "center",
-    marginVertical: 15,
-  },
-  securityBox: {
-    backgroundColor: "#f9f9f9",
-    width: "80%",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  securityBoxTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  securityBoxText: {
-    fontSize: 14,
-    color: "#555",
-    textAlign: "center",
-  },
-  noticeText: {
-    fontStyle: "italic",
-    color: COLORS.background,
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 10,
-  },
-  warningContainer: {
-    marginHorizontal: 20,
-    marginTop: 15,
-    marginBottom: 20,
-    borderRadius: 10,
-    overflow: "hidden",
-  },
-  warningHeader: {
-    backgroundColor: COLORS.background,
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 15,
-  },
-  warningHeaderText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  warningBodyText: {
-    backgroundColor: "#fff5f5",
-    padding: 15,
-    fontSize: 15,
-    color: "#444",
-    lineHeight: 22,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.background,
-    borderRightWidth: 1,
-    borderRightColor: "#ddd",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  safetyTipsContainer: {
-    backgroundColor: "#f5f5f5",
-    padding: 15,
-    borderLeftWidth: 3,
-    borderLeftColor: COLORS.background,
-    borderRightWidth: 1,
-    borderRightColor: "#ddd",
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-  },
-  safetyTipsTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 10,
-  },
-  termsContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  termsSectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 15,
-  },
-  termItem: {
-    flexDirection: "row",
-    marginBottom: 12,
     alignItems: "flex-start",
+    backgroundColor: "#E1F5EE",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    gap: 10,
   },
-  termBullet: {
+  infoNoteDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: COLORS.background,
-    marginTop: 8,
-    marginRight: 10,
+    backgroundColor: COLORS.teal,
+    marginTop: 6,
+    flexShrink: 0,
   },
-  termText: {
+  infoNoteText: {
+    fontSize: 13,
+    color: "#085041",
+    lineHeight: 20,
     flex: 1,
-    fontSize: 14,
+  },
+
+  // HubClips card
+  hubclipsCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    marginBottom: 12,
+  },
+  hubclipsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 10,
+  },
+  hubclipsIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: COLORS.teal,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  hubclipsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 2,
+  },
+  hubclipsTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111",
+  },
+  newBadge: {
+    backgroundColor: COLORS.teal,
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  newBadgeText: {
+    color: COLORS.white,
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+  },
+  hubclipsSub: {
+    fontSize: 12,
+    color: "#888",
+  },
+  hubclipsBody: {
+    fontSize: 13,
     color: "#555",
     lineHeight: 20,
   },
-  termsLink: {
-    alignSelf: "center",
-    marginTop: 15,
-  },
-  ctaButton: {
+
+  // Referral card
+  referralCard: {
     flexDirection: "row",
-    backgroundColor: COLORS.background,
-    marginHorizontal: 20,
-    marginBottom: 30,
-    padding: 18,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: "flex-start",
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.teal,
+    padding: 14,
+    gap: 12,
+    marginBottom: 4,
   },
-  ctaButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginRight: 8,
+  referralIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E1F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  referralTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111",
+    marginBottom: 4,
+  },
+  referralBody: {
+    fontSize: 13,
+    color: "#555",
+    lineHeight: 20,
+  },
+
+  // Small cards (3-col)
+  smallCardRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  smallCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    padding: 12,
+  },
+  smallCardIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "#E1F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  smallCardTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#111",
+    marginBottom: 4,
+  },
+  smallCardBody: {
+    fontSize: 11,
+    color: "#666",
+    lineHeight: 16,
+  },
+
+  // Feature cards (full-width rows)
+  featureCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: "#E0E0E0",
+    padding: 14,
+    marginBottom: 10,
+    gap: 12,
+  },
+  featureCardIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: "#E1F5EE",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  featureCardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111",
+    marginBottom: 3,
+  },
+  featureCardBody: {
+    fontSize: 13,
+    color: "#555",
+    lineHeight: 19,
   },
 });
-
-export default HowHostelHubbWorks;

@@ -18,7 +18,7 @@ const NotificationsScreen = () => {
       type: "warning",
       title: "⚠️ Scam Alert – Stay Protected",
       message:
-        "Avoid paying random people from WhatsApp groups! Many students have been scammed by fake agents. Only use verified Hostelhubb agents who are trained to help you find genuine, affordable hostels — safely.",
+        "Avoid paying random people from WhatsApp groups! Many students have been scammed by fake agents. Only use hostelhubb platform",
       time: "Today",
       read: false,
     },
@@ -32,30 +32,12 @@ const NotificationsScreen = () => {
       read: false,
     },
     {
-      id: "2",
-      type: "info",
-      title: "One-Time Access Fee – Unlock Unlimited Bookings!",
-      message:
-        "Every student gets one-time free access to book a hostel through our platform. To continue enjoying unlimited bookings for 6 months, support HostelHubb with just GHC 30. Your contribution helps us keep the service running smoothly and scam-free for everyone.",
-      time: "Today",
-      read: false,
-    },
-    {
       id: "5",
       type: "warning",
       title: "Always Pay Through Official Channels",
       message:
         "To secure your booking, always pay through our app directly to the hostel manager or via our bank account: NAG HOSTELHUBB, GT Bank, 3302001049665. Contact Hostelhubb for support if unsure.",
       time: "Today",
-      read: false,
-    },
-    {
-      id: "8",
-      type: "info",
-      title: "🚌 Transport Coming Soon",
-      message:
-        "Transport upcoming! We are introducing transport to take you home on vacations and bring you back to school with no stress on your end.",
-      time: "Just now",
       read: false,
     },
   ];

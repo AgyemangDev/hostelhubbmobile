@@ -9,14 +9,11 @@ import {
   StatusBar,
   Animated,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
-import { handleBookingProcess } from "../../services/bookingServices";
 
 import { UserContext } from "../../context/UserContext";
-import COLORS from "../../constants/Colors";
 import { useAccommodationById } from "../../hooks/accommodationContext/useAccommodationById";
 
 import HostelImageGallery from "../../components/HostelDetailsComponents/HostelImageGallery";
