@@ -15,12 +15,19 @@ const formatDate = (date) =>
 
 const formatAddress = (info) => {
   if (!info) return "Not set";
+
+  const parts = [];
+
   if (info.area === "Off Campus") {
-    return `${info.hostel || ""}${
-      info.offCampusArea ? `, ${info.offCampusArea}` : ""
-    }`.trim();
+    if (info.hostel) parts.push(info.hostel);
+    if (info.offCampusArea) parts.push(info.offCampusArea);
+  } else if (info.area) {
+    parts.push(info.area);
   }
-  return info.area;
+
+  if (info.room) parts.push(`Room ${info.room}`);
+
+  return parts.length ? parts.join(", ") : "Not set";
 };
 
 export default function ReviewScheduleSection({ pickupInfo, deliveryInfo }) {

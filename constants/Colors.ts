@@ -6,7 +6,6 @@ const COLORS = {
   placeholder: "#d87071",
   primary: "#0364A5",
 
-  
   darkest: "#670708",
   gold: "#f2c94c",
   teal: "#0F6E56",

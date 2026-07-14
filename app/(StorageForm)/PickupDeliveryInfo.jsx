@@ -1,136 +1,187 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import DateSelector from "../../components/Storage/DateSelector";
 import LocationSelector from "../../components/Storage/LocationSelector";
 import BottomButton from "../../components/ButtonComponents/BottomButton";
+import SectionCard from "../../components/Storage/SectionCard";
+import ToggleRow from "../../components/Storage/ToggleRow";
+import LocationSummaryCard from "../../components/Storage/LocationSummaryCard";
 import COLORS from "../../constants/Colors";
 import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
+
+const PICKUP_MIN_DATE = new Date("2026-09-03");
+const PICKUP_MAX_DATE = new Date("2026-09-06");
+const DELIVERY_MIN_DATE = new Date("2026-10-17");
+const DELIVERY_MAX_DATE = new Date("2026-10-18");
 
 export default function PickupDeliveryInfo() {
   const router = useRouter();
   const { reservation, updateReservation } = useStorageReservation();
 
-  const proceed = () => {
-    const error = validatePickupDeliveryForm({
-      pickupInfo: reservation.pickupInfo,
-      deliveryInfo: reservation.deliveryInfo,
+  const [sameAsPickup, setSameAsPickup] = useState(false);
+  const decideLater = !!reservation.deliveryInfo?.decideLater;
+  const pickupInfo = reservation.pickupInfo;
+  const deliveryInfo = reservation.deliveryInfo;
+
+  // Keep the delivery address perpetually in sync with pickup while the
+  // toggle is on — not just at the moment the user flips it. This means
+  // editing the pickup hall/room later automatically carries through.
+  useEffect(() => {
+    if (!sameAsPickup || decideLater) return;
+    if (!pickupInfo?.area) return;
+
+    const alreadyInSync =
+      deliveryInfo?.area === pickupInfo.area &&
+      deliveryInfo?.offCampusArea === pickupInfo.offCampusArea &&
+      deliveryInfo?.hostel === pickupInfo.hostel &&
+      deliveryInfo?.room === pickupInfo.room;
+
+    if (alreadyInSync) return;
+
+    updateReservation({
+      deliveryInfo: {
+        ...deliveryInfo,
+        decideLater: false,
+        area: pickupInfo.area,
+        offCampusArea: pickupInfo.offCampusArea,
+        hostel: pickupInfo.hostel,
+        room: pickupInfo.room,
+      },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    sameAsPickup,
+    decideLater,
+    pickupInfo?.area,
+    pickupInfo?.offCampusArea,
+    pickupInfo?.hostel,
+    pickupInfo?.room,
+  ]);
+
+  const proceed = () => {
+    const error = validatePickupDeliveryForm({ pickupInfo, deliveryInfo });
 
     if (error) {
-      Alert.alert("Missing Information", error);
+      Alert.alert("Missing information", error);
       return;
     }
 
     router.push("ImageUpload");
   };
 
+  const handleToggleSameAsPickup = (next) => {
+    if (next && !pickupInfo?.area) {
+      Alert.alert("Pickup location needed", "Please set your pickup location first.");
+      return;
+    }
+    setSameAsPickup(next);
+  };
+
+  const handleToggleDecideLater = (next) => {
+    if (next) setSameAsPickup(false);
+
+    updateReservation({
+      deliveryInfo: {
+        ...deliveryInfo,
+        decideLater: next,
+        ...(next && {
+          area: null,
+          offCampusArea: null,
+          hostel: "",
+          room: "",
+        }),
+      },
+    });
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {/* Header */}
         <View style={styles.header}>
+          <Text style={styles.title}>Pickup &amp; delivery</Text>
           <Text style={styles.subtitle}>
-            Choose when and where we should collect and return your items
+            Choose when and where we should collect and return your items.
           </Text>
         </View>
 
-        {/* PICKUP SECTION */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.iconCircle}>
-              <Text style={styles.iconText}>📦</Text>
-            </View>
-            <Text style={styles.sectionTitle}>Pickup Information</Text>
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <DateSelector
-              placeholder="Select your pickup date"
-              value={reservation.pickupInfo?.date}
-              minDate={new Date("2026-04-24")}
-              maxDate={new Date("2026-04-25")}
-              onChange={(date) =>
-                updateReservation({
-                  pickupInfo: {
-                    ...reservation.pickupInfo,
-                    date,
-                  },
-                })
-              }
+        <SectionCard icon="cube-outline" title="Pickup" subtitle="Where we'll collect your items">
+          <DateSelector
+            placeholder="Pickup date"
+            value={pickupInfo?.date}
+            minDate={PICKUP_MIN_DATE}
+            maxDate={PICKUP_MAX_DATE}
+            onChange={(date) =>
+              updateReservation({ pickupInfo: { ...pickupInfo, date } })
+            }
+          />
+
+          <LocationSelector
+            placeholder="Select pickup location"
+            value={pickupInfo}
+            selectedType="pickup"
+            onSelectLocation={(val) =>
+              updateReservation({ pickupInfo: { ...pickupInfo, ...val } })
+            }
+          />
+        </SectionCard>
+
+        <SectionCard icon="car-outline" title="Delivery" subtitle="Where we'll return your items">
+          <View style={styles.toggleGroup}>
+            <ToggleRow
+              label="Deliver to the same location"
+              description="Reuses your pickup hall, hostel and room automatically."
+              value={sameAsPickup}
+              onValueChange={handleToggleSameAsPickup}
+              disabled={decideLater}
+            />
+            <View style={styles.toggleDivider} />
+            <ToggleRow
+              label="I don't know my delivery hostel yet"
+              description="You can add it later — we'll follow up before the return date."
+              value={decideLater}
+              onValueChange={handleToggleDecideLater}
             />
           </View>
 
-          <View style={styles.inputGroup}>
-            <LocationSelector
-              placeholder="Select pickup location"
-              value={reservation.pickupInfo}
-              onSelectLocation={(val) =>
-                updateReservation({
-                  pickupInfo: {
-                    ...reservation.pickupInfo,
-                    ...val,
-                  },
-                })
-              }
-            />
-          </View>
-        </View>
+          <DateSelector
+            placeholder="Delivery date"
+            value={deliveryInfo?.date}
+            minDate={DELIVERY_MIN_DATE}
+            maxDate={DELIVERY_MAX_DATE}
+            onChange={(date) =>
+              updateReservation({ deliveryInfo: { ...deliveryInfo, date } })
+            }
+          />
 
-        {/* DELIVERY SECTION */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.iconCircle}>
-              <Text style={styles.iconText}>🚚</Text>
-            </View>
-            <Text style={styles.sectionTitle}>Delivery Information</Text>
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <DateSelector
-              placeholder="Select your delivery date"
-              value={reservation.deliveryInfo?.date}
-              minDate={new Date("2026-05-23")}
-              maxDate={new Date("2026-05-25")}
-              onChange={(date) =>
-                updateReservation({
-                  deliveryInfo: {
-                    ...reservation.deliveryInfo,
-                    date,
-                  },
-                })
-              }
+          {decideLater ? null : sameAsPickup ? (
+            <LocationSummaryCard
+              info={pickupInfo}
+              onEdit={() => setSameAsPickup(false)}
             />
-          </View>
-
-          <View style={styles.inputGroup}>
+          ) : (
             <LocationSelector
               placeholder="Select delivery location"
-              value={reservation.deliveryInfo}
+              value={deliveryInfo}
+              selectedType="delivery"
               onSelectLocation={(val) =>
                 updateReservation({
-                  deliveryInfo: {
-                    ...reservation.deliveryInfo,
-                    ...val,
-                  },
+                  deliveryInfo: { ...deliveryInfo, decideLater: false, ...val },
                 })
               }
             />
-          </View>
-        </View>
+          )}
+        </SectionCard>
       </ScrollView>
 
-      {/* STICKY BUTTON */}
-      <View style={styles.stickyButton}>
-        <BottomButton
-          buttonText="Continue"
-          onPressFunction={proceed}
-        />
+      <View style={styles.footer}>
+        <BottomButton buttonText="Continue" onPressFunction={proceed} />
       </View>
     </View>
   );
@@ -139,76 +190,53 @@ export default function PickupDeliveryInfo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
-  
+
   scroll: {
     padding: 20,
-    paddingBottom: 140,
+    paddingBottom: 120,
+    gap: 16,
   },
 
   header: {
-    marginBottom: 28,
+    marginBottom: 4,
+  },
+
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.textDark,
+    marginBottom: 6,
   },
 
   subtitle: {
-    fontSize: 15,
+    fontSize: 14.5,
     color: COLORS.textMuted,
-    lineHeight: 22,
+    lineHeight: 21,
   },
 
-  section: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-  
-    marginBottom: 16,
-
+  toggleGroup: {
+    borderRadius: 14,
+    paddingVertical: 6,
   },
 
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+  toggleDivider: {
+    height: 1,
+    backgroundColor: "#ECECEC",
+    marginVertical: 10,
   },
 
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#f0f9ff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-
-  iconText: {
-    fontSize: 20,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textDark,
-  },
-
-  inputGroup: {
-    marginBottom: 20,
-  },
-  stickyButton: {
+  footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: COLORS.white,
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingHorizontal: 0,
     borderTopWidth: 1,
     borderTopColor: "#e5e5e5",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 5,
+    paddingTop: 4,
+    paddingHorizontal: 4,
+    paddingBottom: 4,
   },
 });
