@@ -102,7 +102,7 @@ export default function ImageUpload() {
       ]);
       return;
     }
-    router.push("ReviewPay");
+    router.push("ReferralStep");
   };
 
   return (

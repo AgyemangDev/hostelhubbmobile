@@ -17,6 +17,7 @@ export default function ReviewPay() {
  const { reservation, resetReservation } = useStorageReservation();
 
   const { user,userInfo } = useContext(UserContext);
+  console.log(userInfo)
   const [loading, setLoading] = useState(false);
 
   const totalAmount = reservation.items.reduce(

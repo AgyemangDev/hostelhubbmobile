@@ -109,7 +109,7 @@ export default function ItemsSelection() {
       {/* Sticky button with total price */}
       <View style={styles.stickyButton}>
         <BottomButton
-          buttonText={hasItems ? `Continue - GH₵${totalAmount.toFixed(2)}` : "Continue"}
+          buttonText={hasItems ? `Continue - GH₵ ${totalAmount.toFixed(2)}` : "Continue"}
           onPressFunction={proceed}
         />
       </View>

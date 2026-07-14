@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "increased time for hubbclips post" --platform ios
+eas update --branch production --message "updated dates for storage" --platform ios
 
 
 # Always push both platforms together (no --platform flag)

@@ -10,18 +10,22 @@ const initialState = {
   pickupInfo: null,
   deliveryInfo: null,
   groupImage: null,
+  // referral.status: 'pending' (not yet visited the referral step) |
+  // 'confirmed' (a valid referrer was matched and picked) |
+  // 'skipped' (user explicitly said "I wasn't referred")
+  // ReviewPay should refuse to proceed while status is 'pending'.
+  referral: { status: "pending", referrerId: null, code: null, firstname: null, surname: null },
 };
 
 export const StorageReservationProvider = ({ children }) => {
   const [reservation, setReservation] = useState(initialState);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load draft
   useEffect(() => {
     (async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
-        if (saved) setReservation(JSON.parse(saved));
+        if (saved) setReservation({ ...initialState, ...JSON.parse(saved) });
       } catch (e) {
         console.log("Failed to load reservation", e);
       } finally {
@@ -30,13 +34,11 @@ export const StorageReservationProvider = ({ children }) => {
     })();
   }, []);
 
-  // Persist on every change
   useEffect(() => {
     if (!hydrated) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservation));
   }, [reservation, hydrated]);
 
-  // Generic updater
   const updateReservation = (updates) => {
     setReservation((prev) => ({
       ...prev,
@@ -44,7 +46,6 @@ export const StorageReservationProvider = ({ children }) => {
     }));
   };
 
-  // Add/update item
   const upsertItem = (item) => {
     setReservation((prev) => {
       const exists = prev.items.find((i) => i.id === item.id);
@@ -60,7 +61,6 @@ export const StorageReservationProvider = ({ children }) => {
     });
   };
 
-  // Remove item
   const removeItem = (id) => {
     setReservation((prev) => ({
       ...prev,
@@ -68,7 +68,6 @@ export const StorageReservationProvider = ({ children }) => {
     }));
   };
 
-  // Reset everything
   const resetReservation = async () => {
     setReservation(initialState);
     await AsyncStorage.removeItem(STORAGE_KEY);

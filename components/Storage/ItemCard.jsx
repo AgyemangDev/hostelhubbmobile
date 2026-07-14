@@ -44,7 +44,7 @@ export default function ItemCard({
             {item.name}
           </Text>
           <Text style={styles.price}>
-            GH₵{displayPrice.toFixed(2)}
+            GH₵ {displayPrice.toFixed(2)}
             {isSelected && selectedItem.quantity > 1 && (
               <Text style={styles.priceDetail}>
                 {" "}(₵{item.price} × {selectedItem.quantity})

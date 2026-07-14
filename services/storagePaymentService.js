@@ -1,14 +1,6 @@
 import * as FileSystem from "expo-file-system/legacy";
 import API_BASE_URL from "../utils/api/api";
 
-/**
- * Handles storage payment request.
- *
- * Why we read base64 here rather than storing it in context:
- * - base64 of a photo can be 1–3 MB as a string
- * - AsyncStorage has a ~6 MB limit and silently drops oversized values
- * - Reading fresh from the local uri at payment time is instant and reliable
- */
 export const processStoragePayment = async ({ user, reservation }) => {
   if (!user) {
     throw new Error("You must be logged in to continue");
@@ -16,7 +8,6 @@ export const processStoragePayment = async ({ user, reservation }) => {
 
   const token = await user.getIdToken(false);
 
-  // ✅ Read base64 fresh from the local uri right before sending
   let groupImage = null;
   if (reservation.groupImage?.uri) {
     try {
@@ -33,7 +24,6 @@ export const processStoragePayment = async ({ user, reservation }) => {
         };
       }
     } catch (err) {
-      // File may have been cleared from cache — proceed without image
       console.warn("[processStoragePayment] Could not read image file:", err.message);
     }
   }
@@ -42,7 +32,11 @@ export const processStoragePayment = async ({ user, reservation }) => {
     items: reservation.items,
     pickupInfo: reservation.pickupInfo,
     deliveryInfo: reservation.deliveryInfo,
-    groupImage, // { base64, mimeType, fileName } or null
+    groupImage,
+    referrerId:
+      reservation.referral?.status === "confirmed"
+        ? reservation.referral.referrerId
+        : null,
   };
 
   const response = await fetch(`${API_BASE_URL}/payment/storagepayment`, {
@@ -60,5 +54,5 @@ export const processStoragePayment = async ({ user, reservation }) => {
     throw new Error(data.message || "Payment failed");
   }
 
-  return data.data; // { orderId, reference, amount, ... }
+  return data.data;
 };

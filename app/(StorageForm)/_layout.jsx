@@ -56,6 +56,15 @@ const _layout = () => {
           }}
         />
 
+        {/* Pickup & Delivery Info */}
+        <Stack.Screen
+          name="ReferralStep"
+          options={{
+            headerLeft: () => <BackButton />,
+            title: "Enter Referral Code",
+          }}
+        />
+
         {/* Review & Pay */}
         <Stack.Screen
           name="ReviewPay"
