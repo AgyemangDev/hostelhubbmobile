@@ -74,8 +74,11 @@ export default function ReferralStep() {
 
   const handleShare = async () => {
     try {
+      const referralUrl = `https://hostelhubb.com/refer/${encodeURIComponent(myReferralCode)}`;
+
       await Share.share({
-        message: `Use my referral code ${myReferralCode} to book for storage on hostelhubb, and share yours with someone to earn.`,
+        message: `Use my referral code ${myReferralCode} to book for storage on hostelhubb, and share yours with someone to earn.\n${referralUrl}`,
+        url: referralUrl, // iOS attaches this as the shareable link; its OG metadata drives the preview image
       });
     } catch (e) {
       console.warn("Failed to open share sheet:", e);

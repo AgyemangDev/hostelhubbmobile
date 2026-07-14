@@ -40,6 +40,24 @@ const NotificationsScreen = () => {
       time: "Today",
       read: false,
     },
+    {
+      id: "6",
+      type: "info",
+      title: "🏠 HostelHubb Could Pay Your Fees",
+      message:
+        "Know a hostel that isn't on HostelHubb yet? Tell your hostel manager about HostelHubb Manager — a free tool to list and manage the hostel, and earn money every time someone books through the app.",
+      time: "Today",
+      read: false,
+    },
+    {
+      id: "7",
+      type: "info",
+      title: "💰 Earn With Every Referral",
+      message:
+        "Share your referral code with friends from your profile. When they book storage, transport, or a hostel through HostelHubb, you earn a share of the booking — they never pay extra.",
+      time: "Today",
+      read: false,
+    },
   ];
 
   // Shuffle function using Fisher-Yates algorithm
