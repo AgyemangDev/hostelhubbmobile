@@ -16,16 +16,19 @@ import { useNavigation } from "@react-navigation/native";
 
 const HostelDetailsHeader = ({ hostel, hostelId, scrollY }) => {
   const navigation = useNavigation();
+  
+const handleShare = async () => {
+  try {
+    const link = `https://hostelhubb.com/hostels/${hostel?.slug}`;
 
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out ${hostel?.accommodation_name}`,
-      });
-    } catch (error) {
-      Alert.alert("Sharing failed", error.message);
-    }
-  };
+    await Share.share({
+      message: `${hostel?.accommodation_name} is available on HostelHubb. Reserve your spot now before it goes. No stress 🏠`,
+      url: link,
+    });
+  } catch (error) {
+    Alert.alert("Sharing failed", error.message);
+  }
+};
 
   // Header background animation
   const headerOpacity = scrollY.interpolate({
