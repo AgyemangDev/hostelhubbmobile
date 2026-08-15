@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "notifications update" --platform ios
+eas update --branch production --message "hostel sharing link and image" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
