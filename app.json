@@ -74,7 +74,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "./plugins/withFirebaseModularHeaders"
     ],
     "experiments": {
       "typedRoutes": true
@@ -91,6 +92,9 @@
             "screens": {
               "Details": {
                 "path": "Details/:id"
+              },
+              "Ticket": {
+                "path": "transport/booking/:groupRef"
               }
             }
           },

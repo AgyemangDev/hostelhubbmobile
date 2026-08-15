@@ -12,6 +12,8 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
     return bookings
       .filter((booking) => {
         if (booking.type === "storage") return true;
+        // UniGo trips carry their own status; only paid trips have a ticket.
+        if (booking.type === "transport") return booking.status === "success";
         return booking.payment_status === true;
       })
       .map((booking) => {
@@ -65,6 +67,7 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
         navigation={navigation}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        onChanged={onRefresh}
       />
     </View>
   );

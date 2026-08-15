@@ -1,88 +1,129 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
-import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import COLORS from "../../../constants/Colors";
 import Button from "../../../components/ButtonComponents/ButtonComponent";
 import CustomDropdown from "../../../components/Dropdowns/CustomDropdown";
 import BusCard, { BusCardSkeleton, BusEmptyState } from "../../../components/Cards/transport/Buscard";
-import API_BASE_URL from "../../../utils/api/api";
-import locations from "../../../assets/data/transport/location";
+import { getLocations, searchTrips } from "../../../utils/api/unigo";
 import { useRouter } from "expo-router";
 
+/**
+ * Trips come from UniGo, and so do the pickup/destination options — UniGo's
+ * endpoint labels are the ones its buses are actually stored under, so a
+ * hardcoded local list would silently return zero results.
+ */
 const BusSelectionScreen = () => {
-    const router = useRouter();
+  const router = useRouter();
+
+  const [locations, setLocations] = useState({ origins: [], destinations: [] });
+  const [locationsError, setLocationsError] = useState("");
+  const [loadingLocations, setLoadingLocations] = useState(true);
+
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   const [pickupVisible, setPickupVisible] = useState(false);
   const [destinationVisible, setDestinationVisible] = useState(false);
+
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [buses, setBuses] = useState([]);
   const [searched, setSearched] = useState(false);
-  const [error, setError] = useState(""); 
+  const [error, setError] = useState("");
 
-  const fetchBuses = async () => {
-    if (!pickup || !destination) {
-      setError("Please select both pickup and destination");
-      return;
-    }
+  useEffect(() => {
+    let cancelled = false;
 
-    setLoading(true);
-    setError("");
-    setBuses([]);
-    setSearched(false);
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/transport/buses`, {
-        pickup,
-        destination,
-      });
-      if (response.data.success && response.data.buses.length) {
-        setBuses(response.data.buses);
+    (async () => {
+      try {
+        const data = await getLocations();
+        if (cancelled) return;
+        setLocations({
+          origins: data?.origins || [],
+          destinations: data?.destinations || [],
+        });
+      } catch (err) {
+        if (!cancelled) setLocationsError(err.message);
+      } finally {
+        if (!cancelled) setLoadingLocations(false);
       }
-    } catch (err) {
-      console.error(err);
-      setError("Server error. Please try again.");
-    } finally {
-      setLoading(false);
-      setSearched(true);
-    }
-  };
+    })();
 
-const handleSelectBus = (bus) => {
-  router.push({
-    pathname: "/(categories)/(transport)/SeatSelection",
-    params: { bus: JSON.stringify(bus) },
-  });
-};
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const fetchBuses = useCallback(
+    async ({ silent } = {}) => {
+      if (!pickup || !destination) {
+        setError("Please select both pickup and destination");
+        return;
+      }
+      if (pickup === destination) {
+        setError("Pickup and destination cannot be the same");
+        return;
+      }
+
+      if (!silent) setLoading(true);
+      setError("");
+
+      try {
+        const trips = await searchTrips({ from: pickup, to: destination });
+        setBuses(trips);
+      } catch (err) {
+        setBuses([]);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+        setSearched(true);
+      }
+    },
+    [pickup, destination]
+  );
+
+  const onRefresh = useCallback(() => {
+    if (!searched) return;
+    setRefreshing(true);
+    fetchBuses({ silent: true });
+  }, [searched, fetchBuses]);
+
+  // Seat availability is only a snapshot; SeatSelection re-fetches the live map.
+  const handleSelectBus = (bus) => {
+    router.push({
+      pathname: "/(categories)/(transport)/SeatSelection",
+      params: { bus: JSON.stringify(bus) },
+    });
+  };
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <Text style={styles.heading}>Select Your Route</Text>
 
+      {locationsError ? (
+        <Text style={styles.error}>{locationsError}</Text>
+      ) : null}
+
       <Text style={styles.label}>Pickup Point</Text>
       <CustomDropdown
-        data={locations}
+        data={locations.origins}
         selectedValue={pickup}
         onSelect={(val) => setPickup(val)}
-        placeholder="Select Pickup"
+        placeholder={loadingLocations ? "Loading routes…" : "Select Pickup"}
         visible={pickupVisible}
         onPress={() => setPickupVisible((prev) => !prev)}
       />
 
       <Text style={styles.label}>Destination Point</Text>
       <CustomDropdown
-        data={locations}
+        data={locations.destinations}
         selectedValue={destination}
         onSelect={(val) => setDestination(val)}
-        placeholder="Select Destination"
+        placeholder={loadingLocations ? "Loading routes…" : "Select Destination"}
         visible={destinationVisible}
         onPress={() => setDestinationVisible((prev) => !prev)}
       />
@@ -95,7 +136,6 @@ const handleSelectBus = (bus) => {
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {/* Shimmer skeletons while loading */}
       {loading && (
         <View style={{ marginTop: 8 }}>
           <Text style={styles.subHeading}>Available Buses</Text>
@@ -105,10 +145,7 @@ const handleSelectBus = (bus) => {
         </View>
       )}
 
-      {/* Results */}
-      {!loading && searched && buses.length === 0 && !error && (
-        <BusEmptyState />
-      )}
+      {!loading && searched && buses.length === 0 && !error && <BusEmptyState />}
 
       {!loading && buses.length > 0 && (
         <View style={{ marginTop: 8 }}>
@@ -118,6 +155,7 @@ const handleSelectBus = (bus) => {
           {buses.map((bus) => (
             <BusCard key={bus.id} bus={bus} onSelect={handleSelectBus} />
           ))}
+          <Text style={styles.poweredBy}>Buses and tickets provided by UniGo Transport</Text>
         </View>
       )}
     </ScrollView>
@@ -146,5 +184,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     color: COLORS.textDark,
   },
-  error: { color: "red", marginTop: 4, fontWeight: "600", marginBottom: 8 },
+  error: { color: COLORS.error, marginTop: 4, fontWeight: "600", marginBottom: 8 },
+  poweredBy: {
+    fontSize: 12,
+    color: COLORS.textFaint,
+    textAlign: "center",
+    marginTop: 8,
+  },
 });

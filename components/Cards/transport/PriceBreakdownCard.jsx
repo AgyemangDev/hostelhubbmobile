@@ -2,69 +2,43 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
-import { storageItems, luggageItem } from "../../../assets/data/transport/storageItem";
 
-const PriceRow = ({ label, value, bold, accent }) => (
+const PriceRow = ({ label, value, bold, accent, muted }) => (
   <View style={styles.row}>
-    <Text style={[styles.label, bold && styles.boldText, accent && styles.accentText]}>
+    <Text style={[styles.label, bold && styles.boldText, accent && styles.accentText, muted && styles.mutedText]}>
       {label}
     </Text>
-    <Text style={[styles.value, bold && styles.boldText, accent && styles.accentText]}>
+    <Text style={[styles.value, bold && styles.boldText, accent && styles.accentText, muted && styles.mutedText]}>
       {value}
     </Text>
   </View>
 );
 
-const PriceBreakdownCard = ({ selectedSeats, seatFee, quantities, storageFee, grandTotal }) => {
-  const hasStorage = Object.values(quantities).some((q) => q > 0);
+const money = (amount) => `GH₵${Number(amount || 0).toFixed(2)}`;
 
-  return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Ionicons name="receipt-outline" size={20} color={COLORS.primary} />
-        <Text style={styles.title}>Payment Breakdown</Text>
-      </View>
-
-      {/* Seats */}
-      <PriceRow
-        label={`Seat${selectedSeats.length > 1 ? "s" : ""} × ${selectedSeats.length}`}
-        value={`GH₵${seatFee.toFixed(2)}`}
-      />
-
-      {/* Storage items */}
-      {hasStorage && (
-        <>
-          {Object.entries(quantities).map(([name, qty]) =>
-            qty > 0 ? (
-              <PriceRow
-                key={name}
-                label={`${name} × ${qty}`}
-                value={
-                  name === luggageItem.name
-                    ? "GH₵0"
-                    : `GH₵${((storageItems.find((i) => i.name === name)?.price || 0) * qty).toFixed(2)}`
-                }
-              />
-            ) : null
-          )}
-          {quantities[luggageItem.name] > 0 && (
-            <PriceRow label="Luggage handling fee" value="GH₵10.00" />
-          )}
-        </>
-      )}
-
-      <View style={styles.divider} />
-      
-      {/* Total */}
-      <PriceRow
-        label="Total Amount"
-        value={`GH₵${grandTotal.toFixed(2)}`}
-        bold
-        accent
-      />
+/**
+ * Payment breakdown for a UniGo trip.
+ *
+ * @param {{lines: Array<{label: string, amount: number, muted?: boolean}>, total: number}} props
+ *   `lines` comes straight from UniGo's pricing response, so what the user sees
+ *   here is exactly what Hubtel will charge.
+ */
+const PriceBreakdownCard = ({ lines = [], total = 0 }) => (
+  <View style={styles.card}>
+    <View style={styles.header}>
+      <Ionicons name="receipt-outline" size={20} color={COLORS.primary} />
+      <Text style={styles.title}>Payment Breakdown</Text>
     </View>
-  );
-};
+
+    {lines.map((line) => (
+      <PriceRow key={line.label} label={line.label} value={money(line.amount)} muted={line.muted} />
+    ))}
+
+    <View style={styles.divider} />
+
+    <PriceRow label="Total Amount" value={money(total)} bold accent />
+  </View>
+);
 
 export default PriceBreakdownCard;
 
@@ -116,6 +90,10 @@ const styles = StyleSheet.create({
   },
   accentText: {
     color: COLORS.primary,
+  },
+  mutedText: {
+    fontSize: 13,
+    color: COLORS.textFaint,
   },
   divider: {
     height: 1,
