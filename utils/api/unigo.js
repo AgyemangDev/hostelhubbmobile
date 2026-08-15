@@ -33,8 +33,13 @@ class UnigoApiError extends Error {
 
 async function request(path, { method = "GET", body, signal } = {}) {
   if (!PARTNER_KEY) {
+    // EXPO_PUBLIC_* values in eas.json apply to EAS builds only; local runs read
+    // `.env`. Missing key means one of those two, and which one matters a lot to
+    // whoever is reading the error.
     throw new UnigoApiError(
-      "Transport is not configured in this build. Please update the app.",
+      __DEV__
+        ? "EXPO_PUBLIC_UNIGO_PARTNER_KEY is not set. Copy .env.example to .env, then restart Metro with `npx expo start --clear`."
+        : "Transport is not available in this version of the app. Please update to the latest version.",
       { code: "NO_PARTNER_KEY" }
     );
   }

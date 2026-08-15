@@ -18,6 +18,7 @@ import * as Sharing from "expo-sharing";
 import COLORS from "../../../constants/Colors";
 import FunctionalButton from "../../../components/ButtonComponents/FunctionalButton";
 import { getBooking, ticketPdfUrl, ticketPdfHeaders } from "../../../utils/api/unigo";
+import { useResumePayment } from "../../../hooks/transport/useResumePayment";
 
 /**
  * The ticket, assembled natively in HostelHubb from UniGo's booking data.
@@ -47,6 +48,7 @@ const Ticket = () => {
   const [downloading, setDownloading] = useState(false);
   const [saved, setSaved] = useState(false);
   const autoSaved = useRef(false);
+  const { resume, busy: resuming } = useResumePayment();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,9 +139,29 @@ const Ticket = () => {
         {!isPaid && (
           <View style={styles.pendingCard}>
             <Ionicons name="time-outline" size={18} color={COLORS.warning} />
-            <Text style={styles.pendingText}>
-              This booking is not confirmed yet. If you have paid, it will confirm shortly.
-            </Text>
+            <View style={{ flex: 1, gap: 10 }}>
+              <Text style={styles.pendingText}>
+                This booking is not paid for yet, so there is no ticket to show. Seats are
+                only held for {booking.holdMinutes || 5} minutes.
+              </Text>
+              <TouchableOpacity
+                style={styles.payNow}
+                onPress={() => resume(groupRef, { onDone: load })}
+                disabled={resuming}
+                activeOpacity={0.85}
+              >
+                {resuming ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="lock-closed" size={14} color="#fff" />
+                    <Text style={styles.payNowText}>
+                      Complete payment · GH₵{Number(booking.total || 0).toFixed(2)}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -176,22 +198,37 @@ const Ticket = () => {
             <View style={styles.notchRight} />
           </View>
 
-          {/* Details */}
+          {/* Details. An unpaid booking shows only what it costs — seat,
+              passenger, reference and QR would all imply a confirmed seat. */}
           <View style={styles.details}>
-            <Row label="Passenger" value={booking.passenger?.name} />
             <Row label="Departure" value={booking.departureTime} />
-            <Row label={booking.seatCount > 1 ? "Seats" : "Seat"} value={seatLabel} />
-            <Row label="Amount paid" value={`GH₵${Number(booking.total || 0).toFixed(2)}`} />
-            <Row label="Reference" value={booking.partnerRef} />
+            {isPaid && <Row label="Passenger" value={booking.passenger?.name} />}
+            {isPaid && (
+              <Row label={booking.seatCount > 1 ? "Seats" : "Seat"} value={seatLabel} />
+            )}
+            <Row
+              label={isPaid ? "Amount paid" : "Amount due"}
+              value={`GH₵${Number(booking.total || 0).toFixed(2)}`}
+            />
+            {isPaid && <Row label="Reference" value={booking.partnerRef} />}
           </View>
 
-          {/* QR */}
-          <View style={styles.qrWrap}>
-            <View style={styles.qrBox}>
-              <QRCode value={String(booking.groupRef || groupRef)} size={150} />
+          {/* QR — only ever for a seat that is actually confirmed. */}
+          {isPaid ? (
+            <View style={styles.qrWrap}>
+              <View style={styles.qrBox}>
+                <QRCode value={String(booking.groupRef || groupRef)} size={150} />
+              </View>
+              <Text style={styles.qrHint}>Show this code when boarding</Text>
             </View>
-            <Text style={styles.qrHint}>Show this code when boarding</Text>
-          </View>
+          ) : (
+            <View style={styles.qrWrap}>
+              <View style={styles.qrPlaceholder}>
+                <Ionicons name="lock-closed-outline" size={26} color={COLORS.textFaint} />
+              </View>
+              <Text style={styles.qrHint}>Your boarding code appears once payment clears</Text>
+            </View>
+          )}
         </View>
 
         {isPaid && (
@@ -269,7 +306,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
   },
-  pendingText: { flex: 1, fontSize: 12, color: "#92400E", lineHeight: 18 },
+  pendingText: { fontSize: 12, color: "#92400E", lineHeight: 18 },
+  payNow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7,
+    backgroundColor: COLORS.button, paddingVertical: 11, borderRadius: 12,
+  },
+  payNowText: { color: "#fff", fontWeight: "700", fontSize: 13 },
 
   ticket: {
     backgroundColor: COLORS.white,
@@ -350,7 +392,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#EFEFEF",
   },
-  qrHint: { fontSize: 11, color: COLORS.textFaint },
+  qrHint: { fontSize: 11, color: COLORS.textFaint, textAlign: "center", paddingHorizontal: 24 },
+  qrPlaceholder: {
+    width: 178,
+    height: 178,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: "#E5E7EB",
+    backgroundColor: "#FAFAFB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
   saveCard: {
     flexDirection: "row",

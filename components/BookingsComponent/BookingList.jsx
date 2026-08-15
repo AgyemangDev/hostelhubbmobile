@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import BookingCard from "./BookingCard";
 import TransportBookingCard from "./TransportBookingCard";
 
-const BookingList = ({ userBookings, navigation }) => {
+const BookingList = ({ userBookings, navigation, onChanged }) => {
   const router = useRouter();
 
   // Accommodation, hubclips and bus trips. Transport is included at every
@@ -19,6 +19,7 @@ const BookingList = ({ userBookings, navigation }) => {
       return (
         <TransportBookingCard
           booking={item}
+          onChanged={onChanged}
           onPress={() =>
             router.push({
               pathname: "/(categories)/(transport)/Ticket",

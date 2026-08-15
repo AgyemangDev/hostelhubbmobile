@@ -23,6 +23,14 @@ prepare_react_native_project!
 target 'Hostelhubb' do
   use_expo_modules!
 
+  # withFirebaseModularHeaders: AppCheckCore is a Swift pod and cannot build as a static library
+  # against dependencies that emit no module map. Narrow fix — do NOT replace
+  # this with a global use_modular_headers!, which breaks other Expo modules.
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'RecaptchaInterop', :modular_headers => true
+
+
+
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
   else

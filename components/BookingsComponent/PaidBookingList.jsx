@@ -5,7 +5,7 @@ import StorageBookingCard from "./StorageBookingCard";
 import TransportBookingCard from "./TransportBookingCard";
 import { useNavigation, useRouter } from "expo-router";
 
-const PaidBookingList = ({ userBookings }) => {
+const PaidBookingList = ({ userBookings, onChanged }) => {
   const navigation = useNavigation();
   const router = useRouter();
   const renderBookingItem = ({ item }) => {
@@ -40,6 +40,7 @@ if (item.type === "storage") {
       return (
         <TransportBookingCard
           booking={item}
+          onChanged={onChanged}
           onPress={() =>
             router.push({
               pathname: "/(categories)/(transport)/Ticket",

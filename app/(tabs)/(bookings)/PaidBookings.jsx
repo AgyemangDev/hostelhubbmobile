@@ -67,6 +67,7 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
         navigation={navigation}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        onChanged={onRefresh}
       />
     </View>
   );
