@@ -9,7 +9,9 @@
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
-        "EXPO_PUBLIC_ACCESS_FEE": "30"
+        "EXPO_PUBLIC_ACCESS_FEE": "30",
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
       },
       "android": {
         "buildType": "app-bundle",
@@ -26,7 +28,9 @@
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
-        "EXPO_PUBLIC_ACCESS_FEE": "30"
+        "EXPO_PUBLIC_ACCESS_FEE": "30",
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
       },
       "android": {
         "buildType": "apk",
@@ -42,7 +46,9 @@
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_CALLBACK_URL": "https://hostelhubbgh.web.app/auth/callback",
-        "EXPO_PUBLIC_ACCESS_FEE": "30"
+        "EXPO_PUBLIC_ACCESS_FEE": "30",
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
       },
       "android": {
         "buildType": "apk",

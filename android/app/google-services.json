@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "397953583899",
+    "project_id": "hostelhubbgh",
+    "storage_bucket": "hostelhubbgh.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:397953583899:android:43785512be5ddf5d2661be",
+        "android_client_info": {
+          "package_name": "com.Hostelhubb.Hostelhubb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1shQalK7h-9RIi7VO6jB-87a4-RtYl1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

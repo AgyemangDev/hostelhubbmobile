@@ -91,9 +91,13 @@ export const BusEmptyState = () => (
 // ─── Bus Card ─────────────────────────────────────────────────────────────────
 
 const BusCard = ({ bus, onSelect }) => {
-  const availableSeats = bus.seats.filter((s) => s.status === "available").length;
-  const totalSeats = bus.totalSeats;
-  const occupancyRatio = (totalSeats - availableSeats) / totalSeats;
+  // UniGo's trip list sends a count instead of the seat map (it never exposes
+  // who booked what); fall back to counting when a full seat array is present.
+  const availableSeats =
+    bus.seatsAvailable ??
+    (Array.isArray(bus.seats) ? bus.seats.filter((s) => s.status === "available").length : 0);
+  const totalSeats = bus.totalSeats || availableSeats || 1;
+  const occupancyRatio = Math.min(1, Math.max(0, (totalSeats - availableSeats) / totalSeats));
 
   const seatColor =
     availableSeats === 0

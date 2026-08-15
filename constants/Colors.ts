@@ -17,6 +17,14 @@ const COLORS = {
   textMuted: "#555555",
   shadow: "rgba(0,0,0,0.1)",
   logoShadow: "rgba(139, 0, 0, 0.2)",
+
+  // Referenced across the app (transport PaymentScreen, FunctionalButton) but
+  // previously undefined, which silently rendered `undefined`.
+  error: "#EF4444",
+  warning: "#F59E0B",
+  border: "#E5E7EB",
+  surface: "#F8FAFF",
+  textFaint: "#9CA3AF",
 };
 
 export default COLORS;

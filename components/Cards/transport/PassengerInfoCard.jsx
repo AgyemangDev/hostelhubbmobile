@@ -10,11 +10,18 @@ const InfoRow = ({ label, value }) => (
   </View>
 );
 
-const PassengerInfoCard = ({ userInfo, user }) => {
-  const fullName = userInfo?.first_name && userInfo?.surname 
-    ? `${userInfo.first_name} ${userInfo.surname}` 
-    : "—";
-  const email = userInfo?.email || user?.email || "—";
+/**
+ * `passenger` wins when present — a booking can be made for someone other than
+ * the signed-in account holder, and the ticket carries the passenger's details.
+ */
+const PassengerInfoCard = ({ passenger, userInfo, user }) => {
+  const fullName =
+    passenger?.name ||
+    (userInfo?.first_name && userInfo?.surname
+      ? `${userInfo.first_name} ${userInfo.surname}`
+      : "—");
+  const email = passenger?.email || userInfo?.email || user?.email || "—";
+  const phone = passenger?.phone || userInfo?.phone_number || "";
 
   return (
     <View style={styles.card}>
@@ -24,6 +31,7 @@ const PassengerInfoCard = ({ userInfo, user }) => {
       </View>
       <InfoRow label="Full Name" value={fullName} />
       <InfoRow label="Email" value={email} />
+      {phone ? <InfoRow label="Phone" value={phone} /> : null}
     </View>
   );
 };

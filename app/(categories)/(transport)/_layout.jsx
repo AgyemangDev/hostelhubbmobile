@@ -55,10 +55,10 @@ const _layout = () => {
         }}
       />
       <Stack.Screen
-        name="StorageCompartment"
+        name="PassengerDetails"
         options={{
           headerShown: true,
-          title: "Storage Compartment",
+          title: "Passenger Details",
         }}
       />
       <Stack.Screen
@@ -66,6 +66,17 @@ const _layout = () => {
         options={{
           headerShown: true,
           title: "Pay to Confirm",
+        }}
+      />
+      <Stack.Screen
+        name="Ticket"
+        options={{
+          headerShown: true,
+          title: "Your Ticket",
+          // Reached by replace() after payment and by deep link, so `back` would
+          // return to a dead checkout screen.
+          headerLeft: () => null,
+          gestureEnabled: false,
         }}
       />
     </Stack>
