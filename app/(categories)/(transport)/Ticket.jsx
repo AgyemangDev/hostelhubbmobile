@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -37,7 +37,7 @@ const Row = ({ label, value }) => (
 );
 
 const Ticket = () => {
-  const { groupRef } = useLocalSearchParams();
+  const { groupRef, justPaid } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -45,6 +45,8 @@ const Ticket = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const autoSaved = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -86,12 +88,24 @@ const Ticket = () => {
       } else {
         Alert.alert("Ticket saved", "Your ticket PDF has been saved to the app's files.");
       }
+      setSaved(true);
     } catch (err) {
       Alert.alert("Download failed", err.message);
     } finally {
       setDownloading(false);
     }
   };
+
+  // Straight from payment: push the ticket at them once. Later visits from the
+  // Bookings tab just show the button — re-opening a share sheet every time the
+  // user glances at their trip would be hostile.
+  useEffect(() => {
+    if (justPaid !== "1" || autoSaved.current) return;
+    if (booking?.status !== "success") return;
+    autoSaved.current = true;
+    handleDownload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [justPaid, booking]);
 
   if (loading) {
     return (
@@ -179,6 +193,21 @@ const Ticket = () => {
             <Text style={styles.qrHint}>Show this code when boarding</Text>
           </View>
         </View>
+
+        {isPaid && (
+          <View style={saved ? styles.savedCard : styles.saveCard}>
+            <Ionicons
+              name={saved ? "checkmark-circle" : "download-outline"}
+              size={18}
+              color={saved ? COLORS.success : COLORS.button}
+            />
+            <Text style={styles.saveText}>
+              {saved
+                ? "Ticket saved. It also stays here in My Trips — you can open it any time, even offline data allowing."
+                : "Save your ticket now. We don't send it by email, so keep a copy on your phone. It also stays here in My Trips."}
+            </Text>
+          </View>
+        )}
 
         <Text style={styles.footNote}>
           Operated by UniGo Transport. Please arrive at your pickup point at least 30
@@ -323,6 +352,27 @@ const styles = StyleSheet.create({
   },
   qrHint: { fontSize: 11, color: COLORS.textFaint },
 
+  saveCard: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+    backgroundColor: `${COLORS.button}10`,
+    borderWidth: 1,
+    borderColor: `${COLORS.button}30`,
+    borderRadius: 14,
+    padding: 14,
+  },
+  savedCard: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+    backgroundColor: `${COLORS.success}10`,
+    borderWidth: 1,
+    borderColor: `${COLORS.success}30`,
+    borderRadius: 14,
+    padding: 14,
+  },
+  saveText: { flex: 1, fontSize: 12, color: COLORS.textMuted, lineHeight: 18 },
   footNote: {
     fontSize: 11,
     color: COLORS.textFaint,

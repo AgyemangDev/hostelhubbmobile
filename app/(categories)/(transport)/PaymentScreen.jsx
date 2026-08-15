@@ -108,7 +108,10 @@ const PaymentScreen = () => {
         if (status.status === "success") {
           router.replace({
             pathname: "/(categories)/(transport)/Ticket",
-            params: { groupRef },
+            // `justPaid` makes the ticket screen save the PDF straight away —
+            // UniGo's confirmation emails do not deliver, so the passenger must
+            // walk away holding the ticket, not expecting one to arrive.
+            params: { groupRef, justPaid: "1" },
           });
           return;
         }
