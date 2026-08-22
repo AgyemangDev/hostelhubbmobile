@@ -3,6 +3,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../app/firebase/FirebaseConfig';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../app/firebase/FirebaseConfig';
+import { useFetchTransportBookings } from '../hooks/bookingContext/useFetchTransportBookings';
 
 const BookingsContext = createContext();
 
@@ -14,6 +15,10 @@ export const BookingsProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user] = useAuthState(auth);
+
+  // Bus trips come from UniGo's API rather than Firestore, so they arrive
+  // through a fetch hook instead of a snapshot listener.
+  const transport = useFetchTransportBookings();
 
   useEffect(() => {
     let unsubscribeBookings;
@@ -78,10 +83,16 @@ export const BookingsProvider = ({ children }) => {
   return (
     <BookingsContext.Provider
       value={{
-        bookings,          // Hostel bookings
-        storageBookings,   // Storage bookings
+        bookings,                             // Hostel bookings
+        storageBookings,                      // Storage bookings
+        transportBookings: transport.bookings, // UniGo bus trips
         loading,
         error,
+        // UniGo is a separate system; when it is down the other two are still
+        // usable, so its failure is reported apart from `error` rather than
+        // taking the whole tab down with it.
+        transportError: transport.error,
+        refetchTransport: transport.refetch,
       }}
     >
       {children}

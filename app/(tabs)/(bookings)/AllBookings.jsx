@@ -7,7 +7,8 @@ import { useAdmin } from "../../../context/ManagersContext";
 import { useHostels } from "../../../context/HostelsContext";
 
 const AllBookings = ({ navigation }) => {
-  const { bookings, storageBookings } = useBookingsContext();
+  const { bookings, storageBookings, transportBookings, refetchTransport } =
+    useBookingsContext();
   const { admins } = useAdmin();
   const { hostels } = useHostels();
   const [userBookings, setUserBookings] = useState([]);
@@ -25,8 +26,19 @@ const AllBookings = ({ navigation }) => {
       };
     });
 
-    // Combine hostel + storage bookings
-    const combined = [...enrichedHostelBookings, ...storageBookings];
+    // Unpaid bus trips belong here too: the seat hold is still running and this
+    // list is where the user can go back and finish paying.
+    const enrichedTransportBookings = (transportBookings || []).map((booking) => ({
+      ...booking,
+      bookingDate: booking.createdAt ? new Date(booking.createdAt).getTime() : 0,
+    }));
+
+    // Combine hostel + storage + transport bookings
+    const combined = [
+      ...enrichedHostelBookings,
+      ...storageBookings,
+      ...enrichedTransportBookings,
+    ];
 
     // Sort combined bookings
     const sortedBookings = combined.sort((a, b) => {
@@ -38,14 +50,18 @@ const AllBookings = ({ navigation }) => {
     });
 
     setUserBookings(sortedBookings);
-  }, [bookings, storageBookings, admins, hostels]);
+  }, [bookings, storageBookings, transportBookings, admins, hostels]);
 
   return (
     <View style={styles.container}>
       {userBookings.length === 0 ? (
         <EmptyState message="No Bookings Found." />
       ) : (
-        <BookingList userBookings={userBookings} navigation={navigation} />
+        <BookingList
+          userBookings={userBookings}
+          navigation={navigation}
+          onChanged={refetchTransport}
+        />
       )}
     </View>
   );

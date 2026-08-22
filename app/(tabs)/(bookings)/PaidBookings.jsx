@@ -8,7 +8,8 @@ import { useHostels } from '../../../context/HostelsContext';
 import { auth } from '../../firebase/FirebaseConfig';
 
 const PaidBookings = ({ navigation }) => {
-  const { bookings, storageBookings } = useBookingsContext();
+  const { bookings, storageBookings, transportBookings, refetchTransport } =
+    useBookingsContext();
   const { admins } = useAdmin();
   const { hostels } = useHostels();
   const [userBookings, setUserBookings] = useState([]);
@@ -39,8 +40,22 @@ const PaidBookings = ({ navigation }) => {
       (booking) => booking.userId === currentUser.uid
     );
 
-    // 3. Combine and sort by latest date
-    const combined = [...paidHostelBookings, ...paidStorageBookings];
+    // 3. UniGo trips carry their own status; only a paid trip has a ticket.
+    //    `bookingDate` is filled in from UniGo's createdAt so these sort
+    //    alongside the Firestore bookings below.
+    const paidTransportBookings = (transportBookings || [])
+      .filter((booking) => booking.status === "success")
+      .map((booking) => ({
+        ...booking,
+        bookingDate: booking.createdAt ? new Date(booking.createdAt).getTime() : 0,
+      }));
+
+    // 4. Combine and sort by latest date
+    const combined = [
+      ...paidHostelBookings,
+      ...paidStorageBookings,
+      ...paidTransportBookings,
+    ];
 
     const sorted = combined.sort((a, b) => {
       const dateA = a.acceptedDate ?? a.bookingDate ?? 0;
@@ -49,14 +64,18 @@ const PaidBookings = ({ navigation }) => {
     });
 
     setUserBookings(sorted);
-  }, [bookings, storageBookings, admins, hostels]);
+  }, [bookings, storageBookings, transportBookings, admins, hostels]);
 
   return (
     <View style={styles.container}>
       {userBookings.length === 0 ? (
         <EmptyState message="No Paid Bookings Found." />
       ) : (
-        <PaidBookingList userBookings={userBookings} navigation={navigation} />
+        <PaidBookingList
+          userBookings={userBookings}
+          navigation={navigation}
+          onChanged={refetchTransport}
+        />
       )}
     </View>
   );

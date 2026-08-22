@@ -5,12 +5,13 @@ import React from 'react';
 const _layout = () => {
   return (
     <Stack>
-      <Stack.Screen 
-        name="(transport)" 
-        options={{ 
-          title: 'Transport', 
-          headerBackVisible: false 
-        }} 
+      <Stack.Screen
+        name="(transport)"
+        options={{
+          // The transport stack draws its own headers per screen, so the
+          // parent's would sit on top of them as a second bar.
+          headerShown: false
+        }}
       />
       <Stack.Screen 
         name="(hostels)" 

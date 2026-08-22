@@ -97,6 +97,9 @@
             "screens": {
               "Details": {
                 "path": "Details/:id"
+              },
+              "Ticket": {
+                "path": "transport/booking/:groupRef"
               }
             }
           },

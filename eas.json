@@ -5,6 +5,10 @@
   },
   "build": {
     "production": {
+      "env": {
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
+      },
       "android": {
         "buildType": "app-bundle",
         "channel": "production"
@@ -15,12 +19,20 @@
       }
     },
     "apk": {
+      "env": {
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
+      },
       "android": {
         "buildType": "apk",
         "channel": "production"
       }
     },
     "development": {
+      "env": {
+        "EXPO_PUBLIC_UNIGO_API_URL": "https://yenko-backend.onrender.com",
+        "EXPO_PUBLIC_UNIGO_PARTNER_KEY": "pk_live_hostelhu_e05a1877b15698ee15e70b4c18298491d0d3"
+      },
       "android": {
         "buildType": "apk",
         "channel": "development",

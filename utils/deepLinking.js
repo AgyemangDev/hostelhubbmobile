@@ -22,6 +22,24 @@ export const handleDeepLinking = async (event) => {
     const urlObj = new URL(cleanedUrl);
     const pathParts = urlObj.pathname.split("/");
 
+    // Returning from UniGo/Hubtel checkout: hostelhubb://transport/booking/:ref
+    if (pathParts[1] === "transport" && pathParts[2] === "booking" && pathParts[3]) {
+      const groupRef = decodeURIComponent(pathParts[3]);
+      const cancelled = urlObj.searchParams.get("cancelled") === "1";
+
+      // The PaymentScreen is already awaiting the browser session and will
+      // confirm with UniGo itself; only take over when the app was reopened
+      // cold (or the payment was cancelled, where there is nothing to await).
+      if (!cancelled) {
+        console.log("Navigating to transport ticket", groupRef);
+        router.push({
+          pathname: "/(categories)/(transport)/Ticket",
+          params: { groupRef },
+        });
+      }
+      return;
+    }
+
     // Handle /Details/:id
     if (pathParts[1] === "Details" && pathParts[2]) {
       id = pathParts[2];
