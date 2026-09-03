@@ -5,27 +5,30 @@ import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 
 const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
-  const { bookings, loading, error } = useBookingsContext();
+  const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
+    useBookingsContext();
 
   const paidBookings = useMemo(() => {
-    if (!bookings || bookings.length === 0) return [];
-    return bookings
-      .filter((booking) => {
-        if (booking.type === "storage") return true;
-        return booking.payment_status === true;
-      })
-      .map((booking) => {
-        if (booking.type === "accommodation") {
-          return {
-            ...booking,
-            payment_option: booking.payment_option
-              ? parseFloat(booking.payment_option) * 1.05
-              : 0,
-          };
-        }
-        return booking;
-      });
-  }, [bookings]);
+    const paidHostelBookings = (bookings || [])
+      .filter((booking) => booking.payment_status === true)
+      .map((booking) => ({
+        ...booking,
+        payment_option: booking.payment_option
+          ? parseFloat(booking.payment_option) * 1.05
+          : 0,
+      }));
+
+    // Storage bookings don't carry a payment_status flag — a storage booking
+    // only exists once it's paid for, so every one here counts as paid.
+    const paidStorageBookings = storageBookings || [];
+
+    // Only a UniGo trip that actually went through has a ticket.
+    const paidTransportBookings = (transportBookings || []).filter(
+      (booking) => booking.status === "success"
+    );
+
+    return [...paidHostelBookings, ...paidStorageBookings, ...paidTransportBookings];
+  }, [bookings, storageBookings, transportBookings]);
 
   if (loading && !refreshing) {
     return (
@@ -65,6 +68,7 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
         navigation={navigation}
         refreshing={refreshing}
         onRefresh={onRefresh}
+        onChanged={refetchTransport}
       />
     </View>
   );

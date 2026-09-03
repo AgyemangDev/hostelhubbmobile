@@ -21,8 +21,10 @@ const StorageBanner = ({ facility }) => {
     switch (facility.type) {
       case "storage":
         return { text: "Store Now", route: "(StorageForm)" };
+      // case "transport":
+      //   return { text: "Travel Now", route: "(transport)" };
       case "transport":
-        return { text: "Travel Now", route: "(transport)" };
+        return { text: "Travel Now", route: "(unigotransport)" };
       case "shop":
         return { text: "Shop Now", route: "(shop)" };
       case "accommodation":

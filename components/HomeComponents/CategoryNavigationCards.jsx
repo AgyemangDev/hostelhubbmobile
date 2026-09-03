@@ -9,7 +9,8 @@ const categories = [
   { name: "Hostels", image: require("../../assets/images/hostel.png"), route: "/(categories)/(hostels)" },
   { name: "Storage", image: require("../../assets/images/storagebox.png"), route: "/(StorageForm)" },
   { name: "Data Shop", image: require("../../assets/images/data.png"), route: "/(categories)/(shop)" },
-  { name: "Transport", image: require("../../assets/images/transport.png"), route: "/(categories)/(transport)" },
+    { name: "Transport", image: require("../../assets/images/transport.png"), route: "/(categories)/(unigotransport)" },
+  // { name: "Transport", image: require("../../assets/images/transport.png"), route: "/(categories)/(transport)" },
 ];
 
 const shuffleArray = (array) => {

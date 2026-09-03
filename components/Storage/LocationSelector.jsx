@@ -7,6 +7,7 @@ import FloatingLabelInput from "../InputFields/FormInput";
 
 const ON_CAMPUS = [
   "Gaza",
+  "Wilkado",
   "Republic Hall",
   "Katanga Hall",
   "Africa Hall",

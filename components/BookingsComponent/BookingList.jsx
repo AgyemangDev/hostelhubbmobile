@@ -1,44 +1,75 @@
 import React from "react";
 import { View, Text, FlatList, StyleSheet } from "react-native";
 import BookingCard from "./BookingCard";
+import StorageBookingCard from "./StorageBookingCard";
+import TransportBookingCard from "../Cards/transport/TransportBookingCard";
+import { useNavigation, useRouter } from "expo-router";
 
-const BookingList = ({ userBookings, navigation }) => {
-  // Filter only accommodation or hubclip bookings
-  const accommodationBookings = userBookings.filter(
-    (b) => b.type === "accommodation" || b.type === "hubclip"
-  );
+const BookingList = ({ userBookings, navigation, onChanged }) => {
+  const router = useRouter();
+  // expo-router screens don't get a `navigation` prop automatically the way
+  // React Navigation stack screens do — fall back to the hook if the caller
+  // didn't (or couldn't) pass one down.
+  const navHook = useNavigation();
+  const nav = navigation || navHook;
 
-  const renderBookingItem = ({ item }) => (
-    <BookingCard
-      booking={item}
-      onPress={() =>
-        navigation.navigate("BookingDetails", { bookingData: item })
-      }
-    />
-  );
+  const renderBookingItem = ({ item }) => {
+    if (item.type === "accommodation") {
+      return (
+        <BookingCard
+          booking={item}
+          onPress={() =>
+            nav.navigate("BookingDetails", { bookingId: item.id })
+          }
+        />
+      );
+    }
 
-  if (!accommodationBookings || accommodationBookings.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No bookings available.</Text>
-      </View>
-    );
-  }
+    if (item.type === "storage") {
+      return (
+        <StorageBookingCard
+          booking={item}
+          onPress={() =>
+            nav.navigate("StorageBookingDetails", {
+              booking: JSON.stringify(item),
+            })
+          }
+        />
+      );
+    }
+
+    // An unpaid bus trip shows here too — its seat hold is still running, and
+    // the card is the only place the user can resume that payment.
+    if (item.type === "transport") {
+      return (
+        <TransportBookingCard
+          booking={item}
+          onChanged={onChanged}
+          onPress={() =>
+            router.push({
+              pathname: "/(categories)/(transport)/Ticket",
+              params: { groupRef: item.groupRef },
+            })
+          }
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
     <FlatList
-      data={accommodationBookings}
+      data={userBookings}
       renderItem={renderBookingItem}
-      keyExtractor={(item, index) =>
-        item.type === "storage"
-          ? item.bookingReference
-          : item.id || `booking-${index}`
-      }
+      keyExtractor={(item, index) => {
+        if (item.type === "storage") return item.bookingReference;
+        if (item.type === "transport") return item.groupRef;
+        return item.id || `booking-${index}`;
+      }}
       contentContainerStyle={styles.listContainer}
       ListEmptyComponent={
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No bookings available.</Text>
-        </View>
+        <Text style={styles.emptyText}>No bookings available.</Text>
       }
     />
   );
@@ -46,17 +77,12 @@ const BookingList = ({ userBookings, navigation }) => {
 
 const styles = StyleSheet.create({
   listContainer: {
-    padding: 0,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 50,
+    padding: 10,
   },
   emptyText: {
     fontSize: 16,
     textAlign: "center",
+    marginTop: 20,
     color: "#888",
   },
 });

@@ -1,78 +1,49 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../../constants/Colors";
-
-const InfoRow = ({ label, value }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value} numberOfLines={1}>{value}</Text>
-  </View>
-);
+import TicketCard, { TicketDivider, TicketTab, TICKET, MONO } from "./TicketCard";
 
 const PassengerInfoCard = ({ userInfo, user }) => {
-  const fullName = userInfo?.first_name && userInfo?.surname 
-    ? `${userInfo.first_name} ${userInfo.surname}` 
-    : "—";
+  const fullName =
+    userInfo?.first_name && userInfo?.surname
+      ? `${userInfo.first_name} ${userInfo.surname}`
+      : "—";
   const email = userInfo?.email || user?.email || "—";
 
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Ionicons name="person-outline" size={20} color={COLORS.primary} />
-        <Text style={styles.title}>Passenger Information</Text>
+    <TicketCard>
+      <TicketTab>PASSENGER</TicketTab>
+
+      <Text style={styles.name}>{fullName}</Text>
+
+      <TicketDivider />
+
+      <View>
+        <Text style={styles.label}>TICKET SENT TO</Text>
+        <Text style={styles.mono} numberOfLines={1}>{email}</Text>
       </View>
-      <InfoRow label="Full Name" value={fullName} />
-      <InfoRow label="Email" value={email} />
-    </View>
+    </TicketCard>
   );
 };
 
 export default PassengerInfoCard;
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#EFEFEF",
-    gap: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.textDark,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  name: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: TICKET.ink,
   },
   label: {
-    fontSize: 14,
-    color: "#6B7280",
-    fontWeight: "500",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    color: TICKET.slate,
+    marginBottom: 4,
   },
-  value: {
+  mono: {
+    fontFamily: MONO,
     fontSize: 14,
-    color: COLORS.textDark,
     fontWeight: "600",
-    textAlign: "right",
-    flex: 1,
-    marginLeft: 12,
+    color: TICKET.ink,
   },
 });

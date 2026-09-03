@@ -70,7 +70,7 @@ const HorizontalScrollCardList = ({ accommodations }) => {
 
       {/* Recently Added Section */}
       <Section
-        title="Recently Added"
+        title="Recently Added Hostels"
         list={recentlyAddedAccommodations}
         listLength={recentlyAddedAccommodations.length}
         renderCard={renderCard}

@@ -91,9 +91,15 @@ export const BusEmptyState = () => (
 // ─── Bus Card ─────────────────────────────────────────────────────────────────
 
 const BusCard = ({ bus, onSelect }) => {
-  const availableSeats = bus.seats.filter((s) => s.status === "available").length;
-  const totalSeats = bus.totalSeats;
-  const occupancyRatio = (totalSeats - availableSeats) / totalSeats;
+  // UniGo's trip list sends a count instead of the seat map (it never exposes
+  // who booked what); fall back to counting when a full seat array is present.
+  const availableSeats =
+    bus.seatsAvailable ??
+    (Array.isArray(bus.seats) ? bus.seats.filter((s) => s.status === "available").length : 0);
+  const totalSeats = bus.totalSeats || availableSeats || 1;
+  const occupancyRatio = Math.min(1, Math.max(0, (totalSeats - availableSeats) / totalSeats));
+
+    const route = bus.route || { from: "—", to: "—" };
 
   const seatColor =
     availableSeats === 0
@@ -122,8 +128,8 @@ const BusCard = ({ bus, onSelect }) => {
         <View style={styles.routeStop}>
           <Ionicons name="radio-button-on" size={14} color={COLORS.button} />
           <Text style={styles.routeText} numberOfLines={1}>
-            {bus.route.from}
-          </Text>
+  {route.from}
+</Text>
         </View>
         <View style={styles.routeLine}>
           <View style={styles.routeDash} />
@@ -132,9 +138,9 @@ const BusCard = ({ bus, onSelect }) => {
         </View>
         <View style={styles.routeStop}>
           <Ionicons name="location" size={14} color="#FF4D4D" />
-          <Text style={styles.routeText} numberOfLines={1}>
-            {bus.route.to}
-          </Text>
+ <Text style={styles.routeText} numberOfLines={1}>
+  {route.to}
+</Text>
         </View>
       </View>
 
@@ -381,4 +387,4 @@ const styles = StyleSheet.create({
     color: COLORS.button,
     fontWeight: "600",
   },
-});
+}); 

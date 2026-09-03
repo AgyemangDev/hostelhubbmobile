@@ -12,6 +12,12 @@ const _layout = () => {
         }} 
       />
       <Stack.Screen 
+        name="(unigotransport)" 
+        options={{ 
+         headerShown:false 
+        }} 
+      />
+      <Stack.Screen 
         name="(hostels)" 
         options={{ 
           headerShown: false,

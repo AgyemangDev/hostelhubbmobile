@@ -19,7 +19,7 @@ export const getStatusMeta = (pickupStatus, deliveryStatus) => {
       bg: "#EFF6FF",
       border: "#BFDBFE",
       color: "#1D4ED8",
-      icon: "truck-delivery-outline",
+      icon: "car-outline",
     };
   }
 
@@ -29,7 +29,7 @@ export const getStatusMeta = (pickupStatus, deliveryStatus) => {
       bg: "#FEF3C7",
       border: "#FDE68A",
       color: "#92400E",
-      icon: "clock-outline",
+      icon: "time-outline",
     };
   }
 

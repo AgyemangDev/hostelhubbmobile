@@ -1,78 +1,73 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../../constants/Colors";
-
-const InfoRow = ({ label, value }) => (
-  <View style={styles.row}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value} numberOfLines={2}>{value}</Text>
-  </View>
-);
+import TicketCard, { TicketDivider, TicketTab, TICKET, MONO } from "./TicketCard";
 
 const TripInfoCard = ({ bus, selectedSeats }) => {
+  const seatList = selectedSeats.map((s) => s.number).join(", ");
+
   return (
-    <View style={styles.card}>
-      <View style={styles.header}>
-        <Ionicons name="bus-outline" size={20} color={COLORS.primary} />
-        <Text style={styles.title}>Trip Details</Text>
+    <TicketCard>
+      <TicketTab>TRIP</TicketTab>
+
+      <View style={styles.routeRow}>
+        <Text style={styles.routeText} numberOfLines={1}>{bus?.route?.from}</Text>
+        <Ionicons name="arrow-forward" size={14} color={TICKET.slate} style={{ marginHorizontal: 8 }} />
+        <Text style={styles.routeText} numberOfLines={1}>{bus?.route?.to}</Text>
       </View>
-      <InfoRow label="Bus" value={bus?.name} />
-      <InfoRow label="Route" value={`${bus?.route?.from} → ${bus?.route?.to}`} />
-      <InfoRow label="Departure" value={bus?.departureTime || "—"} />
-      <InfoRow
-        label={`Seat${selectedSeats.length > 1 ? "s" : ""}`}
-        value={selectedSeats.map((s) => `Seat ${s.number}`).join(", ")}
-      />
-    </View>
+      <Text style={styles.busName}>{bus?.name}</Text>
+
+      <TicketDivider />
+
+      <View style={styles.dataRow}>
+        <View>
+          <Text style={styles.label}>DEPARTS</Text>
+          <Text style={styles.mono}>{bus?.departureTime || "—"}</Text>
+        </View>
+        <View style={styles.seatsBlock}>
+          <Text style={[styles.label, { textAlign: "right" }]}>
+            SEAT{selectedSeats.length > 1 ? "S" : ""}
+          </Text>
+          <Text style={[styles.mono, { textAlign: "right" }]} numberOfLines={1}>
+            {seatList || "—"}
+          </Text>
+        </View>
+      </View>
+    </TicketCard>
   );
 };
 
 export default TripInfoCard;
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#EFEFEF",
-    gap: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+  routeRow: { flexDirection: "row", alignItems: "center" },
+  routeText: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: TICKET.ink,
+    flexShrink: 1,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
+  busName: {
+    fontSize: 12,
+    color: TICKET.slate,
+    marginTop: 2,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.textDark,
-  },
-  row: {
+  dataRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
   },
+  seatsBlock: { maxWidth: "55%" },
   label: {
-    fontSize: 14,
-    color: "#6B7280",
-    fontWeight: "500",
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    color: TICKET.slate,
+    marginBottom: 4,
   },
-  value: {
-    fontSize: 14,
-    color: COLORS.textDark,
-    fontWeight: "600",
-    textAlign: "right",
-    flex: 1,
-    marginLeft: 12,
+  mono: {
+    fontFamily: MONO,
+    fontSize: 15,
+    fontWeight: "700",
+    color: TICKET.ink,
   },
 });

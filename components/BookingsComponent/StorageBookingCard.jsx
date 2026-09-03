@@ -7,6 +7,11 @@ import COLORS from "../../constants/Colors";
 const StorageBookingCard = ({ booking, onPress }) => {
   const statusMeta = getStatusMeta(booking.pickup_status, booking.delivery_status);
 
+  // Firestore's Storage docs use totalPrice/bookingReference — fall back to
+  // price/id in case an older shape is ever passed in.
+  const displayPrice = Number(booking.totalPrice ?? booking.price ?? 0);
+  const displayRef = booking.bookingReference ?? booking.id ?? "";
+
   const isPickupPending = booking.pickup_status === "pending";
   const isPickupCompleted = booking.pickup_status === "picked_up" || booking.pickup_status === "completed";
   const isDelivered = booking.delivery_status === "completed" || booking.delivery_status === "delivered";
@@ -64,9 +69,9 @@ const StorageBookingCard = ({ booking, onPress }) => {
         <View style={styles.headerInfo}>
           <View style={styles.nameAndId}>
             <Text style={styles.title}>Storage Booking</Text>
-            <Text style={styles.ref}>#{booking.id.slice(0, 13)}</Text>
+            <Text style={styles.ref}>#{displayRef.slice(0, 13)}</Text>
           </View>
-          <Text style={styles.price}>GH₵{booking.price.toFixed(2)}</Text>
+          <Text style={styles.price}>GH₵{displayPrice.toFixed(2)}</Text>
         </View>
       </View>
 

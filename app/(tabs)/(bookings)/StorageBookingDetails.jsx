@@ -6,7 +6,6 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  TouchableOpacity,
   SafeAreaView,
   StatusBar,
 } from "react-native";
@@ -17,18 +16,25 @@ import { useLocalSearchParams } from "expo-router";
 const StorageBookingDetails = () => {
   const { booking } = useLocalSearchParams();
 
-    const parsedBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
+  const parsedBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
 
+  // Real Storage docs carry a single flat `status` field, not separate
+  // pickup_status/delivery_status.
+  const isPickupPending = parsedBooking.status === "pending";
+  const isPickupCompleted = parsedBooking.status === "picked_up" || parsedBooking.status === "delivered";
+  const isDelivered = parsedBooking.status === "delivered";
 
-  // Determine status
-  const isPickupPending = parsedBooking.pickup_status === "pending";
-  const isPickupCompleted = parsedBooking.pickup_status === "picked_up" || parsedBooking.pickup_status === "completed";
-  const isDelivered = parsedBooking.delivery_status === "completed" || parsedBooking.delivery_status === "delivered";
-
-  // Format dates
+  // Format dates — handles both ISO ("2025-09-11") and DD/MM/YYYY ("20/09/2025").
   const formatDate = (dateString) => {
     if (!dateString) return "Not scheduled";
-    const date = new Date(dateString);
+    let date;
+    if (dateString.includes("/")) {
+      const [day, month, year] = dateString.split("/");
+      date = new Date(year, month - 1, day);
+    } else {
+      date = new Date(dateString);
+    }
+    if (isNaN(date.getTime())) return "Not scheduled";
     return date.toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
@@ -40,18 +46,21 @@ const StorageBookingDetails = () => {
   const formatTime = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
   };
 
-  // Calculate timeline progress (0-100%)
   const getProgress = () => {
     if (isDelivered) return 100;
     if (isPickupCompleted) return 50;
     return 0;
   };
+
+  const totalAmount = Number(parsedBooking.totalPrice ?? 0);
+  const displayRef = parsedBooking.bookingReference ?? parsedBooking.id ?? "";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,9 +70,9 @@ const StorageBookingDetails = () => {
         {/* Order ID Card */}
         <View style={styles.orderIdCard}>
           <Text style={styles.orderIdLabel}>Order ID</Text>
-          <Text style={styles.orderId}>#{parsedBooking.id}</Text>
+          <Text style={styles.orderId}>#{displayRef}</Text>
           <Text style={styles.orderDate}>
-            Storage placed on {formatDate(parsedBooking.order_date)}
+            Storage placed on {formatDate(parsedBooking.bookingDate)}
           </Text>
         </View>
 
@@ -101,10 +110,10 @@ const StorageBookingDetails = () => {
                   {isPickupCompleted ? "Items Picked Up" : "Awaiting Pickup"}
                 </Text>
                 <Text style={styles.timelineLocation}>
-                  {parsedBooking.pickup_info?.area || "Location pending"}
+                  {parsedBooking.pickupLocation || "Location pending"}
                 </Text>
                 <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.pickup_info?.date)}
+                  {formatDate(parsedBooking.pickupDate)}
                   {parsedBooking.pickup_date && ` • ${formatTime(parsedBooking.pickup_date)}`}
                 </Text>
               </View>
@@ -138,11 +147,11 @@ const StorageBookingDetails = () => {
                   {isDelivered ? "Items Delivered" : "Awaiting Delivery"}
                 </Text>
                 <Text style={styles.timelineLocation}>
-                  {parsedBooking.delivery_info?.area || "Location pending"}
+                  {parsedBooking.deliveryLocation || "Location pending"}
                 </Text>
                 <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.delivery_info?.date)}
-                  {parsedBooking.delivery_date && ` • ${formatTime(parsedBooking.delivery_date)}`}
+                  {formatDate(parsedBooking.deliveryDate)}
+                  {parsedBooking.delivered_date && ` • ${formatTime(parsedBooking.delivered_date)}`}
                 </Text>
               </View>
             </View>
@@ -167,13 +176,21 @@ const StorageBookingDetails = () => {
           <Text style={styles.sectionTitle}>Stored Items</Text>
 
           {parsedBooking.items?.map((item, index) => (
-            <View key={index} style={styles.itemRow}>
-              <Image source={{ uri: item.image }} style={styles.itemImage} />
+            <View key={item.id ?? index} style={styles.itemRow}>
+              {item.image ? (
+                <Image source={{ uri: item.image }} style={styles.itemImage} />
+              ) : (
+                <View style={[styles.itemImage, styles.itemImagePlaceholder]}>
+                  <Ionicons name="cube-outline" size={22} color="#9CA3AF" />
+                </View>
+              )}
               <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemName}>{item.category || item.name || "Item"}</Text>
                 <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
               </View>
-              <Text style={styles.itemPrice}>GH₵{(item.price * item.quantity).toFixed(2)}</Text>
+              <Text style={styles.itemPrice}>
+                GH₵{Number(item.totalPrice ?? (item.unitPrice ?? item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+              </Text>
             </View>
           ))}
 
@@ -181,7 +198,7 @@ const StorageBookingDetails = () => {
 
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalAmount}>GH₵{parsedBooking.price.toFixed(2)}</Text>
+            <Text style={styles.totalAmount}>GH₵{totalAmount.toFixed(2)}</Text>
           </View>
         </View>
 
@@ -205,18 +222,8 @@ const StorageBookingDetails = () => {
             <View style={styles.locationInfo}>
               <Text style={styles.locationLabel}>Pickup Location</Text>
               <Text style={styles.locationValue}>
-                {parsedBooking.pickup_info?.area || "Pending"}
+                {parsedBooking.pickupLocation || "Pending"}
               </Text>
-              {parsedBooking.pickup_info?.hostel && (
-                <Text style={styles.locationSubtext}>
-                  Hostel: {parsedBooking.pickup_info.hostel}
-                </Text>
-              )}
-              {parsedBooking.pickup_info?.offCampusArea && (
-                <Text style={styles.locationSubtext}>
-                  Off-campus: {parsedBooking.pickup_info.offCampusArea}
-                </Text>
-              )}
             </View>
           </View>
 
@@ -230,22 +237,11 @@ const StorageBookingDetails = () => {
             <View style={styles.locationInfo}>
               <Text style={styles.locationLabel}>Delivery Location</Text>
               <Text style={styles.locationValue}>
-                {parsedBooking.delivery_info?.area || "Pending"}
+                {parsedBooking.deliveryLocation || "Pending"}
               </Text>
-              {parsedBooking.delivery_info?.hostel && (
-                <Text style={styles.locationSubtext}>
-                  Hostel: {parsedBooking.delivery_info.hostel}
-                </Text>
-              )}
-              {parsedBooking.delivery_info?.offCampusArea && (
-                <Text style={styles.locationSubtext}>
-                  Off-campus: {parsedBooking.delivery_info.offCampusArea}
-                </Text>
-              )}
             </View>
           </View>
         </View>
-
 
         <View style={{ height: 20 }} />
       </ScrollView>
@@ -381,6 +377,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#F3F4F6",
     marginRight: 12,
+  },
+  itemImagePlaceholder: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   itemDetails: {
     flex: 1,
