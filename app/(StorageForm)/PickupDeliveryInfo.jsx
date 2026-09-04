@@ -12,7 +12,7 @@ import LocationSummaryCard from "../../components/Storage/LocationSummaryCard";
 import COLORS from "../../constants/Colors";
 import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
 
-const PICKUP_MIN_DATE = new Date("2026-09-04");
+const PICKUP_MIN_DATE = new Date("2026-09-05");
 const PICKUP_MAX_DATE = new Date("2026-09-06");
 const DELIVERY_MIN_DATE = new Date("2026-10-17");
 const DELIVERY_MAX_DATE = new Date("2026-10-18");
