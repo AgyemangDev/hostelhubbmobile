@@ -3,6 +3,7 @@ import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl }
 import BookingList from "../../../components/BookingsComponent/BookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
+import BookingsSkeleton from "../../../components/Loading/BookingsSkeleton";
 
 const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -41,10 +42,7 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#e74c3c" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading bookings...</Text>
-      </View>
+  <BookingsSkeleton count={5} />
     );
   }
 

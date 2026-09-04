@@ -13,22 +13,45 @@ import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
 import { useLocalSearchParams } from "expo-router";
 
+// Helper: safely parse a field that may already be an object, or may be a
+// JSON string (as it comes straight out of the DB row), or may be missing.
+const safeParse = (value, fallback) => {
+  if (value == null) return fallback;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+};
+
 const StorageBookingDetails = () => {
   const { booking } = useLocalSearchParams();
 
-  const parsedBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
+  const rawBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
 
-  // Real Storage docs carry a single flat `status` field, not separate
-  // pickup_status/delivery_status.
-  const isPickupPending = parsedBooking.status === "pending";
-  const isPickupCompleted = parsedBooking.status === "picked_up" || parsedBooking.status === "delivered";
-  const isDelivered = parsedBooking.status === "delivered";
+  // items / pickup_info / delivery_info are stored as JSON strings in the
+  // DB row, so they need a second parse pass here.
+  const parsedBooking = {
+    ...rawBooking,
+    items: safeParse(rawBooking.items, []),
+    pickup_info: safeParse(rawBooking.pickup_info, {}),
+    delivery_info: safeParse(rawBooking.delivery_info, {}),
+  };
+
+  // Real rows carry pickup_status / delivery_status (not a single flat
+  // `status`) — same fields the booking card uses.
+  const isPickupPending = parsedBooking.pickup_status === "pending";
+  const isPickupCompleted =
+    parsedBooking.pickup_status === "picked_up" || parsedBooking.pickup_status === "completed";
+  const isDelivered =
+    parsedBooking.delivery_status === "completed" || parsedBooking.delivery_status === "delivered";
 
   // Format dates — handles both ISO ("2025-09-11") and DD/MM/YYYY ("20/09/2025").
   const formatDate = (dateString) => {
     if (!dateString) return "Not scheduled";
     let date;
-    if (dateString.includes("/")) {
+    if (typeof dateString === "string" && dateString.includes("/")) {
       const [day, month, year] = dateString.split("/");
       date = new Date(year, month - 1, day);
     } else {
@@ -59,8 +82,31 @@ const StorageBookingDetails = () => {
     return 0;
   };
 
-  const totalAmount = Number(parsedBooking.totalPrice ?? 0);
+  // DB field is `price` (a string, e.g. "69.98"); `totalPrice` doesn't
+  // exist on the real row, so it was always falling back to 0.
+  const totalAmount = Number(parsedBooking.totalPrice ?? parsedBooking.price ?? 0);
   const displayRef = parsedBooking.bookingReference ?? parsedBooking.id ?? "";
+
+  const pickupArea = parsedBooking.pickup_info?.area;
+  const pickupRoom = parsedBooking.pickup_info?.room;
+  const pickupHostel = parsedBooking.pickup_info?.hostel;
+  const pickupLocation =
+    pickupHostel || pickupArea
+      ? [pickupHostel, pickupArea, pickupRoom ? `Room ${pickupRoom}` : null]
+          .filter(Boolean)
+          .join(" • ")
+      : null;
+
+  const deliveryArea = parsedBooking.delivery_info?.area;
+  const deliveryRoom = parsedBooking.delivery_info?.room;
+  const deliveryHostel = parsedBooking.delivery_info?.hostel;
+  const deliveryOffCampusArea = parsedBooking.delivery_info?.offCampusArea;
+  const deliveryLocation =
+    deliveryHostel || deliveryArea || deliveryOffCampusArea
+      ? [deliveryHostel, deliveryOffCampusArea || deliveryArea, deliveryRoom ? `Room ${deliveryRoom}` : null]
+          .filter(Boolean)
+          .join(" • ")
+      : null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,9 +116,9 @@ const StorageBookingDetails = () => {
         {/* Order ID Card */}
         <View style={styles.orderIdCard}>
           <Text style={styles.orderIdLabel}>Order ID</Text>
-          <Text style={styles.orderId}>#{displayRef}</Text>
+          <Text style={styles.orderId}>#{String(displayRef).slice(0, 13)}</Text>
           <Text style={styles.orderDate}>
-            Storage placed on {formatDate(parsedBooking.bookingDate)}
+            Storage placed on {formatDate(parsedBooking.order_date ?? parsedBooking.bookingDate)}
           </Text>
         </View>
 
@@ -110,10 +156,10 @@ const StorageBookingDetails = () => {
                   {isPickupCompleted ? "Items Picked Up" : "Awaiting Pickup"}
                 </Text>
                 <Text style={styles.timelineLocation}>
-                  {parsedBooking.pickupLocation || "Location pending"}
+                  {pickupLocation || "Location pending"}
                 </Text>
                 <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.pickupDate)}
+                  {formatDate(parsedBooking.pickup_date ?? parsedBooking.pickup_info?.date)}
                   {parsedBooking.pickup_date && ` • ${formatTime(parsedBooking.pickup_date)}`}
                 </Text>
               </View>
@@ -147,11 +193,11 @@ const StorageBookingDetails = () => {
                   {isDelivered ? "Items Delivered" : "Awaiting Delivery"}
                 </Text>
                 <Text style={styles.timelineLocation}>
-                  {parsedBooking.deliveryLocation || "Location pending"}
+                  {deliveryLocation || "Location pending"}
                 </Text>
                 <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.deliveryDate)}
-                  {parsedBooking.delivered_date && ` • ${formatTime(parsedBooking.delivered_date)}`}
+                  {formatDate(parsedBooking.delivery_date ?? parsedBooking.delivery_info?.date)}
+                  {parsedBooking.delivery_date && ` • ${formatTime(parsedBooking.delivery_date)}`}
                 </Text>
               </View>
             </View>
@@ -189,7 +235,10 @@ const StorageBookingDetails = () => {
                 <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
               </View>
               <Text style={styles.itemPrice}>
-                GH₵{Number(item.totalPrice ?? (item.unitPrice ?? item.price ?? 0) * (item.quantity ?? 1)).toFixed(2)}
+                GH₵
+                {Number(
+                  item.totalPrice ?? (item.unitPrice ?? item.price ?? 0) * (item.quantity ?? 1)
+                ).toFixed(2)}
               </Text>
             </View>
           ))}
@@ -221,9 +270,7 @@ const StorageBookingDetails = () => {
             </View>
             <View style={styles.locationInfo}>
               <Text style={styles.locationLabel}>Pickup Location</Text>
-              <Text style={styles.locationValue}>
-                {parsedBooking.pickupLocation || "Pending"}
-              </Text>
+              <Text style={styles.locationValue}>{pickupLocation || "Pending"}</Text>
             </View>
           </View>
 
@@ -236,9 +283,7 @@ const StorageBookingDetails = () => {
             </View>
             <View style={styles.locationInfo}>
               <Text style={styles.locationLabel}>Delivery Location</Text>
-              <Text style={styles.locationValue}>
-                {parsedBooking.deliveryLocation || "Pending"}
-              </Text>
+              <Text style={styles.locationValue}>{deliveryLocation || "Pending"}</Text>
             </View>
           </View>
         </View>

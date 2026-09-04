@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "price update" --platform ios
+eas update --branch production --message "bookings update with accurate details" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
@@ -30,3 +30,6 @@ eas build --profile apk --platform android
 ## Dev
 npx expo run:ios
 npx expo run:android
+
+
+FMaP9In5voZuxw28711LfFwjg2n1
