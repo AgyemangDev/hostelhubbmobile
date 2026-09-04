@@ -10,7 +10,7 @@ export const CustomHeader = ({ title, showBack = false }) => {
     <View style={styles.header}>
       {showBack && (
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color="#9a0b0d" />
         </TouchableOpacity>
       )}
       <Text style={[styles.headerTitle, showBack && styles.headerTitleWithBack]}>
