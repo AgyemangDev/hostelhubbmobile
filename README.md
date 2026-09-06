@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "bookings update with accurate details" --platform ios
+eas update --branch production --message "removal of off campus pickup" --platform ios
 
 
 # Always push both platforms together (no --platform flag)

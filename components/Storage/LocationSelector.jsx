@@ -99,7 +99,13 @@ export default function LocationSelector({
     setHostelName(text);
   };
 
+  // off campus pickup allowed
   const mainDropdownData = [...ON_CAMPUS, "Off Campus"];
+
+  // //off ccampus pickup not allowed
+  // const mainDropdownData =
+  //   selectedType === "pickup" ? ON_CAMPUS : [...ON_CAMPUS, "Off Campus"];
+
 
   // Room number applies once we know where — on-campus (hall picked) or
   // off-campus (hostel name entered). Grouped right under location so it

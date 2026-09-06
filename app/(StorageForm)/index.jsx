@@ -15,6 +15,7 @@ import React, { useState, useContext } from "react";
 import { UserContext } from "../../context/UserContext";
 import { auth } from "../firebase/FirebaseConfig";
 import ClientLogIn from "../(Client)/ClientLogIn";
+import BookingsClosedModal from "../../components/Storage/BookingsClosedModal";
 
 const STEPS = [
   {
@@ -47,14 +48,23 @@ export default function Index() {
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
   const { userInfo, refreshUserInfo } = useContext(UserContext);
+  const [showClosedModal, setShowClosedModal] = useState(false);
+
   const user = auth.currentUser;
 
-  const handleReservePress = () => {
-    if (!user) {
-      setShowAuth(true);
-      return;
-    }
-    router.push("ItemsSelection");
+
+  // const handleReservePress = () => {
+  //   if (!user) {
+  //     setShowAuth(true);
+  //     return;
+  //   }
+  //   router.push("ItemsSelection");
+  // };
+
+
+  //Storage closed modal state
+    const handleReservePress = () => {
+    setShowClosedModal(true);
   };
 
   return (
@@ -185,6 +195,11 @@ export default function Index() {
           </View>
         </View>
       </ScrollView>
+
+      <BookingsClosedModal
+        visible={showClosedModal}
+        onClose={() => setShowClosedModal(false)}
+      />
 
       <Modal
         visible={showAuth}
