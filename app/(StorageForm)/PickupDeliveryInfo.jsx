@@ -11,20 +11,57 @@ import ToggleRow from "../../components/Storage/ToggleRow";
 import LocationSummaryCard from "../../components/Storage/LocationSummaryCard";
 import COLORS from "../../constants/Colors";
 import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
+import API_BASE_URL from "../../utils/api/api";
 
-const PICKUP_MIN_DATE = new Date("2026-09-06");
-const PICKUP_MAX_DATE = new Date("2026-09-06");
-const DELIVERY_MIN_DATE = new Date("2026-10-17");
-const DELIVERY_MAX_DATE = new Date("2026-10-18");
+// Used until the admin-configured schedule loads (or if that request fails)
+// so the picker never has to render without min/max bounds.
+const FALLBACK_SCHEDULE = {
+  pickupMinDate: new Date("2026-09-06"),
+  pickupMaxDate: new Date("2026-09-06"),
+  deliveryMinDate: new Date("2026-10-17"),
+  deliveryMaxDate: new Date("2026-10-18"),
+};
 
 export default function PickupDeliveryInfo() {
   const router = useRouter();
   const { reservation, updateReservation } = useStorageReservation();
 
   const [sameAsPickup, setSameAsPickup] = useState(false);
+  const [schedule, setSchedule] = useState(FALLBACK_SCHEDULE);
   const decideLater = !!reservation.deliveryInfo?.decideLater;
   const pickupInfo = reservation.pickupInfo;
   const deliveryInfo = reservation.deliveryInfo;
+
+  // Pickup/delivery date ranges are admin-configurable from
+  // /storage/manage on the management system — fetch the current range
+  // instead of relying on dates hardcoded in the app.
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSchedule = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/storage-schedule`);
+        if (!res.ok) return;
+
+        const { schedule: s } = await res.json();
+        if (!isMounted || !s) return;
+
+        setSchedule({
+          pickupMinDate: new Date(s.pickup_start_date),
+          pickupMaxDate: new Date(s.pickup_end_date),
+          deliveryMinDate: new Date(s.delivery_start_date),
+          deliveryMaxDate: new Date(s.delivery_end_date),
+        });
+      } catch (err) {
+        console.error("Failed to load storage schedule, using defaults:", err);
+      }
+    };
+
+    loadSchedule();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Keep the delivery address perpetually in sync with pickup while the
   // toggle is on — not just at the moment the user flips it. This means
@@ -115,8 +152,8 @@ export default function PickupDeliveryInfo() {
           <DateSelector
             placeholder="Pickup date"
             value={pickupInfo?.date}
-            minDate={PICKUP_MIN_DATE}
-            maxDate={PICKUP_MAX_DATE}
+            minDate={schedule.pickupMinDate}
+            maxDate={schedule.pickupMaxDate}
             onChange={(date) =>
               updateReservation({ pickupInfo: { ...pickupInfo, date } })
             }
@@ -153,8 +190,8 @@ export default function PickupDeliveryInfo() {
           <DateSelector
             placeholder="Delivery date"
             value={deliveryInfo?.date}
-            minDate={DELIVERY_MIN_DATE}
-            maxDate={DELIVERY_MAX_DATE}
+            minDate={schedule.deliveryMinDate}
+            maxDate={schedule.deliveryMaxDate}
             onChange={(date) =>
               updateReservation({ deliveryInfo: { ...deliveryInfo, date } })
             }

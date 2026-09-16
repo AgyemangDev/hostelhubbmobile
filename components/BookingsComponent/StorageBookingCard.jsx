@@ -1,10 +1,12 @@
 // StorageBookingCard.jsx
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { getStatusMeta } from "../../utils/bookingStatus";
 import COLORS from "../../constants/Colors";
 
 const StorageBookingCard = ({ booking, onPress }) => {
+  const router = useRouter();
   const statusMeta = getStatusMeta(booking.pickup_status, booking.delivery_status);
 
   // Firestore's Storage docs use totalPrice/bookingReference — fall back to
@@ -42,6 +44,14 @@ const StorageBookingCard = ({ booking, onPress }) => {
   if (isPickupCompleted && !isDelivered && booking.delivery_info?.area) {
     deliveryDestText = `Items to be delivered at ${booking.delivery_info.area}`;
   }
+
+  // Students who chose "decide later" during booking have no delivery
+  // location on file yet — offer to add one right from the card, as long
+  // as the order hasn't already been delivered.
+  const hasDeliveryLocation = !!(
+    booking.delivery_info?.area || booking.delivery_info?.hostel
+  );
+  const canAddDeliveryLocation = !hasDeliveryLocation && !isDelivered;
 
   // Calculate diffDays if delivery info exists
   let diffDays = null;
@@ -111,6 +121,23 @@ const StorageBookingCard = ({ booking, onPress }) => {
             {deliveryNote}
           </Text>
         </View>
+      ) : null}
+
+      {/* ---------- ADD DELIVERY LOCATION ---------- */}
+      {canAddDeliveryLocation ? (
+        <TouchableOpacity
+          style={styles.addLocationButton}
+          onPress={() =>
+            router.push({
+              pathname: "/StorageEdit",
+              params: { booking: JSON.stringify(booking) },
+            })
+          }
+          activeOpacity={0.85}
+        >
+          <Ionicons name="add-circle-outline" size={16} color={COLORS.background} />
+          <Text style={styles.addLocationText}>Add delivery location</Text>
+        </TouchableOpacity>
       ) : null}
     </TouchableOpacity>
   );
@@ -206,6 +233,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 6,
     flex: 1,
+  },
+  addLocationButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.background,
+  },
+  addLocationText: {
+    marginLeft: 6,
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.background,
   },
 });
 
