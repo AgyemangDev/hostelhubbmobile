@@ -42,7 +42,7 @@ const PersonalInfo = () => {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Personal Info</Text>
           <TouchableOpacity onPress={toggleEdit}>
-            <Ionicons name="pencil" size={24} color="#9a0b0d" />
+            <Ionicons name="pencil" size={24} color="#0D9488" />
           </TouchableOpacity>
         </View>
 
@@ -106,6 +106,6 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   sectionTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.background },
   textContainer: { marginBottom: 30 },
-  saveButton: { backgroundColor: "#9a0b0d", paddingVertical: 15, borderRadius: 10, marginTop: 20, alignItems: "center" },
+  saveButton: { backgroundColor: "#0D9488", paddingVertical: 15, borderRadius: 10, marginTop: 20, alignItems: "center" },
   saveButtonText: { color: "white", fontSize: 18, fontWeight: "bold" },
 });

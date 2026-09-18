@@ -14,7 +14,11 @@ const PaidBookingList = ({ userBookings, navigation, onChanged }) => {
   const router = useRouter();
 
   const renderBookingItem = ({ item }) => {
-    if (item.type === "accommodation") {
+    // PaidBookingCard already reads both booking.accommodation and
+    // booking.hubclip — this routing just never grew a "hubclip" case, so a
+    // paid hubclip booking silently rendered as null (see the identical fix
+    // in BookingList.jsx).
+    if (item.type === "accommodation" || item.type === "hubclip") {
       return (
         <PaidBookingCard
           booking={item}
@@ -62,9 +66,9 @@ const PaidBookingList = ({ userBookings, navigation, onChanged }) => {
       data={userBookings}
       renderItem={renderBookingItem}
       keyExtractor={(item, index) => {
-        if (item.type === "storage") return item.bookingReference;
-        if (item.type === "transport") return item.groupRef;
-        return item.id || `booking-${index}`;
+        if (item.type === "storage") return `storage-${item.bookingReference || item.id || index}`;
+        if (item.type === "transport") return `transport-${item.groupRef || index}`;
+        return `booking-${item.id || index}`;
       }}
       contentContainerStyle={styles.listContainer}
       ListEmptyComponent={

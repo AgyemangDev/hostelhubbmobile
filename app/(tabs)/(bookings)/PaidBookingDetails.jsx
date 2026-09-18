@@ -1,117 +1,123 @@
-// import React, { useContext } from 'react';
-// import { View, Text, ScrollView } from 'react-native';
-// // import { useRoute } from '@react-navigation/native';
-// // import BookingDetails from '../../../components/BookingsComponent/BookingDetails';
-// // import ComplaintSection from '../../../components/BookingsComponent/ComplaintSection';
-// // import ReviewSection from '../../../components/BookingsComponent/ReviewSection';
-// // import MinimalBookingDetails from '../../../components/BookingsComponent/MinimalBookingDetails';
-
-// const PaidBookingDetails = () => {
- 
-
-//   return (
-//     <ScrollView>
-//       {/* {isFallback ? (
-//         <MinimalBookingDetails booking={booking} />
-//       ) : (
-//         <>
-//           <BookingDetails booking={booking} hostel={hostel} admin={admin} userInfo={userInfo} />
-//           <ComplaintSection
-//             bookingId={booking.id}
-//             userId={userId}
-//             hostelId={booking.hostelId}
-//             adminId={booking.adminUid}
-//           />
-//           <ReviewSection
-//             bookingId={booking.id}
-//             userId={userId}
-//             hostelId={booking.hostelId}
-//             adminId={booking.adminUid}
-//           />
-//         </>
-//       )} */}
-//     </ScrollView>
-//   );
-// };
-
-// export default PaidBookingDetails;
-
-import React from "react";
-import { View, Text, ScrollView, Image, StyleSheet } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { View, Text, ScrollView, Image, ActivityIndicator, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { UserContext } from "../../../context/UserContext";
+import API_BASE_URL from "../../../utils/api/api";
+import COLORS from "../../../constants/Colors";
 
+const TEAL = "#0D9488";
+
+// PaidBookingList.jsx has always navigated here with { bookingId }, but this
+// screen read a nonexistent `item` param and tried to JSON.parse it — always
+// undefined, so it showed "Booking not found" unconditionally regardless of
+// which booking was tapped. Fetching by id (same pattern as PayNow.jsx) both
+// fixes that and adds the missing hubclip fallback the accommodation-only
+// version never had.
 const PaidBookingDetails = () => {
-  const { item } = useLocalSearchParams();
+  const { bookingId } = useLocalSearchParams();
+  const { user } = useContext(UserContext);
 
-  // 🛡️ item comes as a string sometimes → parse safely
-  const booking = typeof item === "string" ? JSON.parse(item) : item;
+  const [booking, setBooking] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!booking) {
+  useEffect(() => {
+    if (!bookingId || !user) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const token = await user.getIdToken(false);
+        const res = await fetch(`${API_BASE_URL}/bookings/accommodation/fetch/${bookingId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Booking not found");
+        if (!cancelled) setBooking(data.booking);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bookingId, user]);
+
+  if (loading) {
     return (
       <View style={styles.centered}>
-        <Text>Booking not found</Text>
+        <ActivityIndicator size="large" color={TEAL} />
       </View>
     );
   }
 
-  const accommodation = booking.accommodation;
+  if (error || !booking) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error || "Booking not found"}</Text>
+      </View>
+    );
+  }
+
+  const listing = booking.type === "hubclip" ? booking.hubclip : booking.accommodation;
+  const name = listing?.accommodation_name || "Hostel";
+  const imageUri = listing?.front_image || null;
+  const managerName = `${booking.owner?.first_name || ""} ${booking.owner?.surname || ""}`.trim();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Image */}
-      {accommodation?.front_image && (
-        <Image
-          source={{ uri: accommodation.front_image }}
-          style={styles.image}
-        />
+      {imageUri ? (
+        <Image source={{ uri: imageUri }} style={styles.image} />
+      ) : (
+        <View style={[styles.image, styles.imagePlaceholder]}>
+          <Ionicons name="home-outline" size={32} color="#99D8CE" />
+        </View>
       )}
 
-      {/* Main Details */}
       <View style={styles.card}>
-        <Text style={styles.title}>
-          {accommodation?.accommodation_name}
-        </Text>
+        <Text style={styles.title}>{name}</Text>
 
-        <Text style={styles.label}>
-          Room Type:{" "}
-          <Text style={styles.value}>{booking.room_type}</Text>
-        </Text>
+        <View style={styles.paidBadge}>
+          <Ionicons name="checkmark-circle" size={13} color="#fff" />
+          <Text style={styles.paidBadgeText}>Paid</Text>
+        </View>
 
-        <Text style={styles.label}>
-          Amount Paid:{" "}
-          <Text style={styles.value}>
-            GHS {booking.payment_option}
-          </Text>
-        </Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Room type</Text>
+          <Text style={styles.value}>{booking.room_type || "N/A"}</Text>
+        </View>
 
-        <Text style={styles.label}>
-          Payment Status:{" "}
-          <Text style={styles.paid}>Paid</Text>
-        </Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Amount paid</Text>
+          <Text style={styles.value}>GHS {Number(booking.payment_option || 0).toFixed(2)}</Text>
+        </View>
 
         {booking.payment_date && (
-          <Text style={styles.label}>
-            Paid On:{" "}
-            <Text style={styles.value}>
-              {new Date(booking.payment_date).toDateString()}
-            </Text>
-          </Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Paid on</Text>
+            <Text style={styles.value}>{new Date(booking.payment_date).toDateString()}</Text>
+          </View>
         )}
-      </View>
 
-      {/* Location */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Location</Text>
-        <Text>{accommodation?.location}</Text>
-      </View>
+        {listing?.location && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Location</Text>
+            <Text style={styles.value}>{listing.location}</Text>
+          </View>
+        )}
 
-      {/* Owner Info */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Hostel Manager</Text>
-        <Text>
-          {booking.owner?.firstname} {booking.owner?.surname}
-        </Text>
-        <Text>{booking.owner?.phone}</Text>
+        {managerName && (
+          <View style={styles.row}>
+            <Text style={styles.label}>Manager</Text>
+            <Text style={styles.value}>{managerName}</Text>
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -119,49 +125,73 @@ const PaidBookingDetails = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#F9FAFB",
+    paddingBottom: 32,
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
+  errorText: {
+    fontSize: 14,
+    color: "#B91C1C",
+  },
   image: {
     width: "100%",
-    height: 220,
-    borderRadius: 12,
-    marginBottom: 16,
+    height: 200,
+    backgroundColor: "#F0FDFA",
+  },
+  imagePlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: TEAL,
+    margin: 16,
+    padding: 18,
   },
   title: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "700",
+    color: "#111827",
     marginBottom: 8,
+  },
+  paidBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 4,
+    backgroundColor: TEAL,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginBottom: 14,
+  },
+  paidBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#F3F4F6",
   },
   label: {
-    fontSize: 14,
-    marginTop: 6,
-    color: "#374151",
+    fontSize: 13,
+    color: "#6B7280",
   },
   value: {
+    fontSize: 13,
     fontWeight: "600",
-  },
-  paid: {
-    color: "#10B981",
-    fontWeight: "700",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
+    color: "#111827",
   },
 });
 
 export default PaidBookingDetails;
-

@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   item: {
     padding: 14,
     borderWidth: 1, 
-    borderColor: COLORS.background, // Light brown border color
+    borderColor: COLORS.background, // Teal border color
     marginBottom: 10, // Space between items
     borderRadius: 8, // Rounded borders for items
   },
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 15,
-    color: '#8b4513', 
+    color: '#0D9488',
   },
   selectedItemText: {
     fontWeight: 'bold', // Bold text for the selected item

@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "storage delivery update" --platform ios
+eas update --branch production --message "update changes" --platform ios
 
 
 # Always push both platforms together (no --platform flag)

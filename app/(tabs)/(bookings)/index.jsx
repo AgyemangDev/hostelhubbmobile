@@ -1,6 +1,5 @@
 import React, { useContext, useCallback, useState } from "react";
 import { View, SafeAreaView } from "react-native";
-import { useFocusEffect } from "expo-router";
 import ReusableTabs from "../../../components/Tabs/ReusableTabs";
 import AllBookings from "./AllBookings";
 import PaidBookings from "./PaidBookings";
@@ -13,12 +12,10 @@ const Index = ({ navigation }) => {
   const { refetch } = useBookingsContext();
   const [refreshing, setRefreshing] = useState(false);
 
-  // Silent background refresh on focus
-  useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch])
-  );
+  // Refetching only happens via pull-to-refresh now (onRefresh below) — a
+  // useFocusEffect here used to silently refetch every time this screen
+  // regained focus (e.g. coming back from PayNow), which the bookings list
+  // doesn't need and just added an extra request/flash on every navigation.
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

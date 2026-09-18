@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../app/firebase/FirebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import API_BASE_URL from "../utils/api/api";
+import { useAuthedEventSource } from "../hooks/realtime/useAuthedEventSource";
 
 export const UserContext = createContext();
 
@@ -148,6 +149,16 @@ export const UserProvider = ({ children }) => {
 
     return () => unsubscribe();
   }, [fetchUserInfo]);
+
+  // ─── Push updates ──────────────────────────────────────────────────────────
+  // Replaces the old useFocusEffect(refreshUserInfo(true)) calls scattered
+  // across screens — the backend now pushes profile changes (balance,
+  // noofbooking, paymentstatus, etc.) down this connection instead of the
+  // client re-polling on every screen focus. `refreshUserInfo` itself is kept
+  // as a manual fallback.
+  useAuthedEventSource("/api/students/me/stream", (payload) => {
+    setUserInfo((prev) => ({ ...prev, ...payload }));
+  });
 
   // ─── Context value ─────────────────────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import BalanceDisplay from "./BalanceDisplay";
 import BankAccountDetails from "./BankAccountDetails";
 import MobileMoneyDetails from "./MobileMoneyDetails";
 import { UserContext } from "../../context/UserContext";
+import { WalletContext } from "../../context/WalletContext";
 import COLORS from "../../constants/Colors";
 import WithdrawalInput from "./WithdrawalInput";
 import { db } from "../../app/firebase/FirebaseConfig";
@@ -12,9 +13,10 @@ import WithdrawalTermsConditions from "./WithdrawalTermsConditions";
 
 const WithdrawalScreen = () => {
   const { userInfo } = useContext(UserContext);
+  const { balance } = useContext(WalletContext);
   const userEmail = userInfo?.email;
   const userId = userInfo?.id;
-  const userBalance = userInfo?.balance || 0.0;
+  const userBalance = balance || 0.0;
 
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [accountDetails, setAccountDetails] = useState({});

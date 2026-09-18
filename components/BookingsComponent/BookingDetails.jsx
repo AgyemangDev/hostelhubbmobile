@@ -7,11 +7,6 @@ const BookingDetails = ({ hostel, admin }) => {
   const manager = admin || {};
   const frontImage = hostel?.frontImage;
 
-  // Capitalize room types
-  const formatRoomType = (type) => {
-    return type === "OneInARoom" ? "One In A Room" : type === "TwoInARoom" ? "Two In A Room" : type;
-  };
-
   const callNumber = (number) => {
     Linking.openURL(`tel:${number}`);
   };

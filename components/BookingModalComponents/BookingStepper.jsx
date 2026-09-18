@@ -38,7 +38,7 @@ const BookingStepper = ({ hostelData, formData, handleSelectPaymentRange, handle
             <Ionicons name="checkmark-circle-outline" size={18} color="#fff" style={{ marginRight: 8 }} />
           )}
           <Text style={styles.buttonText}>
-            {isReady ? "Confirm booking" : "Select a room to continue"}
+            {isReady ? "Confirm Reservation" : "Select a room to continue"}
           </Text>
         </TouchableOpacity>
       </View>

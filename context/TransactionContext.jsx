@@ -7,10 +7,19 @@ import React, {
 } from "react";
 import API_BASE_URL from "../utils/api/api";
 import { UserContext } from "./UserContext";
+import { useAuthedEventSource } from "../hooks/realtime/useAuthedEventSource";
 
 export const TransactionContext = createContext();
 
 const PAGE_SIZE = 10;
+
+const mergeUniqueById = (prev, next) => {
+  const map = new Map();
+  [...prev, ...next].forEach((item) => {
+    map.set(item.id, item);
+  });
+  return Array.from(map.values());
+};
 
 export const TransactionProvider = ({ children }) => {
   const { user } = useContext(UserContext);
@@ -51,14 +60,6 @@ const fetchTransactions = useCallback(
 
       const data = await response.json();
 
-      const mergeUniqueById = (prev, next) => {
-  const map = new Map();
-  [...prev, ...next].forEach((item) => {
-    map.set(item.id, item);
-  });
-  return Array.from(map.values());
-};
-
  setTransactions((prev) =>
   reset
     ? data.transactions
@@ -91,6 +92,19 @@ const fetchTransactions = useCallback(
   }, [fetchTransactions, loading, page, totalPages]);
 
   const isInitialLoading = !initialized && loading;
+
+  /* ------------------ Push updates ------------------ */
+  // Upsert newly-pushed transactions (e.g. a payment that just completed)
+  // straight into page-1 state, using the same de-dupe helper the paginated
+  // fetch already relies on. Falls back to a full reset-refetch if the app
+  // was backgrounded and might have missed a push.
+  useAuthedEventSource(
+    "/api/transactions/stream",
+    (payload) => {
+      setTransactions((prev) => mergeUniqueById(prev, [payload]));
+    },
+    refreshTransactions
+  );
 
   /* ------------------ Context Value ------------------ */
 

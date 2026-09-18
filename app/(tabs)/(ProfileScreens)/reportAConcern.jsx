@@ -62,7 +62,7 @@ const ReportAConcern = () => {
       <TouchableOpacity
         style={[
           styles.button,
-          { backgroundColor: isButtonEnabled ? "#A52A2A" : "#E0B2B2" }, // Brown color when active, light brown when disabled
+          { backgroundColor: isButtonEnabled ? "#0D9488" : "#B2DEDA" }, // Teal when active, light teal when disabled
         ]}
         onPress={handleSubmit}
         disabled={!isButtonEnabled}

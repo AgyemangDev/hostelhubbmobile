@@ -36,6 +36,7 @@ const BookingModal = () => {
       const key = room.room_type;
       if (!acc[key]) acc[key] = [];
       acc[key].push({
+        id: room.id,
         description: room.description,
         price: room.price,
         roomsAvailable: room.rooms_available,
@@ -45,13 +46,14 @@ const BookingModal = () => {
     }, {});
   }, [hostelData]);
 
-  const handleSelectPaymentRange = (roomType, price, available) => {
+  const handleSelectPaymentRange = (roomType, price, available, roomTypeId) => {
     if (!available) {
       Alert.alert("Room Unavailable", "This room type is not available.");
       return;
     }
     handleInputChange("selectedRoomType", roomType);
     handleInputChange("selectedPayment", price);
+    handleInputChange("selectedRoomTypeId", roomTypeId);
   };
 
   const handleBooking = async () => {

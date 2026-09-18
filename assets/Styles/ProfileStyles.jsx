@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   linkDetailsButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#9a0b0d",
+    backgroundColor: "#0D9488",
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,

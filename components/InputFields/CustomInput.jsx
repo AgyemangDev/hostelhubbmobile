@@ -2,7 +2,7 @@ import React from 'react';
 import { TextInput, StyleSheet } from 'react-native';
 import COLORS from '../../constants/Colors';
 
-const CustomInput = ({ placeholder, value, onChangeText, keyboardType = 'default', placeholderTextColor = '#9a0b0d' }) => {
+const CustomInput = ({ placeholder, value, onChangeText, keyboardType = 'default', placeholderTextColor = '#0D9488' }) => {
   return (
     <TextInput
       style={styles.input}
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.background, 
     borderWidth: 1,
     fontSize: 16,
-    color: '#9a0b0d',
+    color: '#0D9488',
     width:330,
     marginBottom:8
   }

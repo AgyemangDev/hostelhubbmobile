@@ -54,27 +54,27 @@ const styles = StyleSheet.create({
   item: {
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.background, // Light brown border color
+    borderBottomColor: COLORS.background, // Teal border color
     borderWidth: 1, // Added border to each item
-    borderColor: COLORS.background, // Light brown border color for items
+    borderColor: COLORS.background, // Teal border color for items
     marginBottom: 10, // Space between items
     borderRadius: 8, // Rounded borders for items
   },
   selectedItem: {
-    backgroundColor: '#ffe4b5', // Light background for selected item
+    backgroundColor: '#E1F5EE', // Light teal background for selected item
   },
   itemText: {
     fontSize: 15,
-    color: '#8b4513', // Dark brown text color
+    color: '#0D9488', // Teal text color
   },
   selectedItemText: {
     fontWeight: 'bold', // Bold text for the selected item
-    color: '#d2691e', // Change text color when selected
+    color: '#0B5449', // Darker teal when selected
   },
   closeButton: {
     marginTop: 10,
     padding: 12,
-    backgroundColor: COLORS.background, // Light brown background for close button
+    backgroundColor: COLORS.background, // Teal background for close button
     borderRadius: 8,
   },
   closeText: {

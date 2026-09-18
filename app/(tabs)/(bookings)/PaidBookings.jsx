@@ -3,6 +3,7 @@ import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl }
 import PaidBookingList from "../../../components/BookingsComponent/PaidBookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
+import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
 
 const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -14,7 +15,7 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
       .map((booking) => ({
         ...booking,
         payment_option: booking.payment_option
-          ? parseFloat(booking.payment_option) * 1.05
+          ? parseFloat(booking.payment_option) * PLATFORM_MARKUP_RATE
           : 0,
       }));
 

@@ -1,39 +1,55 @@
 // components/video/VideoItem.jsx
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import VideoPlayer from './VideoPlayer';
 import VideoOverlay from './VideoOverlay';
 import HostelInfo from './HostelInfo';
-import { showBookingAlert } from './BookingAlert';
 import { useRouter } from 'expo-router';
 import { UserContext } from '../../context/UserContext';
+import { handleBookingProcess } from '../../services/bookingServices';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const VideoItem = ({ item, index, isActive, shouldRestart }) => {
-  const { userInfo, setUserInfo } = useContext(UserContext);
+  const { user, userInfo, patchUserData, currentExpoToken } = useContext(UserContext);
   const router = useRouter();
+  const [isBooking, setIsBooking] = useState(false);
 
-  const handleBookNow = useCallback(() => {
-    showBookingAlert(
-      item, // hostel data
-      () => {
-        // Optional success callback
-        console.log('Navigating to booking with data:', {
-          hostelId: item.id,
-          hostelName: item.hostelName,
-          roomType: item.roomType,
-          price: item.price,
-          location: item.location,
-          porterNumber: item.porter?.number,
-          porterName: item.porter?.number,
-        });
-      },
-      userInfo, // user information
-      setUserInfo, // function to update user info
-      router // router for navigation
-    );
-  }, [item, userInfo, setUserInfo, router]);
+  // Previously an independent Firestore-only implementation
+  // (showBookingAlert/proceedWithPaymentAndBooking in the old BookingAlert.jsx)
+  // that wrote straight to Firestore and bypassed the Postgres backend
+  // entirely, with its own booking-count gate. Now routed through the same
+  // handleBookingProcess used by bookingModal.jsx and HubClip.jsx, so the
+  // video feed goes through the same booking-creation + direct-Paystack
+  // payment flow as every other entry point, with no booking-count limit.
+  const handleBookNow = useCallback(async () => {
+    if (!user || !userInfo || isBooking) return;
+
+    setIsBooking(true);
+    try {
+      const firebaseToken = await user.getIdToken(true);
+
+      await handleBookingProcess({
+        user,
+        userInfo,
+        formData: {
+          selectedRoomType: item.roomType,
+          selectedPayment: item.price,
+        },
+        hostelId: item.id,
+        bookingSource: "videofeed",
+        patchUserData,
+        currentExpoToken,
+        firebaseToken,
+        onSuccess: () => router.push("/(tabs)/(bookings)"),
+        onError: () => {},
+        onFinally: () => setIsBooking(false),
+      });
+    } catch (err) {
+      console.error('Booking failed:', err);
+      setIsBooking(false);
+    }
+  }, [user, userInfo, patchUserData, currentExpoToken, item, router, isBooking]);
 
   return (
     <View style={styles.container}>

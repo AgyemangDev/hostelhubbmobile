@@ -1,18 +1,18 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { ROOM_TYPE_DISPLAY_ORDER } from "../../constants/roomTypes";
+import { PLATFORM_MARKUP_RATE } from "../../constants/bookingConstants";
 
 const ROOM_CONFIG = {
-  Apartment:    { icon: "home-outline",          color: "#185FA5", bg: "#E6F1FB", popular: false },
-  OneInARoom:   { icon: "person-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
-  TwoInARoom:   { icon: "people-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
-  ThreeInARoom: { icon: "people-outline",        color: "#854F0B", bg: "#FAEEDA", popular: false },
-  FourInARoom:  { icon: "people-circle-outline", color: "#5F5E5A", bg: "#F1EFE8", popular: false },
+  "Apartment": { icon: "home-outline",          color: "#185FA5", bg: "#E6F1FB", popular: false },
+  "1 in 1":    { icon: "person-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
+  "2 in 1":    { icon: "people-outline",        color: "#0F6E56", bg: "#E1F5EE", popular: true  },
+  "3 in 1":    { icon: "people-outline",        color: "#854F0B", bg: "#FAEEDA", popular: false },
+  "4 in 1":    { icon: "people-circle-outline", color: "#5F5E5A", bg: "#F1EFE8", popular: false },
 };
 
-const ROOM_ORDER = ["Apartment", "OneInARoom", "TwoInARoom", "ThreeInARoom", "FourInARoom"];
-
-const formatRoomName = (key) => key.replace(/([A-Z])/g, " $1").trim();
+const ROOM_ORDER = ROOM_TYPE_DISPLAY_ORDER;
 
 const PaymentRange = ({ paymentRanges }) => {
   return (
@@ -40,7 +40,7 @@ const PaymentRange = ({ paymentRanges }) => {
               <View style={[styles.iconWrap, { backgroundColor: config.bg }]}>
                 <Ionicons name={config.icon} size={18} color={config.color} />
               </View>
-              <Text style={styles.roomName}>{formatRoomName(roomType)}</Text>
+              <Text style={styles.roomName}>{roomType}</Text>
               <View style={[
                 styles.badge,
                 config.popular ? styles.badgePopular : styles.badgeNeutral
@@ -64,7 +64,7 @@ const PaymentRange = ({ paymentRanges }) => {
                   <View style={styles.optRight}>
                     <Text style={styles.perLabel}>Per year</Text>
                     <Text style={styles.priceVal}>
-                      GHc {(parseFloat(opt.price) * 1.05).toFixed(2)}
+                      GHc {(parseFloat(opt.price) * PLATFORM_MARKUP_RATE).toFixed(2)}
                     </Text>
                   </View>
                 </View>

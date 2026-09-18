@@ -4,6 +4,7 @@ export const useBookingForm = () => {
   const [formData, setFormData] = useState({
     selectedPayment: null,
     selectedRoomType: '',
+    selectedRoomTypeId: null,
   });
 
   const handleInputChange = (field, value) => {
@@ -14,6 +15,7 @@ export const useBookingForm = () => {
     setFormData({
       selectedPayment: null,
       selectedRoomType: '',
+      selectedRoomTypeId: null,
     });
   };
 

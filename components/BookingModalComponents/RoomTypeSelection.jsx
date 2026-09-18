@@ -1,23 +1,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { ROOM_TYPE_DISPLAY_ORDER } from '../../constants/roomTypes';
+import { PLATFORM_MARKUP_RATE } from '../../constants/bookingConstants';
 
 const TEAL = "#0F6E56";
 const TEAL_LIGHT = "#E1F5EE";
 const TEAL_MID = "#1D9E75";
 
 const ROOM_CONFIG = {
-  Apartment:    { lib: Ionicons,                  name: "home-outline",         size: 20 },
-  OneInARoom:   { lib: MaterialCommunityIcons,    name: "bed-single",           size: 22 },
-  TwoInARoom:   { lib: MaterialCommunityIcons,    name: "bed-queen",            size: 22 },
-  ThreeInARoom: { lib: FontAwesome5,              name: "bed",                  size: 18 },
-  FourInARoom:  { lib: MaterialCommunityIcons,    name: "bunk-bed",             size: 22 },
-  FiveInARoom:  { lib: MaterialCommunityIcons,    name: "bunk-bed-outline",     size: 22 },
+  "Apartment": { lib: Ionicons,               name: "home-outline",         size: 20 },
+  "1 in 1":    { lib: MaterialCommunityIcons, name: "bed-single",           size: 22 },
+  "2 in 1":    { lib: MaterialCommunityIcons, name: "bed-queen",            size: 22 },
+  "3 in 1":    { lib: FontAwesome5,           name: "bed",                  size: 18 },
+  "4 in 1":    { lib: MaterialCommunityIcons, name: "bunk-bed",             size: 22 },
 };
 
-const DISPLAY_ORDER = ['Apartment', 'OneInARoom', 'TwoInARoom', 'ThreeInARoom', 'FourInARoom', 'FiveInARoom'];
-
-const formatRoomTypeName = (roomType) => roomType.replace(/([A-Z])/g, ' $1').trim();
+const DISPLAY_ORDER = ROOM_TYPE_DISPLAY_ORDER;
 
 const RoomTypeSection = ({ roomTypes, selectedRoomType, selectedPayment, onSelect }) => {
   const filteredRoomTypes = DISPLAY_ORDER.filter((type) =>
@@ -42,7 +41,7 @@ const RoomTypeSection = ({ roomTypes, selectedRoomType, selectedPayment, onSelec
                 <View style={styles.iconWrap}>
                   <IconComponent name={config?.name ?? "home-outline"} size={config?.size ?? 20} color={TEAL} />
                 </View>
-                <Text style={styles.roomName}>{formatRoomTypeName(roomType)}</Text>
+                <Text style={styles.roomName}>{roomType}</Text>
               </View>
 
               {/* Options */}
@@ -61,7 +60,7 @@ const RoomTypeSection = ({ roomTypes, selectedRoomType, selectedPayment, onSelec
                           isSelected && styles.optionRowSelected,
                           !available && styles.optionRowUnavailable,
                         ]}
-                        onPress={() => available && onSelect(roomType, option.price, available)}
+                        onPress={() => available && onSelect(roomType, option.price, available, option.id)}
                         disabled={!available}
                         activeOpacity={0.75}
                       >
@@ -81,7 +80,7 @@ const RoomTypeSection = ({ roomTypes, selectedRoomType, selectedPayment, onSelec
                             GHS
                           </Text>
                           <Text style={[styles.price, isSelected && styles.textSelected, !available && styles.textUnavailable]}>
-                            {(Number(option.price) * 1.05).toFixed(2)}
+                            {(Number(option.price) * PLATFORM_MARKUP_RATE).toFixed(2)}
                           </Text>
                         </View>
 

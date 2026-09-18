@@ -14,7 +14,11 @@ const BookingList = ({ userBookings, navigation, onChanged }) => {
   const nav = navigation || navHook;
 
   const renderBookingItem = ({ item }) => {
-    if (item.type === "accommodation") {
+    // BookingCard already reads both booking.accommodation and
+    // booking.hubclip (whichever is populated) — it was only ever the
+    // routing here that never grew a "hubclip" case, so hubclip bookings
+    // silently fell through to `return null` below.
+    if (item.type === "accommodation" || item.type === "hubclip") {
       return (
         <BookingCard
           booking={item}
@@ -63,9 +67,12 @@ const BookingList = ({ userBookings, navigation, onChanged }) => {
       data={userBookings}
       renderItem={renderBookingItem}
       keyExtractor={(item, index) => {
-        if (item.type === "storage") return item.bookingReference;
-        if (item.type === "transport") return item.groupRef;
-        return item.id || `booking-${index}`;
+        // Prefixed by type so keys can never collide across the three
+        // merged lists (accommodation/hubclip, storage, transport) even if
+        // an underlying id/reference ever happened to coincide.
+        if (item.type === "storage") return `storage-${item.bookingReference || item.id || index}`;
+        if (item.type === "transport") return `transport-${item.groupRef || index}`;
+        return `booking-${item.id || index}`;
       }}
       contentContainerStyle={styles.listContainer}
       ListEmptyComponent={

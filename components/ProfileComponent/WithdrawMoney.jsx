@@ -95,7 +95,7 @@ const WithdrawMoney = () => {
       <TextInput
         style={styles.input}
         placeholder="Enter amount to withdraw"
-        placeholderTextColor={"#d6a4a4"}
+        placeholderTextColor={"#9DC9C2"}
         keyboardType="numeric"
         value={amount}
         onChangeText={setAmount}
@@ -144,7 +144,7 @@ const WithdrawMoney = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Enter bank account number"
-                placeholderTextColor={"#d6a4a4"}
+                placeholderTextColor={"#9DC9C2"}
                 keyboardType="numeric"
                 value={bankAccount}
                 onChangeText={setBankAccount}
@@ -154,7 +154,7 @@ const WithdrawMoney = () => {
                 <TextInput
                   style={styles.input}
                   placeholder="Enter mobile money number"
-                  placeholderTextColor={"#d6a4a4"}
+                  placeholderTextColor={"#9DC9C2"}
                   keyboardType="numeric"
                   value={mobileMoneyNumber}
                   onChangeText={setMobileMoneyNumber}
@@ -163,7 +163,7 @@ const WithdrawMoney = () => {
                 <TextInput
                   style={styles.input}
                   placeholder="Type to select a network"
-                  placeholderTextColor={"#d6a4a4"}
+                  placeholderTextColor={"#9DC9C2"}
                   value={networkInput}
                   onChangeText={handleNetworkInputChange}
                 />

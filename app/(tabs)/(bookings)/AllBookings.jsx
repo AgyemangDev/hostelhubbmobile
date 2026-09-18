@@ -4,6 +4,7 @@ import BookingList from "../../../components/BookingsComponent/BookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import BookingsSkeleton from "../../../components/Loading/BookingsSkeleton";
+import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
 
 const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -14,7 +15,7 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
     const enrichedHostelBookings = (bookings || []).map((booking) => ({
       ...booking,
       payment_option: booking.payment_option
-        ? parseFloat(booking.payment_option) * 1.05
+        ? parseFloat(booking.payment_option) * PLATFORM_MARKUP_RATE
         : 0,
     }));
 

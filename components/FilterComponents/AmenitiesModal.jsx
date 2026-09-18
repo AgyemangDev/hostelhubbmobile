@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 12,
-    color: '#8b0000', // Default text color
+    color: '#0D9488', // Default text color
   },
   selectedItemText: {
     fontWeight: 'bold',

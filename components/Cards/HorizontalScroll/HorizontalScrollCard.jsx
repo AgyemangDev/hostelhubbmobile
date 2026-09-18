@@ -1,6 +1,5 @@
 import { TouchableOpacity, StyleSheet, Modal } from 'react-native';
-import { useState, useContext, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useState, useContext } from 'react';
 import { auth } from '../../../app/firebase/FirebaseConfig';
 import { UserContext } from '../../../context/UserContext';
 import { handleHostelCardPress } from '../../../utils/PaymentCheck';
@@ -23,13 +22,9 @@ const HorizontalScrollCard = ({
   const { userInfo, refreshUserInfo } = useContext(UserContext);
   const user = auth.currentUser;
 
-  // Refresh user data every time the user navigates back to this screen
-  // This picks up noofbooking increments that happened during a booking flow
-  useFocusEffect(
-    useCallback(() => {
-      refreshUserInfo(true);
-    }, [refreshUserInfo])
-  );
+  // User data (balance, noofbooking, paymentstatus, ...) now arrives via
+  // UserContext's SSE push connection instead of a focus-triggered refetch.
+  // `refreshUserInfo` is still passed down below as a manual fallback.
 
   const handleCardPress = async () => {
     const horizontalMovement = Math.abs(touchEndX - touchStartX);

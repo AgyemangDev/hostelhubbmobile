@@ -107,7 +107,7 @@ const Profile = () => {
           <View style={styles.linksContainer}>
             {[
               { icon: "account-circle", label: "Personal Info", route: "personalInfo" },
-              { icon: "money", label: "Deposits & Transaction", route: "transactions" },
+              { icon: "money", label: "Transactions & Rewards", route: "transactions" },
               { icon: "work", label: "How Hostelhubb Works", route: "howHostelHubbWorks" },
               { icon: "diversity-1", label: "Our Referral Program", route: "referralInfo" },
               // { icon: "report", label: "Report A Concern", route: "reportAConcern" },

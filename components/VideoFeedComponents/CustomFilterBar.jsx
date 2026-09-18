@@ -81,10 +81,10 @@ const CustomFilterBar = ({
 
   const roomOptions = [
     { label: 'All Rooms', value: 'All' },
-    { label: '1 in 1', value: 'One in One' },
-    { label: '2 in 1', value: 'Two in One' },
-    { label: '3 in 1', value: 'Three in One' },
-    { label: '4 in 1', value: 'Four in One' },
+    { label: '1 in 1', value: '1 in 1' },
+    { label: '2 in 1', value: '2 in 1' },
+    { label: '3 in 1', value: '3 in 1' },
+    { label: '4 in 1', value: '4 in 1' },
   ];
 
   const typeOptions = [

@@ -3,34 +3,19 @@ import {
   View,
   Text,
   Image,
+  TextInput,
   TouchableOpacity,
-  Linking,
+  ActivityIndicator,
   StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/Colors";
-
-/* ─── Bank constants ──────────────────────────────────────────────────────── */
-export const BANK = {
-  name: "NAG HOSTELHUBB",
-  bank: "GT Bank",
-  account: "3302001049665",
-  whatsapp: "23345746198",
-};
 
 /* ─── Primitive rows ──────────────────────────────────────────────────────── */
 export const Row = ({ label, value, valueStyle }) => (
   <View style={s.row}>
     <Text style={s.rowLabel}>{label}</Text>
     <Text style={[s.rowValue, valueStyle]}>{value}</Text>
-  </View>
-);
-
-export const BankRow = ({ label, value, highlight }) => (
-  <View style={s.bankRow}>
-    <Text style={s.bankLabel}>{label}</Text>
-    <Text style={[s.bankValue, highlight && s.bankHighlight]}>
-      {value}
-    </Text>
   </View>
 );
 
@@ -47,6 +32,15 @@ export const PropertyCard = ({
         <Image
           source={{ uri: imageUrl }}
           style={s.propImage}
+          // Both the URL and the underlying data were verified reachable
+          // and valid server-side (200, image/jpeg) for real accommodation
+          // listings — if this still renders as a blank/placeholder on
+          // device, this logs the RN Image loader's actual reason
+          // (network, decode, unsupported format) instead of failing
+          // silently, since that's the only way left to diagnose it further.
+          onError={(e) =>
+            console.warn("[PropertyCard] Image failed to load:", imageUrl, e.nativeEvent?.error)
+          }
         />
       ) : (
         <View
@@ -115,130 +109,81 @@ export const BookingDetails = ({
   </View>
 );
 
-/* ─── Amount + wallet ─────────────────────────────────────────────────────── */
-export const AmountSection = ({
-  amount,
-  userBalance,
-  hasFunds,
-}) => (
-  <>
-    <View style={s.section}>
-      <Text style={s.sectionTitle}>
-        Amount due
+/* ─── Amount ──────────────────────────────────────────────────────────────── */
+// Direct Paystack is now the only accommodation payment path, so there's no
+// wallet balance or bank-transfer fallback to show here anymore.
+export const AmountSection = ({ amount }) => (
+  <View style={s.section}>
+    <Text style={s.sectionTitle}>
+      Amount due
+    </Text>
+
+    <View style={s.amountBlock}>
+      <Text style={s.amountLabel}>
+        Total
       </Text>
 
-      <View style={s.amountBlock}>
-        <Text style={s.amountLabel}>
-          Total
-        </Text>
-
-        <Text style={s.amountValue}>
-          GHS {amount.toFixed(2)}
-        </Text>
-      </View>
-    </View>
-
-    <View style={s.section}>
-      <Text style={s.sectionTitle}>
-        HostelHubb wallet
+      <Text style={s.amountValue}>
+        GHS {amount.toFixed(2)}
       </Text>
-
-      <View style={s.walletRow}>
-        <Text style={s.walletLabel}>
-          Available balance
-        </Text>
-
-        <Text
-          style={[
-            s.walletValue,
-            !hasFunds && s.walletLow,
-          ]}
-        >
-          GHS {userBalance.toFixed(2)}
-        </Text>
-      </View>
     </View>
-  </>
+  </View>
 );
 
-/* ─── Bank transfer ───────────────────────────────────────────────────────── */
-export const BankTransferSection = ({
-  amount,
-  bookingId,
-  userInfo,
-}) => {
-  const openWhatsApp = () => {
-    const msg = encodeURIComponent(
-      `Hi, I just made a bank transfer for my HostelHubb booking.\n\nBooking ID: ${bookingId}\nAmount: GHS ${amount.toFixed(
-        2
-      )}\nName: ${
-        userInfo.first_name
-      } ${userInfo.surname}\n\nPlease find attached proof of payment.`
-    );
+/* ─── Referral (optional) ─────────────────────────────────────────────────── */
+// Same "buyer picks a referrer at payment time" model as storage's
+// ReferralStep.jsx, offered inline here since accommodation/hubclip
+// payments are a single screen rather than a multi-step flow.
+export const ReferralSection = ({
+  code,
+  onChangeCode,
+  checking,
+  match,
+  error,
+  onCheck,
+  onClear,
+}) => (
+  <View style={s.section}>
+    <Text style={s.sectionTitle}>Referral code (optional)</Text>
 
-    Linking.openURL(
-      `https://wa.me/${BANK.whatsapp}?text=${msg}`
-    );
-  };
-
-  return (
-    <>
-      <View style={s.orRow}>
-        <View style={s.orLine} />
-        <Text style={s.orText}>
-          or pay via bank transfer
+    {match ? (
+      <View style={s.referralMatchRow}>
+        <Ionicons name="checkmark-circle" size={18} color={COLORS.teal} />
+        <Text style={s.referralMatchText}>
+          Referred by {match.firstname} {match.surname}
         </Text>
-        <View style={s.orLine} />
-      </View>
-
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>
-          Bank transfer
-        </Text>
-
-        <BankRow
-          label="Account name"
-          value={BANK.name}
-        />
-
-        <BankRow
-          label="Bank"
-          value={BANK.bank}
-        />
-
-        <BankRow
-          label="Account number"
-          value={BANK.account}
-        />
-
-        <BankRow
-          label="Amount"
-          value={`GHS ${amount.toFixed(2)}`}
-          highlight
-        />
-
-        <View style={s.bankNote}>
-          <Text style={s.bankNoteText}>
-            After transferring, send us proof
-            of payment via WhatsApp. Your
-            booking will be activated within a
-            few minutes.
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={s.whatsappBtn}
-          onPress={openWhatsApp}
-          activeOpacity={0.8}
-        >
-          <Text style={s.whatsappBtnText}>
-            📲 Send proof via WhatsApp
-          </Text>
+        <TouchableOpacity onPress={onClear}>
+          <Text style={s.referralClear}>Remove</Text>
         </TouchableOpacity>
       </View>
-    </>
-  );
-};
+    ) : (
+      <View style={s.referralInputRow}>
+        <TextInput
+          style={s.referralInput}
+          placeholder="Enter referral code"
+          placeholderTextColor={COLORS.textMuted}
+          autoCapitalize="characters"
+          value={code}
+          editable={!checking}
+          onChangeText={onChangeCode}
+        />
+        <TouchableOpacity
+          style={[s.referralCheckBtn, (!code.trim() || checking) && s.referralCheckBtnDisabled]}
+          onPress={onCheck}
+          disabled={!code.trim() || checking}
+        >
+          {checking ? (
+            <ActivityIndicator size="small" color={COLORS.white} />
+          ) : (
+            <Text style={s.referralCheckBtnText}>Check</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    )}
+
+    {error && <Text style={s.referralError}>{error}</Text>}
+  </View>
+);
 
 /* ─── Shared styles ───────────────────────────────────────────────────────── */
 const s = StyleSheet.create({
@@ -260,27 +205,6 @@ const s = StyleSheet.create({
     color: COLORS.textDark,
   },
 
-  bankRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 5,
-  },
-
-  bankLabel: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-
-  bankValue: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: COLORS.textDark,
-  },
-
-  bankHighlight: {
-    color: COLORS.teal,
-    fontWeight: "700",
-  },
 
   propertyCard: {
     backgroundColor: COLORS.white,
@@ -383,73 +307,65 @@ const s = StyleSheet.create({
     color: COLORS.teal,
   },
 
-  walletRow: {
+  referralInputRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    gap: 8,
   },
 
-  walletLabel: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-
-  walletValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: COLORS.teal,
-  },
-
-  walletLow: {
-    color: COLORS.gold,
-  },
-
-  orRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 16,
-    gap: 10,
-  },
-
-  orLine: {
+  referralInput: {
     flex: 1,
-    height: 0.5,
-    backgroundColor: COLORS.shadow,
+    borderWidth: 1,
+    borderColor: COLORS.shadow,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: COLORS.textDark,
   },
 
-  orText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-  },
-
-  bankNote: {
-    marginTop: 10,
-    backgroundColor: "#E1F5EE",
-    borderRadius: 8,
-    padding: 10,
-    borderWidth: 0.5,
-    borderColor: "#9FE1CB",
-  },
-
-  bankNoteText: {
-    fontSize: 12,
-    color: COLORS.teal,
-    lineHeight: 18,
-  },
-
-  whatsappBtn: {
-    marginTop: 10,
-    backgroundColor: "#E1F5EE",
-    borderRadius: 8,
-    paddingVertical: 11,
+  referralCheckBtn: {
+    backgroundColor: COLORS.teal,
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    justifyContent: "center",
     alignItems: "center",
-    borderWidth: 0.5,
-    borderColor: "#9FE1CB",
   },
 
-  whatsappBtnText: {
+  referralCheckBtnDisabled: {
+    opacity: 0.5,
+  },
+
+  referralCheckBtnText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  referralMatchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#E1F5EE",
+    borderRadius: 10,
+    padding: 10,
+  },
+
+  referralMatchText: {
+    flex: 1,
     fontSize: 13,
     fontWeight: "500",
-    color: COLORS.teal,
+    color: COLORS.textDark,
+  },
+
+  referralClear: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textDecorationLine: "underline",
+  },
+
+  referralError: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#B91C1C",
   },
 });

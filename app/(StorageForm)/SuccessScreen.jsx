@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Linking, TouchableOpacity } from "react-native";
 import LottieView from "lottie-react-native";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/Colors";
 import Button from "../../components/ButtonComponents/ButtonComponent";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
+import { STORAGE_WHATSAPP_GROUP_URL } from "../../constants/storageWhatsapp";
 
 export default function SuccessScreen() {
   const router = useRouter();
@@ -37,12 +38,15 @@ export default function SuccessScreen() {
     router.replace("(tabs)/(index)");
   };
 
+  const joinWhatsappGroup = () => {
+    Linking.openURL(STORAGE_WHATSAPP_GROUP_URL).catch(() => {});
+  };
+
   return (
     <ScrollView
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     >
-      {/* Success Animation */}
       <LottieView
         ref={animationRef}
         source={require("../../assets/icons/accommodation_success.json")}
@@ -51,75 +55,90 @@ export default function SuccessScreen() {
         style={styles.animation}
       />
 
-      {/* Success Message */}
       <View style={styles.successSection}>
-        <Text style={styles.title}>Storage Reserved Successfully 🎉</Text>
+        <Text style={styles.title}>Storage Reserved 🎉</Text>
         <Text style={styles.subtitle}>
           Your storage booking has been confirmed and processed successfully.
         </Text>
-
-        {params?.amount && (
-          <Text style={styles.amount}>
-            Amount Paid: GHS {Number(params.amount).toFixed(2)}
-          </Text>
-        )}
       </View>
 
+      {/* Receipt summary */}
+      {(params?.amount || params?.transactionReference) && (
+        <View style={styles.receiptCard}>
+          {params?.amount && (
+            <View style={styles.receiptRow}>
+              <Text style={styles.receiptLabel}>Amount Paid</Text>
+              <Text style={styles.receiptValueAmount}>
+                GHS {Number(params.amount).toFixed(2)}
+              </Text>
+            </View>
+          )}
+          {params?.amount && params?.transactionReference && (
+            <View style={styles.receiptDivider} />
+          )}
+          {params?.transactionReference && (
+            <View style={styles.receiptRow}>
+              <Text style={styles.receiptLabel}>Reference</Text>
+              <Text style={styles.receiptValue}>{params.transactionReference}</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {/* What Happens Next */}
-      <View style={styles.infoCard}>
+      <View style={styles.card}>
         <View style={styles.iconHeader}>
-          <Ionicons
-            name="checkmark-circle"
-            size={24}
-            color={COLORS.primary}
-          />
+          <Ionicons name="checkmark-circle" size={22} color={COLORS.primary} />
           <Text style={styles.cardTitle}>What Happens Next</Text>
         </View>
 
         <View style={styles.infoContent}>
-          <InfoItem
-            icon="mail"
-            text="Your storage receipt has been sent to your email"
-          />
-          <InfoItem
-            icon="cube"
-            text="Our team will contact you to coordinate pickup and delivery"
-          />
+          <InfoItem icon="mail" text="Your storage receipt has been sent to your email" />
+          <InfoItem icon="cube" text="Our team will contact you to coordinate pickup and delivery" />
         </View>
       </View>
 
-      {/* Transport & Storage Promotion */}
-      <View style={styles.promoSection}>
-        <View style={styles.sectionHeader}>
-          <Ionicons name="bus" size={20} color={COLORS.primary} />
-          <Text style={styles.sectionTitle}>
-            Need Transport Home?
+      {/* WhatsApp Group CTA */}
+      <TouchableOpacity
+        style={styles.whatsappCard}
+        activeOpacity={0.85}
+        onPress={joinWhatsappGroup}
+      >
+        <View style={styles.whatsappIconCircle}>
+          <Ionicons name="logo-whatsapp" size={26} color="#25D366" />
+        </View>
+        <View style={styles.whatsappTextGroup}>
+          <Text style={styles.whatsappTitle}>Join our Storage WhatsApp Group</Text>
+          <Text style={styles.whatsappSubtitle}>
+            Get pickup &amp; delivery updates straight to your phone
           </Text>
         </View>
+        <View style={styles.whatsappButton}>
+          <Text style={styles.whatsappButtonText}>Join</Text>
+        </View>
+      </TouchableOpacity>
 
-        <View style={styles.promoCard}>
+      {/* Transport promo */}
+      <View style={styles.promoCard}>
+        <View style={styles.promoHeader}>
           <View style={styles.promoIcon}>
-            <Ionicons name="bus" size={32} color="#fff" />
+            <Ionicons name="bus" size={22} color="#fff" />
           </View>
-
-          <Text style={styles.promoTitle}>
-            Book Transport Easily
-          </Text>
-
-          <Text style={styles.promoDescription}>
-            Move safely back to your house with our trusted,
-            affordable services — all in one app.
-          </Text>
-
-          <View style={styles.benefits}>
-            <Benefit icon="shield-checkmark" text="Safe & Verified" />
-            <Benefit icon="time" text="Convenient Scheduling" />
-            <Benefit icon="wallet" text="Affordable Pricing" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.promoTitle}>Need Transport Home?</Text>
+            <Text style={styles.promoDescription}>
+              Move safely with our trusted, affordable services — all in one app.
+            </Text>
           </View>
+        </View>
+
+        <View style={styles.benefits}>
+          <Benefit icon="shield-checkmark" text="Safe & Verified" />
+          <Benefit icon="time" text="Convenient Scheduling" />
+          <Benefit icon="wallet" text="Affordable Pricing" />
         </View>
       </View>
 
-      {/* Action Button */}
       <Button
         buttonText="Go to Home"
         onPressFunction={finish}
@@ -140,67 +159,97 @@ const InfoItem = ({ icon, text }) => (
 
 const Benefit = ({ icon, text }) => (
   <View style={styles.benefit}>
-    <Ionicons name={icon} size={14} color={COLORS.primary} />
+    <Ionicons name={icon} size={13} color={COLORS.primary} />
     <Text style={styles.benefitText}>{text}</Text>
   </View>
 );
 
 /* ------------------ Styles ------------------ */
 
+const CARD_RADIUS = 16;
+
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingVertical: 32,
+    paddingVertical: 28,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
+    gap: 16,
   },
   animation: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     alignSelf: "center",
   },
 
   successSection: {
     alignItems: "center",
-    marginBottom: 24,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
     color: COLORS.primary,
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#666",
     textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 8,
-    color: "#333",
+    lineHeight: 21,
+    paddingHorizontal: 10,
   },
 
-  infoCard: {
+  receiptCard: {
+    backgroundColor: "#F5F6FF",
+    borderRadius: CARD_RADIUS,
+    padding: 18,
+  },
+  receiptRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  receiptDivider: {
+    height: 1,
+    backgroundColor: "#E4E6FA",
+    marginVertical: 12,
+  },
+  receiptLabel: {
+    fontSize: 13,
+    color: "#6b7280",
+  },
+  receiptValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+  },
+  receiptValueAmount: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  card: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 28,
+    borderRadius: CARD_RADIUS,
+    padding: 18,
     elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
   iconHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
+    color: "#111827",
   },
   infoContent: {
     gap: 12,
@@ -211,75 +260,105 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   infoText: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#555",
     flex: 1,
   },
 
-  promoSection: {
-    marginBottom: 32,
-  },
-  sectionHeader: {
+  whatsappCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginBottom: 16,
+    backgroundColor: "#25D366",
+    borderRadius: CARD_RADIUS,
+    padding: 16,
+    gap: 12,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  promoCard: {
+  whatsappIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    elevation: 3,
+    justifyContent: "center",
     alignItems: "center",
   },
+  whatsappTextGroup: {
+    flex: 1,
+  },
+  whatsappTitle: {
+    fontSize: 14.5,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 3,
+  },
+  whatsappSubtitle: {
+    fontSize: 12,
+    color: "#ecfdf5",
+    lineHeight: 16,
+  },
+  whatsappButton: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 20,
+  },
+  whatsappButtonText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#128C7E",
+  },
+
+  promoCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: CARD_RADIUS,
+    padding: 18,
+  },
+  promoHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 14,
+  },
   promoIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
   },
   promoTitle: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: "700",
-    marginBottom: 8,
-    textAlign: "center",
+    color: "#111827",
+    marginBottom: 2,
   },
   promoDescription: {
-    fontSize: 14,
+    fontSize: 12.5,
     color: "#666",
-    textAlign: "center",
-    marginBottom: 16,
-    lineHeight: 20,
+    lineHeight: 17,
   },
   benefits: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 12,
+    gap: 10,
   },
   benefit: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#fff",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     gap: 6,
   },
   benefitText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
     color: "#555",
   },
 
   doneButton: {
     width: "100%",
+    marginTop: 4,
   },
 });

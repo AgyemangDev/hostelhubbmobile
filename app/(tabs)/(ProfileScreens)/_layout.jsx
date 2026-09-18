@@ -1,14 +1,13 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { useRouter } from "expo-router";
-import { TransactionProvider } from "../../../context/TransactionContext";
 import { CustomHeader } from "../(bookings)/_layout";
 
 const ProfileLayout = () => {
   const router = useRouter();
 
   return (
-    <TransactionProvider>
+    <>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -65,7 +64,7 @@ const ProfileLayout = () => {
           }}
         />
       </Stack>
-    </TransactionProvider>
+    </>
   );
 };
 

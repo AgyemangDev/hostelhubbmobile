@@ -145,7 +145,7 @@ const PaymentScreen = () => {
           />
           {loading && (
             <View style={{ marginTop: 10, alignItems: 'center' }}>
-              <ActivityIndicator size="small" color="#9a0b0d" />
+              <ActivityIndicator size="small" color="#0D9488" />
               <Text style={{ color: '#555', fontSize: 13, marginTop: 5 }}>Redirecting to payment...</Text>
             </View>
           )}

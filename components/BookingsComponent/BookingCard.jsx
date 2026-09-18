@@ -9,16 +9,17 @@ const BookingCard = ({ booking }) => {
 const hostelName = booking.accommodation?.accommodation_name || booking.hubclip?.accommodation_name || "Unknown Hostel";
 const imageUri = booking.accommodation?.front_image || booking.hubclip?.front_image || null;
 
-  const formatRoomType = (roomType) => {
-    if (!roomType) return "N/A";
-    return roomType.replace(/([A-Z])/g, " $1").trim();
-  };
-
   const handlePayNowPress = () => {
-    // Use router.push with query params
+    // PayNow fetches the full booking itself by id now — passing the whole
+    // booking (image URL included) as a JSON string through a route param
+    // was arriving corrupted for accommodation bookings specifically (their
+    // Firebase Storage URLs contain characters that don't round-trip
+    // cleanly through that encode/navigate/decode path), which is why the
+    // property image never showed on that screen despite being present and
+    // valid in the data.
     router.push({
       pathname: "/PayNow",
-      params: { booking: JSON.stringify(booking) } 
+      params: { bookingId: booking.id },
     });
   };
 
@@ -50,7 +51,14 @@ const getStatusConfig = () => {
       {/* Image and Main Info */}
       <View style={styles.content}>
         {imageUri ? (
-          <Image source={{ uri: imageUri }} style={styles.image} resizeMode="cover" />
+          <Image
+            source={{ uri: imageUri }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={(e) =>
+              console.warn("[BookingCard] Image failed to load:", imageUri, e.nativeEvent?.error)
+            }
+          />
         ) : (
           <View style={[styles.image, styles.imagePlaceholder]}>
             <Text style={{ color: "#aaa" }}>No Image</Text>
@@ -63,7 +71,7 @@ const getStatusConfig = () => {
           </Text>
 
           <Text style={styles.roomType} numberOfLines={1}>
-            {formatRoomType(booking.room_type)}
+            {booking.room_type || "N/A"}
           </Text>
 
           <Text style={styles.price}>
@@ -99,14 +107,17 @@ const getStatusConfig = () => {
   );
 };
 
+const TEAL = "#0D9488";
+
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 14,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderWidth: 1.5,
+    borderColor: TEAL,
+    overflow: "hidden",
   },
   content: {
     flexDirection: "row",
@@ -115,12 +126,14 @@ const styles = StyleSheet.create({
   image: {
     width: 80,
     height: 80,
-    borderRadius: 8,
-    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    backgroundColor: "#F0FDFA",
   },
   imagePlaceholder: {
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#CCFBF1",
   },
   details: {
     flex: 1,
@@ -141,7 +154,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
+    color: TEAL,
   },
   footer: {
     flexDirection: "row",
@@ -150,7 +163,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
+    borderTopColor: "#F0FDFA",
+    backgroundColor: "#F8FFFE",
   },
   status: {
     flexDirection: "row",
@@ -169,10 +183,10 @@ const styles = StyleSheet.create({
   payButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#10B981",
+    backgroundColor: TEAL,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: 20,
     gap: 6,
   },
   payButtonText: {

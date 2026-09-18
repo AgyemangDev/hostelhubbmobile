@@ -11,7 +11,6 @@ import CategoryNavigationCards from "../../../components/HomeComponents/Category
 import BenefitSlider from "../../../components/Sliders/BenefitSlider";
 import { hostelBenefits } from "../../../assets/data/SlideData";
 import { WhatsAppButton } from "../../../components/ButtonComponents/WhatsAppButton";
-import BalanceButton from "../../../components/ButtonComponents/BalanceButton";
 import StorageBannerSlider from "../../../components/Sliders/StorageBannerSlider";
 import notificationService from "../../firebase/notificationService";
 import { UserContext } from "../../../context/UserContext";
@@ -89,8 +88,6 @@ const Index = () => {
         <BenefitSlider benefits={hostelBenefits} />
       </ScrollView>
 
-      {/* FAB stack — Balance sits above WhatsApp */}
-      <BalanceButton />
       <WhatsAppButton size={60} />
     </SafeAreaView>
   );

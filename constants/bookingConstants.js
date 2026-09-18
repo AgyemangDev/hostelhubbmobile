@@ -1,6 +1,12 @@
-export const ACCESS_FEE = Number(process.env.EXPO_PUBLIC_ACCESS_FEE);
-export const ACCESS_DURATION_MONTHS = 6;
-export const FREE_BOOKING_LIMIT = 5; // 👈 ADD THIS
+// HostelHubb's cut, added on top of the owner-set base price for
+// accommodation/hubclip bookings, and matched exactly by the backend's own
+// PLATFORM_MARKUP_RATE (services/payments/paymentInitiationService.js) that
+// computes what actually gets charged via Paystack. Kept as one shared
+// constant instead of the literal 1.05 duplicated across screens — that
+// duplication is exactly how PayNow.jsx ended up showing a raw price while
+// every other screen showed the marked-up one, so a student saw one number
+// then got charged a different, higher one.
+export const PLATFORM_MARKUP_RATE = 1.05;
 
 export const BOOKING_MESSAGES = {
   FIRST_TIME_SUCCESS: {

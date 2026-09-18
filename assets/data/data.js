@@ -60,10 +60,10 @@ export const institutions = [
 
 // Room types
 export const roomTypes = [
-  { value: "OneInARoom", label: "1 in 1" },
-  { value: "TwoInARoom", label: "2 in 1" },
-  { value: "ThreeInARoom", label: "3 in 1" },
-  { value: "FourInARoom", label: "4 in 1" },
+  { value: "1 in 1", label: "1 in 1" },
+  { value: "2 in 1", label: "2 in 1" },
+  { value: "3 in 1", label: "3 in 1" },
+  { value: "4 in 1", label: "4 in 1" },
   { value: "Apartment", label: "Apartment" },
 ];
 

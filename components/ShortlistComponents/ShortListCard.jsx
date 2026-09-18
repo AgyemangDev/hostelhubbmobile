@@ -64,7 +64,7 @@ const ShortListCard = ({ hostelName, location, ImageUrl, availability, isLastIte
               <View>
               <TouchableWithoutFeedback onPress={toggleStar}>
                 <Ionicons name={isStarred ? "star" : "star-outline"} size={30
-                } color={'#9a0b0d'}  style
+                } color={'#0D9488'}  style
                 ={styles.starIcon} />
               </TouchableWithoutFeedback>
               </View>

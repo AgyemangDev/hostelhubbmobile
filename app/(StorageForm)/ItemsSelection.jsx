@@ -67,7 +67,7 @@ export default function ItemsSelection() {
   if (loading) {
     return (
       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#b20000" />
+        <ActivityIndicator size="large" color="#0B7A6F" />
         <Text style={{ marginTop: 10 }}>Loading items...</Text>
       </View>
     );

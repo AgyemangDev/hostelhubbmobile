@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState, useCallback } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
-import { useFocusEffect } from "@react-navigation/native";
 
 import { UserContext } from "../../context/UserContext";
 import { useAccommodationById } from "../../hooks/accommodationContext/useAccommodationById";
@@ -47,13 +46,8 @@ const DetailsScreen = () => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  // Refresh user data every time the user comes back to this screen
-  // (e.g. returning from bookingModal after a completed or cancelled booking)
-  useFocusEffect(
-    useCallback(() => {
-      refreshUserInfo(true);
-    }, [refreshUserInfo])
-  );
+  // Profile data (balance, noofbooking, paymentstatus, ...) now arrives via
+  // UserContext's SSE push connection instead of a focus-triggered refetch.
 
   if (loading || !hostel) {
     return <LoadingScreen message="Loading hostel details..." />;

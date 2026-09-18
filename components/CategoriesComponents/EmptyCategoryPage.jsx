@@ -131,7 +131,7 @@ const EmptyCategoryPage = ({ category }) => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={['#8B0000', '#B22222']} 
+              colors={['#0D9488', '#14B8A6']} 
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.button}
