@@ -53,19 +53,20 @@ export default function Index() {
   const user = auth.currentUser;
 
 
-  // const handleReservePress = () => {
-  //   if (!user) {
-  //     setShowAuth(true);
-  //     return;
-  //   }
-  //   router.push("ItemsSelection");
-  // };
+    //Storage open with no modal state
+  const handleReservePress = () => {
+    if (!user) {
+      setShowAuth(true);
+      return;
+    }
+    router.push("ItemsSelection");
+  };
 
 
   //Storage closed modal state
-    const handleReservePress = () => {
-    setShowClosedModal(true);
-  };
+  //   const handleReservePress = () => {
+  //   setShowClosedModal(true);
+  // };
 
   return (
     <>
