@@ -27,6 +27,27 @@ const STEPS = [
   },
 ];
 
+const BOOKING_STEPS = [
+  {
+    n: 1,
+    icon: 'share-2',
+    title: 'Share your code with a friend',
+    sub: 'Anyone booking accommodation, a hubclip, or storage on Hostelhubb can use it.',
+  },
+  {
+    n: 2,
+    icon: 'edit-3',
+    title: 'They enter it when they pay',
+    sub: 'There’s a referral code field on the payment screen for accommodation, hubclip, and storage bookings.',
+  },
+  {
+    n: 3,
+    icon: 'trending-up',
+    title: 'You earn a cut of that booking',
+    sub: 'A commission is credited to your balance as soon as their payment goes through.',
+  },
+];
+
 const HowItWorks = () => {
   return (
     <View>
@@ -34,10 +55,13 @@ const HowItWorks = () => {
       <View style={s.introCard}>
         <Icon name="info" size={15} color={COLORS.teal} />
         <Text style={s.introText}>
-          Refer once. Earn forever. Your code stays linked to every host you
-          bring in — permanently.
+          There are two ways to earn on Hostelhubb: bring a host on board for
+          an ongoing cut of their bookings, or share your code for anyone to
+          use when they pay for accommodation, a hubclip, or storage.
         </Text>
       </View>
+
+      <Text style={s.sectionLabel}>Way 1 — Refer a host</Text>
 
       {/* Steps */}
       {STEPS.map(({ n, icon, title, sub }, i) => (
@@ -57,6 +81,27 @@ const HowItWorks = () => {
         </View>
       ))}
 
+      <Text style={[s.sectionLabel, { marginTop: 8 }]}>
+        Way 2 — Refer a booking
+      </Text>
+
+      {BOOKING_STEPS.map(({ n, icon, title, sub }, i) => (
+        <View key={`booking-${n}`} style={s.stepRow}>
+          <View style={s.stepLeft}>
+            <View style={s.stepDot}>
+              <Icon name={icon} size={14} color={COLORS.teal} />
+            </View>
+            {i < BOOKING_STEPS.length - 1 && <View style={s.stepLine} />}
+          </View>
+
+          <View style={s.stepText}>
+            <Text style={s.stepNum}>Step {n}</Text>
+            <Text style={s.stepTitle}>{title}</Text>
+            <Text style={s.stepSub}>{sub}</Text>
+          </View>
+        </View>
+      ))}
+
       {/* Earnings estimator */}
       <View style={s.estimatorBox}>
         <View style={s.estimatorHeader}>
@@ -65,9 +110,10 @@ const HowItWorks = () => {
         </View>
 
         <Text style={s.hintText}>
-          One referral can pay you continuously. A host with just{' '}
+          Referring a host can pay you continuously — a host with just{' '}
           <Text style={s.hintBold}>10 bookings</Text> could put over{' '}
-          <Text style={s.hintBold}>GHS 600</Text> in your pocket.
+          <Text style={s.hintBold}>GHS 600</Text> in your pocket. Referring a
+          single booking pays out as soon as that payment completes.
         </Text>
 
         <View style={s.divider} />
@@ -98,6 +144,15 @@ const s = StyleSheet.create({
     fontSize: 13,
     color: TEAL_DARK,
     lineHeight: 19,
+  },
+
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.teal,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 14,
   },
 
   stepRow: {

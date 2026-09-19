@@ -5,6 +5,16 @@ import COLORS from '../../constants/Colors';
 
 const TEAL_LIGHT = '#E1F5EE';
 
+// Every row in referral_earnings carries a `source` — surface which of the
+// two earning paths (host-onboarding vs. a buyer using your code) actually
+// produced each commission, instead of a generic "Booking #" label that
+// implied it was always a host referral.
+const SOURCE_LABELS = {
+  hostel: 'Host referral',
+  hostel_referral: 'Booking referral',
+  storage: 'Storage referral',
+};
+
 const EarningsList = ({ earnings }) => {
   if (!earnings.length) return (
     <View style={s.empty}>
@@ -13,7 +23,7 @@ const EarningsList = ({ earnings }) => {
       </View>
       <Text style={s.emptyTitle}>No earnings yet</Text>
       <Text style={s.emptyText}>
-        Refer your first host to start earning. Once they receive a paid booking, your commission shows up here automatically.
+        Refer a host, or share your code for someone to use when they book accommodation, a hubclip, or storage. Your commission shows up here automatically once their payment completes.
       </Text>
     </View>
   );
@@ -31,7 +41,7 @@ const EarningsList = ({ earnings }) => {
           </View>
           <View style={s.earnBody}>
             <View style={s.earnTop}>
-              <Text style={s.earnRef}>Booking #{e.booking_id?.slice(-6)}</Text>
+              <Text style={s.earnRef}>{SOURCE_LABELS[e.source] || 'Referral'}</Text>
               <Text style={s.earnAmount}>+GHS {Number(e.commission_amount).toFixed(2)}</Text>
             </View>
             <Text style={s.earnMeta}>Booking value: GHS {Number(e.booking_amount).toFixed(2)}</Text>

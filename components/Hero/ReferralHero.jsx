@@ -18,7 +18,8 @@ const ReferralHero = ({ referralCode, hostsCount, totalBookings, total, onShare 
       </View>
 
       <Text style={s.tagline}>
-        Every host you refer earns you a cut of their bookings — for life.
+        Refer a host for an ongoing cut of their bookings, or share your code
+        for anyone to use on an accommodation, hubclip, or storage booking.
       </Text>
 
       {/* Stats row */}
