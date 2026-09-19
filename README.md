@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "update changes" --platform ios
+eas update --branch production --message "database update-dropping of Student_users.balance to it's own table" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
