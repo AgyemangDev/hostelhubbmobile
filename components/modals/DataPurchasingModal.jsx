@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { UserContext } from "../../context/UserContext";
+import { WalletContext } from "../../context/WalletContext";
 import { purchaseData } from "../../services/purchaseData";
 import { useNotificationPermission } from "../../hooks/notification/useNotificationPermission";
 
@@ -37,7 +38,10 @@ const getProviderColor = (provider) => {
 };
 
 const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
-  const { userInfo, user,refreshUserInfo } = useContext(UserContext);
+  const { userInfo, user } = useContext(UserContext);
+  // Student_Users.balance is gone — read from wallet_balances via
+  // WalletContext instead of the old frozen profile field.
+  const { balance: userBalance, refetchBalance } = useContext(WalletContext);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -72,7 +76,6 @@ const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
 
   const proceedPurchaseWithBalanceCheck = async () => {
     const price = parseFloat(selectedPackage.price);
-    const userBalance = userInfo?.balance || 0;
 
     if (userBalance < price) {
       const amountNeeded = price - userBalance;
@@ -121,7 +124,7 @@ const DataPurchaseModal = ({ isVisible, onClose, selectedPackage }) => {
         );
         setPhoneNumber("");
         onClose();
-        await refreshUserInfo();
+        await refetchBalance();
       } else {
         Alert.alert("Error", result.message);
       }

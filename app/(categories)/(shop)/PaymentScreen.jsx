@@ -10,16 +10,19 @@ import FormDropdown from '../../../components/InputFields/FormDropDown';
 import CheckoutButton from '../../../components/CheckoutComponents/CheckoutButton';
 import { Ionicons } from '@expo/vector-icons';
 import { UserContext } from '../../../context/UserContext';
+import { WalletContext } from '../../../context/WalletContext';
 import OverlayLoader from '../../../components/Animation/OverlayLoader';
 import axios from 'axios';
 
 const PaymentScreen = () => {
   const { userInfo } = useContext(UserContext);
+  // Student_Users.balance is gone — wallet balance lives in wallet_balances
+  // exclusively, surfaced here via WalletContext (same source the
+  // Transactions/Rewards tab uses) instead of the old frozen profile field.
+  const { balance: userBalance } = useContext(WalletContext);
   const { total, cartItems } = useLocalSearchParams();
   const router = useRouter();
   const parsedCartItems = cartItems ? JSON.parse(cartItems) : [];
-
-  const userBalance = userInfo?.balance || 0.00;
   const userId = userInfo?.id;
   const [loading, setLoading] = useState(false);
 
