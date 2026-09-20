@@ -37,6 +37,13 @@ const _layout = () => {
             title: "Select Items",
           }}
         />
+        <Stack.Screen
+          name="SchoolSelection"
+          options={{
+            headerLeft: () => <BackButton />,
+            title: "Select School",
+          }}
+        />
 
         {/* Pickup & Delivery Info */}
         <Stack.Screen

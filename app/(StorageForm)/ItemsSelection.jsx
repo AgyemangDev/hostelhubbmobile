@@ -21,6 +21,19 @@ export default function ItemsSelection() {
     const getItems = async () => {
       const items = await fetchStorageItems();
       setStorageItems(items);
+      // Rehydrate only the selected ids and quantities with current catalog
+      // metadata so stale prices/images cannot be submitted from the draft.
+      reservation.items.forEach((selected) => {
+        const currentItem = items.find((item) => item.id === selected.id);
+        if (currentItem) {
+          upsertItem({
+            ...currentItem,
+            quantity: selected.quantity,
+          });
+        } else {
+          removeItem(selected.id);
+        }
+      });
       setLoading(false);
     };
     getItems();

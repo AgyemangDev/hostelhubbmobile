@@ -59,7 +59,7 @@ export default function Index() {
       setShowAuth(true);
       return;
     }
-    router.push("ItemsSelection");
+    router.push("SchoolSelection");
   };
 
 

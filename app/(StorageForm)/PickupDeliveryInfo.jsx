@@ -13,21 +13,14 @@ import COLORS from "../../constants/Colors";
 import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
 import API_BASE_URL from "../../utils/api/api";
 
-// Used until the admin-configured schedule loads (or if that request fails)
-// so the picker never has to render without min/max bounds.
-const FALLBACK_SCHEDULE = {
-  pickupMinDate: new Date("2026-09-06"),
-  pickupMaxDate: new Date("2026-09-06"),
-  deliveryMinDate: new Date("2026-10-17"),
-  deliveryMaxDate: new Date("2026-10-18"),
-};
-
 export default function PickupDeliveryInfo() {
   const router = useRouter();
   const { reservation, updateReservation } = useStorageReservation();
 
   const [sameAsPickup, setSameAsPickup] = useState(false);
-  const [schedule, setSchedule] = useState(FALLBACK_SCHEDULE);
+  const [schedule, setSchedule] = useState(null);
+  const [points, setPoints] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(true);
   const decideLater = !!reservation.deliveryInfo?.decideLater;
   const pickupInfo = reservation.pickupInfo;
   const deliveryInfo = reservation.deliveryInfo;
@@ -40,11 +33,15 @@ export default function PickupDeliveryInfo() {
 
     const loadSchedule = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/storage-schedule`);
+        if (!reservation.school?.id) return;
+        const res = await fetch(`${API_BASE_URL}/storage-schools/public`);
         if (!res.ok) return;
 
-        const { schedule: s } = await res.json();
+        const { schools = [] } = await res.json();
+        const selectedSchool = schools.find((school) => school.id === reservation.school.id);
+        const s = selectedSchool?.schedule;
         if (!isMounted || !s) return;
+        setPoints(selectedSchool?.points || []);
 
         setSchedule({
           pickupMinDate: new Date(s.pickup_start_date),
@@ -53,7 +50,9 @@ export default function PickupDeliveryInfo() {
           deliveryMaxDate: new Date(s.delivery_end_date),
         });
       } catch (err) {
-        console.error("Failed to load storage schedule, using defaults:", err);
+        console.error("Failed to load storage schedule:", err);
+      } finally {
+        if (isMounted) setScheduleLoading(false);
       }
     };
 
@@ -61,7 +60,7 @@ export default function PickupDeliveryInfo() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [reservation.school?.id]);
 
   // Keep the delivery address perpetually in sync with pickup while the
   // toggle is on — not just at the moment the user flips it. This means
@@ -97,6 +96,17 @@ export default function PickupDeliveryInfo() {
     pickupInfo?.hostel,
     pickupInfo?.room,
   ]);
+
+  if (scheduleLoading || !schedule) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Loading storage cycle…</Text>
+          <Text style={styles.subtitle}>Loading the dates and pickup points for {reservation.school?.code || "your school"}.</Text>
+        </View>
+      </View>
+    );
+  }
 
   const proceed = () => {
     const error = validatePickupDeliveryForm({ pickupInfo, deliveryInfo });
@@ -163,6 +173,7 @@ export default function PickupDeliveryInfo() {
             placeholder="Select pickup location"
             value={pickupInfo}
             selectedType="pickup"
+            points={points}
             onSelectLocation={(val) =>
               updateReservation({ pickupInfo: { ...pickupInfo, ...val } })
             }
@@ -207,6 +218,7 @@ export default function PickupDeliveryInfo() {
               placeholder="Select delivery location"
               value={deliveryInfo}
               selectedType="delivery"
+              points={points}
               onSelectLocation={(val) =>
                 updateReservation({
                   deliveryInfo: { ...deliveryInfo, decideLater: false, ...val },

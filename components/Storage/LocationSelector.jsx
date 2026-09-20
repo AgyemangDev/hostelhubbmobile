@@ -5,27 +5,12 @@ import CustomDropdown from "../Dropdowns/CustomDropdown";
 import COLORS from "../../constants/Colors";
 import FloatingLabelInput from "../InputFields/FormInput";
 
-const ON_CAMPUS = [
-  "Gaza",
-  "Wilkado",
-  "Republic Hall",
-  "Katanga Hall",
-  "Africa Hall",
-  "Queens Hall",
-  "Independence Hall",
-  "SRC",
-  "Unity Hall",
-  "Hall 7",
-  "Brunei",
-];
-
-const OFF_CAMPUS_AREAS = ["Ayeduase", "Kotei", "Bomso", "New Site"];
-
 export default function LocationSelector({
   placeholder,
   value,
   onSelectLocation,
   selectedType = "pickup",
+  points = [],
 }) {
   const [mainDropdownVisible, setMainDropdownVisible] = useState(false);
   const [offCampusDropdownVisible, setOffCampusDropdownVisible] = useState(false);
@@ -100,7 +85,9 @@ export default function LocationSelector({
   };
 
   // off campus pickup allowed
-  const mainDropdownData = [...ON_CAMPUS, "Off Campus"];
+  const onCampus = points.filter((point) => point.point_type === "on_campus").map((point) => point.name);
+  const offCampus = points.filter((point) => point.point_type === "off_campus").map((point) => point.name);
+  const mainDropdownData = [...onCampus, ...(offCampus.length ? ["Off Campus"] : [])];
 
   // //off ccampus pickup not allowed
   // const mainDropdownData =
@@ -135,7 +122,7 @@ export default function LocationSelector({
       {selectedArea === "Off Campus" && (
         <View style={styles.nestedGroup}>
           <CustomDropdown
-            data={OFF_CAMPUS_AREAS}
+            data={offCampus}
             selectedValue={selectedOffCampusArea}
             placeholder="Select off-campus area"
             visible={offCampusDropdownVisible}

@@ -35,6 +35,10 @@ export default function ReviewPay() {
 
     try {
       setLoading(true);
+      if (!reservation.school?.id) {
+        Alert.alert("School required", "Please select your school before paying.");
+        return;
+      }
 
       // Same payload shape the old processStoragePayment built server-side —
       // the backend still computes the charge amount from `items` itself.
@@ -62,6 +66,7 @@ export default function ReviewPay() {
         items: reservation.items,
         pickupInfo: reservation.pickupInfo,
         deliveryInfo: reservation.deliveryInfo,
+        schoolId: reservation.school.id,
         groupImage,
         referrerId:
           reservation.referral?.status === "confirmed"

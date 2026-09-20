@@ -7,6 +7,7 @@ const STORAGE_KEY = "storage_reservation_draft";
 
 const initialState = {
   items: [],
+  school: null,
   pickupInfo: null,
   deliveryInfo: null,
   groupImage: null,
@@ -17,6 +18,19 @@ const initialState = {
   referral: { status: "pending", referrerId: null, code: null, firstname: null, surname: null },
 };
 
+const getPersistedReservation = (reservation) => ({
+  school: reservation.school
+    ? {
+        id: reservation.school.id,
+        name: reservation.school.name,
+        code: reservation.school.code,
+      }
+    : null,
+  // Persist only the user's choices. Names, prices, and catalog images are
+  // refreshed from the current storage catalog when ItemsSelection loads.
+  items: (reservation.items || []).map(({ id, quantity }) => ({ id, quantity })),
+});
+
 export const StorageReservationProvider = ({ children }) => {
   const [reservation, setReservation] = useState(initialState);
   const [hydrated, setHydrated] = useState(false);
@@ -25,7 +39,14 @@ export const StorageReservationProvider = ({ children }) => {
     (async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
-        if (saved) setReservation({ ...initialState, ...JSON.parse(saved) });
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setReservation({
+            ...initialState,
+            school: parsed.school || null,
+            items: Array.isArray(parsed.items) ? parsed.items : [],
+          });
+        }
       } catch (e) {
         console.log("Failed to load reservation", e);
       } finally {
@@ -36,14 +57,32 @@ export const StorageReservationProvider = ({ children }) => {
 
   useEffect(() => {
     if (!hydrated) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(reservation));
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(getPersistedReservation(reservation)));
   }, [reservation, hydrated]);
 
   const updateReservation = (updates) => {
-    setReservation((prev) => ({
-      ...prev,
-      ...updates,
-    }));
+    setReservation((prev) => {
+      if (Object.prototype.hasOwnProperty.call(updates, "school")) {
+        const previousSchoolId = prev.school?.id;
+        const nextSchoolId = updates.school?.id;
+
+        if (previousSchoolId !== nextSchoolId) {
+          return {
+            ...prev,
+            school: updates.school || null,
+            pickupInfo: null,
+            deliveryInfo: null,
+            groupImage: null,
+            referral: initialState.referral,
+          };
+        }
+      }
+
+      return {
+        ...prev,
+        ...updates,
+      };
+    });
   };
 
   const upsertItem = (item) => {
