@@ -1,22 +1,55 @@
 // StorageBookingCard.jsx
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useContext, useState } from "react";
 import { getStatusMeta } from "../../utils/bookingStatus";
 import COLORS from "../../constants/Colors";
+import { UserContext } from "../../context/UserContext";
+import API_BASE_URL from "../../utils/api/api";
 
 const StorageBookingCard = ({ booking, onPress }) => {
   const router = useRouter();
-  const statusMeta = getStatusMeta(booking.pickup_status, booking.delivery_status);
+  const { user } = useContext(UserContext);
+  const [currentPickupStatus, setCurrentPickupStatus] = useState(booking.pickup_status);
+  const [currentDeliveryStatus, setCurrentDeliveryStatus] = useState(booking.delivery_status);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const effectivePickupStatus = currentPickupStatus || booking.pickup_status;
+  const effectiveDeliveryStatus = currentDeliveryStatus || booking.delivery_status;
+  const statusMeta = getStatusMeta(effectivePickupStatus, effectiveDeliveryStatus);
 
   // Firestore's Storage docs use totalPrice/bookingReference — fall back to
   // price/id in case an older shape is ever passed in.
   const displayPrice = Number(booking.totalPrice ?? booking.price ?? 0);
   const displayRef = booking.bookingReference ?? booking.id ?? "";
 
-  const isPickupPending = booking.pickup_status === "pending";
-  const isPickupCompleted = booking.pickup_status === "picked_up" || booking.pickup_status === "completed";
-  const isDelivered = booking.delivery_status === "completed" || booking.delivery_status === "delivered";
+  const isPickupPending = effectivePickupStatus === "pending";
+  const isPickupCompleted = effectivePickupStatus === "picked_up" || effectivePickupStatus === "completed";
+  const isDelivered = effectiveDeliveryStatus === "completed" || effectiveDeliveryStatus === "delivered";
+
+  const updateStudentStatus = async (action) => {
+    if (!user || updatingStatus) return;
+    setUpdatingStatus(true);
+    try {
+      const token = await user.getIdToken(false);
+      const response = await fetch(`${API_BASE_URL}/bookings/storage/${booking.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Unable to update storage status");
+      setCurrentPickupStatus(result.order.pickup_status);
+      setCurrentDeliveryStatus(result.order.delivery_status);
+    } catch (error) {
+      Alert.alert("Unable to update booking", error.message);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   // Determine status text and location
   let statusText = "";
@@ -139,6 +172,43 @@ const StorageBookingCard = ({ booking, onPress }) => {
           <Text style={styles.addLocationText}>Add delivery location</Text>
         </TouchableOpacity>
       ) : null}
+
+      {!isDelivered && isPickupPending ? (
+        <TouchableOpacity
+          style={styles.statusActionButton}
+          onPress={(event) => {
+            event.stopPropagation?.();
+            updateStudentStatus("picked_up");
+          }}
+          disabled={updatingStatus}
+          activeOpacity={0.85}
+        >
+          {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="cube-outline" size={16} color={COLORS.background} />}
+          <Text style={styles.statusActionText}>My items have been picked up</Text>
+        </TouchableOpacity>
+      ) : null}
+
+      {!isDelivered && isPickupCompleted ? (
+        <TouchableOpacity
+          style={styles.statusActionButton}
+          onPress={(event) => {
+            event.stopPropagation?.();
+            updateStudentStatus("delivered");
+          }}
+          disabled={updatingStatus}
+          activeOpacity={0.85}
+        >
+          {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.background} />}
+          <Text style={styles.statusActionText}>I have received my items</Text>
+        </TouchableOpacity>
+      ) : null}
+
+      {isDelivered ? (
+        <View style={styles.thankYouContainer}>
+          <Ionicons name="heart-circle-outline" size={20} color="#047857" />
+          <Text style={styles.thankYouText}>Thank you for using HostelHubb Storage.</Text>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 };
@@ -249,6 +319,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
     color: COLORS.background,
+  },
+  statusActionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 10,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.background,
+  },
+  statusActionText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  thankYouContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#ECFDF5",
+  },
+  thankYouText: {
+    marginLeft: 7,
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#047857",
   },
 });
 

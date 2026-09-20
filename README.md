@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "reward screen update" --platform ios
+eas update --branch production --message "students update of storage status" --platform ios
 
 
 # Always push both platforms together (no --platform flag)

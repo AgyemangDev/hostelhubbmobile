@@ -3,7 +3,7 @@ export const getStatusMeta = (pickupStatus, deliveryStatus) => {
   const ps = pickupStatus?.toLowerCase() || "";
   const ds = deliveryStatus?.toLowerCase() || "";
 
-  if (ds === "delivered") {
+  if (ds === "delivered" || ds === "completed") {
     return {
       label: "Delivered",
       bg: "#ECFDF5",

@@ -5,6 +5,11 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 
+const FALLBACK_ROUTE = '/';
+const BOOKINGS_ROUTE = '/(tabs)/(bookings)';
+const PAID_BOOKING_DETAILS_ROUTE = '/(tabs)/(bookings)/PaidBookingDetails';
+const NOTIFICATIONS_ROUTE = '/NotificationScreen';
+
 const notificationService = {
   registerForPushNotifications: async (userId) => {
     if (!Device.isDevice) {
@@ -71,51 +76,67 @@ const notificationService = {
 
   // Safe navigation handler with error catching
   handleNotificationNavigation: (data) => {
-    if (!data || !data.type) {
+    const notificationData = data?.data || data;
+    const notificationType = notificationData?.type || notificationData?.action;
+    if (!notificationData || !notificationType) {
       console.warn('No navigation data in notification');
       return;
     }
 
     try {
-      console.log('Handling notification navigation:', data);
+      console.log('Handling notification navigation:', notificationData);
 
       setTimeout(() => {
         try {
-          switch (data.type) {
+          switch (notificationType) {
             case 'booking_cancelled':
             case 'booking_successful':
             case 'booking_accepted':
-              if (data.bookingId) {
-                router.push(`/(bookings)/${data.bookingId}`);
+              if (notificationData.bookingId) {
+                router.push({
+                  pathname: PAID_BOOKING_DETAILS_ROUTE,
+                  params: { bookingId: String(notificationData.bookingId) },
+                });
               } else {
                 console.warn('No bookingId in notification data');
-                router.push('/');
+                router.push(BOOKINGS_ROUTE);
               }
               break;
 
             case 'hostel_advertisement':
-              if (data.hostelId) {
+              if (notificationData.hostelId) {
                 router.push({
                   pathname: "/(Details)/[id]",
-                  params: { id: data.hostelId }
+                  params: { id: String(notificationData.hostelId) }
                 });
               } else {
                 console.warn('No hostelId in notification data');
-                router.push('/');
+                router.push(FALLBACK_ROUTE);
               }
               break;
 
+            case 'storage_about_to_pickup':
+            case 'storage_picked_up':
+            case 'storage_delivered':
+            case 'storage_status':
+            case 'about_to_pickup':
+            case 'picked_up':
+            case 'completed':
+            case 'delivered':
+              router.push(BOOKINGS_ROUTE);
+              break;
+
             case 'notifications':
-              router.push('/NotificationScreen');
+              router.push(NOTIFICATIONS_ROUTE);
               break;
 
             default:
-              console.warn('Unknown notification type:', data.type);
-              router.push('/');
+              console.warn('Unknown notification type:', notificationType);
+              router.push(FALLBACK_ROUTE);
           }
         } catch (navError) {
           console.error('Navigation error:', navError);
-          router.push('/');
+          router.replace(FALLBACK_ROUTE);
         }
       }, 100);
     } catch (error) {
@@ -170,6 +191,21 @@ const notificationService = {
         }, 100);
       }
     });
+
+    // Expo delivers a notification tap that launched a cold app through the
+    // last-response API rather than the live response listener.
+    Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (!response) return;
+        setTimeout(() => {
+          notificationService.handleNotificationNavigation(
+            response.notification?.request?.content?.data
+          );
+        }, 500);
+      })
+      .catch((error) => {
+        console.error('Error reading cold-start notification response:', error);
+      });
     
     return () => {
       try {
