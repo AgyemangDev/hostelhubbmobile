@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "Add school-first hostel filters" --platform ios
+eas update --branch production --message "referral code fetch when key is clicked" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
