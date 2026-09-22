@@ -44,6 +44,15 @@ const getStatusConfig = () => {
   const statusConfig = getStatusConfig();
   const showPayButton =
   booking.status === "accepted" && booking.payment_status === false;
+    const lifecycleLabels = {
+      awaiting_payment: "Awaiting payment",
+      upcoming: "Upcoming move-in",
+      active: "Active stay",
+      completed: "Completed",
+      expired: "Expired",
+      cancelled: "Cancelled",
+    };
+    const lifecycleLabel = lifecycleLabels[booking.lifecycle_status];
 
 
   return (
@@ -80,6 +89,19 @@ const getStatusConfig = () => {
   maximumFractionDigits: 2,
 })}
           </Text>
+          {lifecycleLabel ? (
+            <Text style={styles.lifecycle}>{lifecycleLabel}</Text>
+          ) : null}
+          {booking.move_in_date ? (
+            <Text style={styles.dateText}>
+              Move-in: {new Date(`${booking.move_in_date}T00:00:00`).toLocaleDateString("en-GH")}
+            </Text>
+          ) : null}
+          {booking.payment_due_at && booking.lifecycle_status === "awaiting_payment" ? (
+            <Text style={styles.dueText}>
+              Payment due: {new Date(booking.payment_due_at).toLocaleDateString("en-GH")}
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -155,6 +177,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: TEAL,
+  },
+  lifecycle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#0D9488",
+    marginTop: 4,
+  },
+  dateText: {
+    fontSize: 11,
+    color: "#6B7280",
+    marginTop: 3,
+  },
+  dueText: {
+    fontSize: 11,
+    color: "#B45309",
+    marginTop: 3,
   },
   footer: {
     flexDirection: "row",

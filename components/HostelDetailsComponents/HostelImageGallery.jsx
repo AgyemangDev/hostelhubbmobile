@@ -50,6 +50,7 @@ const handleShowAllPhotos = () => {
 
   return (
     <View style={styles.container}>
+      {!images.length && <View style={styles.empty}><Text style={styles.emptyText}>Photos have not been provided yet.</Text></View>}
       <FlatList
         ref={flatListRef}
         data={images}
@@ -75,20 +76,20 @@ const handleShowAllPhotos = () => {
       />
 
       {/* image counter */}
-      <View style={styles.counter}>
+      {images.length > 0 && <View style={styles.counter}>
         <Text style={styles.counterText}>
           {activeIndex + 1} / {images.length}
         </Text>
-      </View>
+      </View>}
 
       {/* show all photos */}
-<TouchableOpacity
+{images.length > 0 && <TouchableOpacity
   style={styles.showPhotosButton}
   onPress={handleShowAllPhotos}
 >
         <Feather name="grid" size={16} color="#222" />
         <Text style={styles.showPhotosText}>Show all photos</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </View>
   );
 };
@@ -150,6 +151,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  empty: { height: IMAGE_HEIGHT, alignItems: "center", justifyContent: "center", backgroundColor: "#f3f5f4" },
+  emptyText: { color: "#777", fontSize: 14 },
 });
 
 export default HostelImageGallery;

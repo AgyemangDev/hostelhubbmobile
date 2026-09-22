@@ -31,13 +31,13 @@ const Amenities = ({ amenities }) => {
     <View style={styles.container}>
       <Text style={styles.title}>What this place offers</Text>
 
-      {preview.map(renderItem)}
+      {preview.length ? preview.map(renderItem) : (
+        <Text style={styles.emptyText}>The manager has not provided amenity information yet.</Text>
+      )}
 
-      <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
-        <Text style={styles.buttonText}>
-          Show all {amenityData.length} amenities
-        </Text>
-      </TouchableOpacity>
+      {amenityData.length > INITIAL_COUNT && <TouchableOpacity style={styles.button} onPress={() => setVisible(true)}>
+        <Text style={styles.buttonText}>Show all {amenityData.length} amenities</Text>
+      </TouchableOpacity>}
 
       <Modal visible={visible} animationType="slide">
         <View style={[styles.modal, { paddingTop: insets.top + 16 }]}>
@@ -81,6 +81,7 @@ const styles = StyleSheet.create({
   },
 
   text: { marginLeft: 18, fontSize: 15, color: "#222" },
+  emptyText: { fontSize: 14, color: "#777", lineHeight: 21, paddingVertical: 8 },
 
   button: {
     borderWidth: 1,

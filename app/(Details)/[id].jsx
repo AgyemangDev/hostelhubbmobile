@@ -20,6 +20,7 @@ import LoadingScreen from "../../components/HostelDetailsComponents/LoadingScree
 import HostelInfo from "../../components/HostelDetailsComponents/HostelInfo";
 import PaymentRange from "../../components/HostelDetailsComponents/PaymentRange";
 import Amenities from "../../components/HostelDetailsComponents/Amenities";
+import AccommodationRules from "../../components/HostelDetailsComponents/AccommodationRules";
 import BookingButton from "../../components/ButtonComponents/BookingButton";
 import ReviewsModal from "../../components/modals/ReviewsModal";
 import HostelDetailsHeader from "../../components/HostelDetailsComponents/HostelDetailsHeader";
@@ -80,6 +81,11 @@ const handleBookingPress = () => {
 };
 
   const paymentRanges = buildPaymentRanges(hostel?.room_types || []);
+  const allImages = [
+    hostel.front_image,
+    ...(hostel.images || []),
+    ...(hostel.room_types || []).flatMap((room) => room.images || []),
+  ].filter(Boolean).filter((image, index, images) => images.indexOf(image) === index);
 
   return (
     <View style={styles.container}>
@@ -107,7 +113,7 @@ const handleBookingPress = () => {
     { useNativeDriver: true }
   )}
 >
-        <HostelImageGallery images={hostel?.images || []} />
+        <HostelImageGallery images={allImages} />
 
         <View style={styles.components}>
           <HostelInfo
@@ -125,8 +131,9 @@ const handleBookingPress = () => {
             hostelId={hostelId}
           />
 
-          <PaymentRange paymentRanges={paymentRanges} />
+          {Object.keys(paymentRanges).length ? <PaymentRange paymentRanges={paymentRanges} /> : <Text style={styles.missingData}>Room pricing has not been provided yet.</Text>}
           <Amenities amenities={hostel?.amenities || []} />
+          <AccommodationRules rules={hostel?.accommodation_rules || {}} />
         </View>
       </Animated.ScrollView>
 
@@ -141,6 +148,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
   scrollViewContent: { paddingBottom: 120 },
   components: { marginHorizontal: 10 },
+  missingData: { marginVertical: 18, color: "#777", fontSize: 14, lineHeight: 21 },
   fixedBookingButtonContainer: {
     position: "absolute",
     bottom: 0,
