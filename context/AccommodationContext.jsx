@@ -28,7 +28,7 @@ export const AccommodationProvider = ({ children }) => {
     useAccommodationSearch(searchQuery);
 
   // Filters hook
-  const { filters, setFilters, clearFilters, applyFilters } = useFilters([0, 100000]);
+  const { filters, setFilters, clearFilters, applyFilters } = useFilters([2000, 30000]);
 
   // Apply filters
   const filteredAccommodations = useMemo(

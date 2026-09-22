@@ -24,6 +24,16 @@ const HostelInfo = ({ hostel, hostelDescription }) => {
           {hostel?.location || "Unknown location"}
         </Text>
       </View>
+      <Text style={styles.type}>{hostel?.category || "Accommodation type not provided"}</Text>
+      {hostel?.accommodation_schedule ? (
+        <View style={styles.schedule}>
+          <Text style={styles.scheduleTitle}>Academic accommodation dates</Text>
+          <Text style={styles.scheduleText}>Move-in: {hostel.accommodation_schedule.move_in_date || "Not set"}</Text>
+          <Text style={styles.scheduleText}>Move-out: {hostel.accommodation_schedule.move_out_date || "Not set"}</Text>
+        </View>
+      ) : (
+        <Text style={styles.scheduleMissing}>Academic accommodation dates have not been set for this institution yet.</Text>
+      )}
 
       {/* Divider */}
       <View style={styles.divider} />
@@ -94,6 +104,11 @@ const styles = StyleSheet.create({
     color: "#222222",
     textDecorationLine: "underline",
   },
+  type: { fontSize: 14, color: "#0F6E56", marginBottom: 12, textTransform: "capitalize" },
+  schedule: { backgroundColor: "#F1F8F5", borderRadius: 10, padding: 12, marginBottom: 16 },
+  scheduleTitle: { fontSize: 13, fontWeight: "700", color: "#0F6E56", marginBottom: 5 },
+  scheduleText: { fontSize: 13, color: "#484848", lineHeight: 20 },
+  scheduleMissing: { fontSize: 13, color: "#777", marginBottom: 16 },
 });
 
 export default HostelInfo;

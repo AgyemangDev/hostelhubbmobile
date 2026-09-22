@@ -3,9 +3,14 @@ import { useState, useCallback, useMemo } from "react";
 export const useFilters = (initialPrice = [0, 100000]) => {
   const [filters, setFiltersState] = useState({
     priceRange: initialPrice,
+    institution: "",
+    schoolId: "",
+    locations: [],
     roomTypes: [],
     buildingTypes: [],
     amenities: [],
+    rules: [],
+    availableOnly: false,
   });
 
   const setFilters = useCallback((newFilters) => {
@@ -15,9 +20,14 @@ export const useFilters = (initialPrice = [0, 100000]) => {
   const clearFilters = useCallback(() => {
     setFiltersState({
       priceRange: initialPrice,
+      institution: "",
+      schoolId: "",
+      locations: [],
       roomTypes: [],
       buildingTypes: [],
       amenities: [],
+      rules: [],
+      availableOnly: false,
     });
   }, [initialPrice]);
 
@@ -28,17 +38,42 @@ export const useFilters = (initialPrice = [0, 100000]) => {
       const noRoomFilter = filters.roomTypes.length === 0;
       const noBuildingFilter = filters.buildingTypes.length === 0;
       const noAmenitiesFilter = filters.amenities.length === 0;
+      const noLocationFilter = filters.locations.length === 0;
+      const noRulesFilter = filters.rules.length === 0;
+      const noInstitutionFilter = !filters.institution;
 
       const isDefaultPrice =
-  filters.priceRange[0] === 0 &&
-  filters.priceRange[1] === 1000000; 
+        filters.priceRange[0] === initialPrice[0] &&
+        filters.priceRange[1] === initialPrice[1];
 
       const noFiltersActive =
-        noRoomFilter && noBuildingFilter && noAmenitiesFilter && isDefaultPrice;
+        noRoomFilter &&
+        noBuildingFilter &&
+        noAmenitiesFilter &&
+        noLocationFilter &&
+        noRulesFilter &&
+        noInstitutionFilter &&
+        !filters.availableOnly &&
+        isDefaultPrice;
 
       if (noFiltersActive) return accommodations;
 
       return accommodations.filter((acc) => {
+        const accommodationInstitution = String(acc.institution || "").toLowerCase();
+        const institutionOk =
+          noInstitutionFilter ||
+          accommodationInstitution === String(filters.institution).toLowerCase() ||
+          String(acc.school_id || "").toLowerCase() === String(filters.schoolId || "").toLowerCase();
+        const locationOk =
+          noLocationFilter ||
+          filters.locations.some((location) =>
+            String(acc.location || "").toLowerCase() === String(location).toLowerCase()
+          );
+        const hasAvailableRoom = Array.isArray(acc.room_types) && acc.room_types.length > 0
+          ? acc.room_types.some((room) => room.room_availability !== false && Number(room.rooms_available ?? 1) > 0)
+          : acc.accommodation_availability === true;
+        const availabilityOk = !filters.availableOnly || hasAvailableRoom;
+
         // --- PRICE + ROOM TYPE check ---
         // Use the joined room_types (array of objects from accommodation_room_types table)
         // which has { room_type, price, ... } shape.
@@ -82,15 +117,43 @@ export const useFilters = (initialPrice = [0, 100000]) => {
         // --- BUILDING TYPE check ---
         // Use acc.category as your building type, since your schema has no building_type column.
         // If you DO have a building_type column (added later), swap "category" for "building_type".
+        const category = String(acc.category || "").toLowerCase();
+        const normalizedCategory = category === "private hostel" ? "hostel"
+          : category === "private homestel" ? "homestel"
+          : category === "private apartment" || category === "appartment" ? "apartment"
+          : category;
         const buildingOk =
-          noBuildingFilter || filters.buildingTypes.includes(acc.category);
+          noBuildingFilter || filters.buildingTypes.includes(normalizedCategory);
 
         // --- AMENITIES check ---
         const amenitiesOk =
           noAmenitiesFilter ||
           filters.amenities.every((a) => acc.amenities?.includes(a));
 
-        return priceOk && roomOk && buildingOk && amenitiesOk;
+        const rules = typeof acc.accommodation_rules === "string"
+          ? (() => {
+              try { return JSON.parse(acc.accommodation_rules); } catch { return {}; }
+            })()
+          : (acc.accommodation_rules || acc.rules || {});
+        if (rules.visitors_allowed === undefined) {
+          rules.visitors_allowed = rules.overnight_visitors_allowed;
+        }
+        if (rules.cooking_allowed === undefined && rules.cooking_in_rooms_not_allowed !== undefined) {
+          rules.cooking_allowed = !rules.cooking_in_rooms_not_allowed;
+        }
+        const rulesOk =
+          noRulesFilter || filters.rules.every((rule) => rules[rule] === true);
+
+        return (
+          priceOk &&
+          roomOk &&
+          buildingOk &&
+          amenitiesOk &&
+          institutionOk &&
+          locationOk &&
+          availabilityOk &&
+          rulesOk
+        );
       });
     },
     [filters]

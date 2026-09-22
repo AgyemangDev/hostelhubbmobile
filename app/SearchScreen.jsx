@@ -1,7 +1,7 @@
 // screens/SearchScreen.jsx - USE CONTEXT
 
 import React, { useContext } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { AccommodationContext } from "../context/AccommodationContext";
 import CardListScreen from "../components/Cards/VerticalScroll/CardListScreen";
 import SearchBar from "../components/SearchComponents/SearchInput";
@@ -20,12 +20,22 @@ const SearchScreen = () => {
     searchLoading,
     searchQuery,
     setSearchQuery,
+    filters,
   } = useContext(AccommodationContext);
 
   const [filterOpen, setFilterOpen] = useState(false);
 
   const dataToShow = searchQuery ? searchAccommodations : accommodations;
   const isLoading = searchQuery ? searchLoading : loading;
+  const activeFilterCount =
+    filters.roomTypes.length +
+    filters.buildingTypes.length +
+    filters.amenities.length +
+    filters.locations.length +
+    filters.rules.length +
+    (filters.institution ? 1 : 0) +
+    (filters.availableOnly ? 1 : 0) +
+    (filters.priceRange[0] > 2000 || filters.priceRange[1] < 30000 ? 1 : 0);
 
   return (
     <View style={styles.container}>
@@ -40,7 +50,14 @@ const SearchScreen = () => {
           />
         </View>
 
-        <FilterButton onPress={() => setFilterOpen(true)} />
+        <FilterButton onPress={() => setFilterOpen(true)} activeCount={activeFilterCount} />
+      </View>
+
+      <View style={styles.resultSummary}>
+        <Text style={styles.resultCount}>
+          {isLoading ? "Finding hostels…" : `${dataToShow.length} hostel${dataToShow.length === 1 ? "" : "s"} found`}
+        </Text>
+        {activeFilterCount > 0 && <Text style={styles.filteredLabel}>Filters applied</Text>}
       </View>
 
       <FilterSheet
@@ -90,4 +107,13 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 15,
   },
+  resultSummary: {
+    paddingHorizontal: 18,
+    marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  resultCount: { color: "#333", fontSize: 13, fontWeight: "600" },
+  filteredLabel: { color: "#610b0c", fontSize: 12, fontWeight: "700" },
 });

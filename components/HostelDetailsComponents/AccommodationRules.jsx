@@ -11,10 +11,33 @@ const RULE_LABELS = [
   ["caretaker_available", "Caretaker is available"],
   ["early_arrival_policy", "Early arrival arrangements are available"],
   ["late_departure_policy", "Late departure arrangements are available"],
+  ["pets_not_allowed", "Pets are not allowed"],
+  ["alcohol_not_allowed", "Alcohol is not allowed"],
+  ["smoking_not_allowed", "Smoking is not allowed"],
 ];
 
+const normalizeRules = (rules) => {
+  if (!rules || typeof rules !== "object") return {};
+
+  const normalized = { ...rules };
+  if (normalized.visitors_allowed === undefined && normalized.overnight_visitors_allowed !== undefined) {
+    normalized.visitors_allowed = normalized.overnight_visitors_allowed;
+  }
+  if (normalized.cooking_allowed === undefined && normalized.cooking_in_rooms_not_allowed !== undefined) {
+    normalized.cooking_allowed = !normalized.cooking_in_rooms_not_allowed;
+  }
+  if (normalized.early_arrival_policy === undefined && normalized.early_arrival_allowed !== undefined) {
+    normalized.early_arrival_policy = normalized.early_arrival_allowed;
+  }
+  if (normalized.late_departure_policy === undefined && normalized.late_departure_allowed !== undefined) {
+    normalized.late_departure_policy = normalized.late_departure_allowed;
+  }
+  return normalized;
+};
+
 export default function AccommodationRules({ rules = {} }) {
-  const available = RULE_LABELS.filter(([key]) => rules[key] === true);
+  const normalizedRules = normalizeRules(rules);
+  const available = RULE_LABELS.filter(([key]) => normalizedRules[key] === true);
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hostel rules</Text>
