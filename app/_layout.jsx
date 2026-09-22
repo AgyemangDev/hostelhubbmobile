@@ -1,5 +1,6 @@
 import { useFonts } from "expo-font";
 import { useEffect, useState, useRef } from "react";
+import * as Linking from "expo-linking";
 import Toast from "react-native-toast-message";
 import { setupProviders } from "../utils/providers";
 import { checkForAppUpdates } from "../utils/update";
@@ -7,6 +8,7 @@ import MainLayout from "../components/MainLayout";
 import ReviewPromptWrapper from "../Global/ReviewPromptWrapper";
 import notificationService from "./firebase/notificationService";
 import { AppState } from "react-native";
+import { extractReferralCode, savePendingReferral } from "../utils/referralStorage";
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -50,6 +52,20 @@ export default function RootLayout() {
 
     initializeApp();
   }, [loaded]);
+
+  useEffect(() => {
+    const captureReferral = async (url) => {
+      const code = extractReferralCode(url);
+      if (code) await savePendingReferral(code);
+    };
+
+    Linking.getInitialURL().then(captureReferral);
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      captureReferral(url);
+    });
+
+    return () => subscription.remove();
+  }, []);
 
   if (!loaded || !updateChecked) return null;
 

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { View, Text, TextInput, StyleSheet, ActivityIndicator, Pressable, Share } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,10 @@ import { useStorageReservation } from "../../context/StorageReservationContext";
 import { UserContext } from "../../context/UserContext";
 import COLORS from "../../constants/Colors";
 import API_BASE_URL from "../../utils/api/api";
+import {
+  clearPendingReferral,
+  getPendingReferral,
+} from "../../utils/referralStorage";
 
 export default function ReferralStep() {
   const router = useRouter();
@@ -17,9 +21,29 @@ export default function ReferralStep() {
   const [checking, setChecking] = useState(false);
   const [matched, setMatched] = useState(null); // { id, firstname, surname }
   const [error, setError] = useState(null);
+  const [pendingReferralLoaded, setPendingReferralLoaded] = useState(false);
 
   // The current user's own referral code, from UserContext (user.referral_code).
   const myReferralCode = userInfo?.referral_code || "—";
+
+  useEffect(() => {
+    let active = true;
+    getPendingReferral()
+      .then((pending) => {
+        if (active && pending?.code) setCode(pending.code);
+      })
+      .finally(() => {
+        if (active) setPendingReferralLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pendingReferralLoaded || !code || matched || checking || !user) return;
+    handleCheck();
+  }, [pendingReferralLoaded]);
 
   const handleCheck = async () => {
     const trimmed = code.trim();
@@ -52,7 +76,7 @@ export default function ReferralStep() {
     }
   };
 
-  const confirmReferrer = () => {
+  const confirmReferrer = async () => {
     updateReservation({
       referral: {
         status: "confirmed",
@@ -62,13 +86,15 @@ export default function ReferralStep() {
         surname: matched.surname,
       },
     });
+    await clearPendingReferral();
     router.push("ReviewPay");
   };
 
-  const skipReferral = () => {
+  const skipReferral = async () => {
     updateReservation({
       referral: { status: "skipped", referrerId: null, code: null, firstname: null, surname: null },
     });
+    await clearPendingReferral();
     router.push("ReviewPay");
   };
 

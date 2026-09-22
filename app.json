@@ -13,6 +13,9 @@
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "associatedDomains": [
+        "applinks:hostelhubb.com"
+      ],
       "config": {
         "googleMapsApiKey": "AIzaSyAbLuhuszsrZAUNH31HH3pc1T9P7rl9UHM"
       },
@@ -52,7 +55,7 @@
             {
               "scheme": "https",
               "host": "hostelhubb.com",
-              "pathPrefix": "/hostel"
+              "pathPrefix": "/"
             },
             {
               "scheme": "hostelhubb",

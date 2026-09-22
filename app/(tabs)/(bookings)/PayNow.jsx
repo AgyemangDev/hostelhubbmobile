@@ -16,6 +16,10 @@ import COLORS from "../../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import API_BASE_URL from "../../../utils/api/api";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
+import {
+  clearPendingReferral,
+  getPendingReferral,
+} from "../../../utils/referralStorage";
 
 import {
   PropertyCard,
@@ -76,6 +80,21 @@ const PayNow = () => {
   const [referralChecking, setReferralChecking] = useState(false);
   const [referralMatch, setReferralMatch] = useState(null); // { id, firstname, surname }
   const [referralError, setReferralError] = useState(null);
+  const [pendingReferralLoaded, setPendingReferralLoaded] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getPendingReferral()
+      .then((pending) => {
+        if (active && pending?.code) setReferralCode(pending.code);
+      })
+      .finally(() => {
+        if (active) setPendingReferralLoaded(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (fetchError) {
     return (
@@ -122,6 +141,13 @@ const PayNow = () => {
       setReferralChecking(false);
     }
   };
+
+  useEffect(() => {
+    if (!pendingReferralLoaded || !referralCode || referralMatch || referralChecking || !user) {
+      return;
+    }
+    checkReferralCode();
+  }, [pendingReferralLoaded]);
 
   const clearReferral = () => {
     setReferralCode("");
@@ -182,6 +208,7 @@ const PayNow = () => {
       const result = await confirm({ authorization_url, reference });
 
       if (result === "success") {
+        await clearPendingReferral();
         // The bookings list only refetches on pull-to-refresh now (no more
         // silent refetch-on-focus) — without this, coming back from a
         // completed payment showed the exact same stale, unpaid booking
