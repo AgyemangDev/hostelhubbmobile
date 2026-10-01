@@ -96,6 +96,13 @@ const PayNow = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!pendingReferralLoaded || !referralCode || referralMatch || referralChecking || !user) {
+      return;
+    }
+    checkReferralCode();
+  }, [pendingReferralLoaded]);
+
   if (fetchError) {
     return (
       <View style={s.centered}>
@@ -141,13 +148,6 @@ const PayNow = () => {
       setReferralChecking(false);
     }
   };
-
-  useEffect(() => {
-    if (!pendingReferralLoaded || !referralCode || referralMatch || referralChecking || !user) {
-      return;
-    }
-    checkReferralCode();
-  }, [pendingReferralLoaded]);
 
   const clearReferral = () => {
     setReferralCode("");

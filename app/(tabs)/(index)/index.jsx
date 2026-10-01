@@ -10,7 +10,6 @@ import HorizontalScrollCardComponent from "../../../components/HomeComponents/Ho
 import CategoryNavigationCards from "../../../components/HomeComponents/CategoryNavigationCards";
 import BenefitSlider from "../../../components/Sliders/BenefitSlider";
 import { hostelBenefits } from "../../../assets/data/SlideData";
-import { WhatsAppButton } from "../../../components/ButtonComponents/WhatsAppButton";
 import StorageBannerSlider from "../../../components/Sliders/StorageBannerSlider";
 import notificationService from "../../firebase/notificationService";
 import { UserContext } from "../../../context/UserContext";
@@ -88,7 +87,6 @@ const Index = () => {
         <BenefitSlider benefits={hostelBenefits} />
       </ScrollView>
 
-      <WhatsAppButton size={60} />
     </SafeAreaView>
   );
 };

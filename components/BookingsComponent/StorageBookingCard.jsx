@@ -27,6 +27,30 @@ const StorageBookingCard = ({ booking, onPress }) => {
   const isPickupCompleted = effectivePickupStatus === "picked_up" || effectivePickupStatus === "completed";
   const isDelivered = effectiveDeliveryStatus === "completed" || effectiveDeliveryStatus === "delivered";
 
+  const confirmReceivedItems = () => {
+  Alert.alert(
+"Confirm Delivery",
+"Have you received all your items? This will mark your order as delivered successfully.",
+    [
+      { text: "No", style: "cancel" },
+      { text: "Yes", onPress: () => updateStudentStatus("delivered") },
+    ],
+    { cancelable: true }
+  );
+};
+
+const confirmPickedUp = () => {
+  Alert.alert(
+    "Confirm Pickup",
+    "Have all your items been picked up from you? This will update your order status successfully.",
+    [
+      { text: "No", style: "cancel" },
+      { text: "Yes", onPress: () => updateStudentStatus("picked_up") },
+    ],
+    { cancelable: true }
+  );
+};
+
   const updateStudentStatus = async (action) => {
     if (!user || updatingStatus) return;
     setUpdatingStatus(true);
@@ -173,35 +197,35 @@ const StorageBookingCard = ({ booking, onPress }) => {
         </TouchableOpacity>
       ) : null}
 
-      {!isDelivered && isPickupPending ? (
-        <TouchableOpacity
-          style={styles.statusActionButton}
-          onPress={(event) => {
-            event.stopPropagation?.();
-            updateStudentStatus("picked_up");
-          }}
-          disabled={updatingStatus}
-          activeOpacity={0.85}
-        >
-          {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="cube-outline" size={16} color={COLORS.background} />}
-          <Text style={styles.statusActionText}>My items have been picked up</Text>
-        </TouchableOpacity>
-      ) : null}
+{!isDelivered && isPickupPending ? (
+  <TouchableOpacity
+    style={styles.statusActionButton}
+    onPress={(event) => {
+      event.stopPropagation?.();
+      confirmPickedUp();
+    }}
+    disabled={updatingStatus}
+    activeOpacity={0.85}
+  >
+    {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="cube-outline" size={16} color={COLORS.background} />}
+    <Text style={styles.statusActionText}>My items have been picked up</Text>
+  </TouchableOpacity>
+) : null}
 
-      {!isDelivered && isPickupCompleted ? (
-        <TouchableOpacity
-          style={styles.statusActionButton}
-          onPress={(event) => {
-            event.stopPropagation?.();
-            updateStudentStatus("delivered");
-          }}
-          disabled={updatingStatus}
-          activeOpacity={0.85}
-        >
-          {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.background} />}
-          <Text style={styles.statusActionText}>I have received my items</Text>
-        </TouchableOpacity>
-      ) : null}
+{!isDelivered && isPickupCompleted ? (
+  <TouchableOpacity
+    style={styles.statusActionButton}
+    onPress={(event) => {
+      event.stopPropagation?.();
+      confirmReceivedItems();
+    }}
+    disabled={updatingStatus}
+    activeOpacity={0.85}
+  >
+    {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.background} />}
+    <Text style={styles.statusActionText}>I have received my items</Text>
+  </TouchableOpacity>
+) : null}
 
       {isDelivered ? (
         <View style={styles.thankYouContainer}>

@@ -1,6 +1,6 @@
 "use client";
-import React, { useContext, useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { View, Text, ScrollView, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserContext } from "../context/UserContext";
@@ -37,6 +37,48 @@ const StorageEdit = () => {
 
   const [location, setLocation] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [points, setPoints] = useState([]);
+  const [pointsLoading, setPointsLoading] = useState(true);
+  const [pointsError, setPointsError] = useState(null);
+
+  // The booking's delivery pickup points depend on which school it was
+  // booked under (KNUST, UG, etc.) — fetch that school's points the same
+  // way the original booking flow does, using the booking's own school_id
+  // instead of a live reservation context.
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadPoints = async () => {
+      if (!parsedBooking?.school_id) {
+        if (isMounted) setPointsLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE_URL}/storage-schools/public`);
+        if (!res.ok) throw new Error("Failed to load location options");
+
+        const { schools = [] } = await res.json();
+        const school = schools.find((s) => s.id === parsedBooking.school_id);
+        if (!isMounted) return;
+
+        if (!school) {
+          setPointsError("Could not load pickup/delivery points for this booking's school.");
+        } else {
+          setPoints(school.points || []);
+        }
+      } catch (err) {
+        console.error("Failed to load storage school points:", err);
+        if (isMounted) setPointsError("Could not load location options. Please try again.");
+      } finally {
+        if (isMounted) setPointsLoading(false);
+      }
+    };
+
+    loadPoints();
+    return () => {
+      isMounted = false;
+    };
+  }, [parsedBooking?.school_id]);
 
   if (!parsedBooking) {
     return (
@@ -137,6 +179,14 @@ const StorageEdit = () => {
               service if you need to change it.
             </Text>
           </View>
+        ) : pointsLoading ? (
+          <View style={styles.card}>
+            <ActivityIndicator color={COLORS.primary} />
+          </View>
+        ) : pointsError ? (
+          <View style={styles.noticeCard}>
+            <Text style={styles.noticeText}>{pointsError}</Text>
+          </View>
         ) : (
           <View style={styles.card}>
             <LocationSelector
@@ -144,12 +194,13 @@ const StorageEdit = () => {
               value={location}
               selectedType="delivery"
               onSelectLocation={setLocation}
+              points={points}
             />
           </View>
         )}
       </ScrollView>
 
-      {!alreadySet && !isDelivered && (
+      {!alreadySet && !isDelivered && !pointsLoading && !pointsError && (
         <View style={styles.footer}>
           <BottomButton
             buttonText={saving ? "Saving…" : "Save"}

@@ -1,15 +1,14 @@
-import { StyleSheet } from 'react-native';
-import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { AntDesign, Ionicons, Octicons } from '@expo/vector-icons';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, Octicons } from '@expo/vector-icons';
+import { WhatsAppButton } from '../../components/ButtonComponents/WhatsAppButton';
 
 const Layout = () => {
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#610B0C',
+          tabBarActiveTintColor: '#0F6E56',
           tabBarStyle: {
             backgroundColor: '#ffff',
           },
@@ -76,10 +75,21 @@ const Layout = () => {
           }}
         />
       </Tabs>
-    </>
+
+      <View style={styles.fab} pointerEvents="box-none">
+        <WhatsAppButton size={60} />
+      </View>
+    </View>
   );
 };
 
 export default Layout;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: 90,
+    right: 0,
+    zIndex: 999,
+  },
+});
