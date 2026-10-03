@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     position: "relative",
-    marginBottom: 24,
+    marginBottom: 2,
   },
 
   image: {

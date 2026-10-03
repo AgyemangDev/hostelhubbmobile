@@ -121,9 +121,9 @@ const handleBookingPress = () => {
             hostelDescription={hostel?.description || ""}
           />
 
-<TouchableOpacity onPress={() => setIsModalVisible(true)}>
+{/* <TouchableOpacity onPress={() => setIsModalVisible(true)}>
   <Text style={styles.reviewsLink}>See all reviews</Text>
-</TouchableOpacity>
+</TouchableOpacity> */}
 
           <ReviewsModal
             visible={isModalVisible}

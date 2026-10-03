@@ -1,7 +1,7 @@
 # Hostelhubb
 
 ## OTA Updates (JS only — no native changes)
-eas update --branch production --message "whatsapp button put on all pages" --platform ios
+eas update --branch production --message "enhanced user experience with items pickup and delivery marking" --platform ios
 
 
 # Always push both platforms together (no --platform flag)
