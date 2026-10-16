@@ -1,10 +1,12 @@
 import React, { useMemo } from "react";
-import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl } from "react-native";
+import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import Colors from "../../../constants/Colors";
 import BookingList from "../../../components/BookingsComponent/BookingList";
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import BookingsSkeleton from "../../../components/Loading/BookingsSkeleton";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
+import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
 
 const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -50,7 +52,10 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   if (error) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <Text style={{ color: "red" }}>Error fetching bookings: {error}</Text>
+        <ErrorMessage
+          title="Couldn't load your bookings"
+          message={`We're currently having trouble fetching your bookings. If it persists, kindly contact customer care.`}
+        />
       </View>
     );
   }
@@ -81,7 +86,7 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  container: { flex: 1, backgroundColor: Colors.white },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 

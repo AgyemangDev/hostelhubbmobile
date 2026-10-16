@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
 import { useLocalSearchParams } from "expo-router";
+import { useBookingsContext } from "../../../context/BookingsContext";
 
 // Helper: safely parse a field that may already be an object, or may be a
 // JSON string (as it comes straight out of the DB row), or may be missing.
@@ -28,7 +29,12 @@ const safeParse = (value, fallback) => {
 const StorageBookingDetails = () => {
   const { booking } = useLocalSearchParams();
 
-  const rawBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
+  const paramBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
+  // Prefer the live copy from the shared bookings list so edits (date/location)
+  // show up immediately instead of the snapshot captured when this screen opened.
+  const { storageBookings } = useBookingsContext();
+  const rawBooking =
+    (storageBookings || []).find((b) => b.id === paramBooking?.id) || paramBooking;
 
   // items / pickup_info / delivery_info are stored as JSON strings in the
   // DB row, so they need a second parse pass here.

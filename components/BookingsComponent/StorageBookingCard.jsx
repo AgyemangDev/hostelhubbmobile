@@ -8,6 +8,9 @@ import COLORS from "../../constants/Colors";
 import { UserContext } from "../../context/UserContext";
 import API_BASE_URL from "../../utils/api/api";
 
+// Delivery info can be changed until the day before the first delivery date.
+// Update this single value for each new cycle.
+
 const StorageBookingCard = ({ booking, onPress }) => {
   const router = useRouter();
   const { user } = useContext(UserContext);
@@ -28,28 +31,28 @@ const StorageBookingCard = ({ booking, onPress }) => {
   const isDelivered = effectiveDeliveryStatus === "completed" || effectiveDeliveryStatus === "delivered";
 
   const confirmReceivedItems = () => {
-  Alert.alert(
-"Confirm Delivery",
-"Have you received all your items? This will mark your order as delivered successfully.",
-    [
-      { text: "No", style: "cancel" },
-      { text: "Yes", onPress: () => updateStudentStatus("delivered") },
-    ],
-    { cancelable: true }
-  );
-};
+    Alert.alert(
+      "Confirm Delivery",
+      "Have you received all your items? This will mark your order as delivered successfully.",
+      [
+        { text: "No", style: "cancel" },
+        { text: "Yes", onPress: () => updateStudentStatus("delivered") },
+      ],
+      { cancelable: true }
+    );
+  };
 
-const confirmPickedUp = () => {
-  Alert.alert(
-    "Confirm Pickup",
-    "Have all your items been picked up from you? This will update your order status successfully.",
-    [
-      { text: "No", style: "cancel" },
-      { text: "Yes", onPress: () => updateStudentStatus("picked_up") },
-    ],
-    { cancelable: true }
-  );
-};
+  const confirmPickedUp = () => {
+    Alert.alert(
+      "Confirm Pickup",
+      "Have all your items been picked up from you? This will update your order status successfully.",
+      [
+        { text: "No", style: "cancel" },
+        { text: "Yes", onPress: () => updateStudentStatus("picked_up") },
+      ],
+      { cancelable: true }
+    );
+  };
 
   const updateStudentStatus = async (action) => {
     if (!user || updatingStatus) return;
@@ -110,23 +113,16 @@ const confirmPickedUp = () => {
   );
   const canAddDeliveryLocation = !hasDeliveryLocation && !isDelivered;
 
-  // Calculate diffDays if delivery info exists
-  let diffDays = null;
-  let deliveryNote = "";
-
-  if (booking.delivery_info?.date && !isDelivered) {
-    const deliveryDate = new Date(booking.delivery_info.date);
-    const now = new Date();
-    const diffTime = deliveryDate - now;
-    diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // Show note only if not delivered
-    if (diffDays >= 14) {
-      deliveryNote = "Delivery info can still be updated.";
-    } else if (diffDays >= 0) {
-      deliveryNote = "Cannot change delivery info. Contact Customer Service.";
-    }
-  }
+  // The delivery date can be changed until 07:00 on the currently booked day.
+  const bookedDeliveryDate = booking.delivery_info?.date
+    ? String(booking.delivery_info.date).slice(0, 10)
+    : null;
+  const deliveryDayStarted =
+    !!bookedDeliveryDate &&
+    Date.now() >= new Date(`${bookedDeliveryDate}T07:00:00Z`).getTime();
+  const canChangeDeliveryDate = !isDelivered && !deliveryDayStarted;
+  const canEditDeliveryInfo = false;
+  const deliveryNote = "";
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.95}>
@@ -170,17 +166,33 @@ const confirmPickedUp = () => {
       {deliveryNote ? (
         <View style={styles.noteContainer}>
           <Ionicons
-            name={diffDays >= 14 ? "information-circle-outline" : "alert-circle-outline"}
+            name={canEditDeliveryInfo ? "information-circle-outline" : "alert-circle-outline"}
             size={14}
-            color={diffDays >= 14 ? "#3B82F6" : "#EF4444"}
+            color={canEditDeliveryInfo ? "#3B82F6" : "#EF4444"}
           />
-          <Text style={[styles.note, { color: diffDays >= 14 ? "#3B82F6" : "#EF4444" }]}>
+          <Text style={[styles.note, { color: canEditDeliveryInfo ? "#3B82F6" : "#EF4444" }]}>
             {deliveryNote}
           </Text>
         </View>
       ) : null}
 
       {/* ---------- ADD DELIVERY LOCATION ---------- */}
+      {!canAddDeliveryLocation && canChangeDeliveryDate ? (
+        <TouchableOpacity
+          style={styles.addLocationButton}
+          onPress={() =>
+            router.push({
+              pathname: "/StorageEdit",
+              params: { booking: JSON.stringify(booking) },
+            })
+          }
+          activeOpacity={0.85}
+        >
+          <Ionicons name="calendar-outline" size={16} color={COLORS.background} />
+          <Text style={styles.addLocationText}>Edit delivery details</Text>
+        </TouchableOpacity>
+      ) : null}
+
       {canAddDeliveryLocation ? (
         <TouchableOpacity
           style={styles.addLocationButton}
@@ -193,39 +205,49 @@ const confirmPickedUp = () => {
           activeOpacity={0.85}
         >
           <Ionicons name="add-circle-outline" size={16} color={COLORS.background} />
-          <Text style={styles.addLocationText}>Add delivery location</Text>
+          <Text style={styles.addLocationText}>
+            {canChangeDeliveryDate ? "Add location / edit details" : "Add delivery location"}
+          </Text>
         </TouchableOpacity>
       ) : null}
 
-{!isDelivered && isPickupPending ? (
-  <TouchableOpacity
-    style={styles.statusActionButton}
-    onPress={(event) => {
-      event.stopPropagation?.();
-      confirmPickedUp();
-    }}
-    disabled={updatingStatus}
-    activeOpacity={0.85}
-  >
-    {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="cube-outline" size={16} color={COLORS.background} />}
-    <Text style={styles.statusActionText}>My items have been picked up</Text>
-  </TouchableOpacity>
-) : null}
+      {!isDelivered && isPickupPending ? (
+        <TouchableOpacity
+          style={styles.statusActionButton}
+          onPress={(event) => {
+            event.stopPropagation?.();
+            confirmPickedUp();
+          }}
+          disabled={updatingStatus}
+          activeOpacity={0.85}
+        >
+          {updatingStatus ? (
+            <ActivityIndicator color={COLORS.background} />
+          ) : (
+            <Ionicons name="cube-outline" size={16} color={COLORS.background} />
+          )}
+          <Text style={styles.statusActionText}>My items have been picked up</Text>
+        </TouchableOpacity>
+      ) : null}
 
-{!isDelivered && isPickupCompleted ? (
-  <TouchableOpacity
-    style={styles.statusActionButton}
-    onPress={(event) => {
-      event.stopPropagation?.();
-      confirmReceivedItems();
-    }}
-    disabled={updatingStatus}
-    activeOpacity={0.85}
-  >
-    {updatingStatus ? <ActivityIndicator color={COLORS.background} /> : <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.background} />}
-    <Text style={styles.statusActionText}>I have received my items</Text>
-  </TouchableOpacity>
-) : null}
+      {!isDelivered && isPickupCompleted ? (
+        <TouchableOpacity
+          style={styles.statusActionButton}
+          onPress={(event) => {
+            event.stopPropagation?.();
+            confirmReceivedItems();
+          }}
+          disabled={updatingStatus}
+          activeOpacity={0.85}
+        >
+          {updatingStatus ? (
+            <ActivityIndicator color={COLORS.background} />
+          ) : (
+            <Ionicons name="checkmark-circle-outline" size={16} color={COLORS.background} />
+          )}
+          <Text style={styles.statusActionText}>I have received my items</Text>
+        </TouchableOpacity>
+      ) : null}
 
       {isDelivered ? (
         <View style={styles.thankYouContainer}>

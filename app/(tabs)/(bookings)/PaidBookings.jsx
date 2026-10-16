@@ -4,6 +4,8 @@ import PaidBookingList from "../../../components/BookingsComponent/PaidBookingLi
 import EmptyState from "../../../components/BookingsComponent/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
+import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage"
+import Colors from "../../../constants/Colors";
 
 const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -40,15 +42,16 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
     );
   }
 
-  if (error) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Text style={{ color: "red" }}>
-          Error fetching bookings: We are currently facing errors fetching your bookings. If it persists, kindly contact customer care.
-        </Text>
-      </View>
-    );
-  }
+if (error) {
+  return (
+    <View style={[styles.container, styles.centered]}>
+      <ErrorMessage
+        title="Couldn't load your bookings"
+        message="We're currently having trouble fetching your bookings. If it persists, kindly contact customer care."
+      />
+    </View>
+  );
+}
 
   if (paidBookings.length === 0) {
     return (
@@ -76,7 +79,7 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9" },
+  container: { flex: 1, backgroundColor: Colors.white },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 
