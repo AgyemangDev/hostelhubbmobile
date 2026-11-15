@@ -1,6 +1,7 @@
 // StorageBookingDetails.jsx
 import React from "react";
 import {
+  ActivityIndicator,
   View,
   Text,
   StyleSheet,
@@ -11,7 +12,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Button, Divider, Eyebrow, FadeIn, ScreenHeader, StatusPill, Timeline, money } from "../../../components/ui/ds";
+import { colors, radius, space, type } from "../../../constants/theme";
 import { useBookingsContext } from "../../../context/BookingsContext";
 
 // Helper: safely parse a field that may already be an object, or may be a
@@ -27,14 +30,32 @@ const safeParse = (value, fallback) => {
 };
 
 const StorageBookingDetails = () => {
-  const { booking } = useLocalSearchParams();
+  // Opened from the bookings list (`booking`, a JSON snapshot) or from a link
+  // or notification (`id` only, e.g. /bookings/storage/:id).
+  const { booking, id } = useLocalSearchParams();
+  const router = useRouter();
 
-  const paramBooking = typeof booking === "string" ? JSON.parse(booking) : booking;
+  const paramBooking = booking ? safeParse(booking, null) : null;
+  const orderId = paramBooking?.id ?? id;
   // Prefer the live copy from the shared bookings list so edits (date/location)
   // show up immediately instead of the snapshot captured when this screen opened.
-  const { storageBookings } = useBookingsContext();
+  const { storageBookings, loading } = useBookingsContext();
   const rawBooking =
-    (storageBookings || []).find((b) => b.id === paramBooking?.id) || paramBooking;
+    (storageBookings || []).find((b) => String(b.id) === String(orderId)) || paramBooking;
+
+  if (!rawBooking) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#fff" }}>
+        {loading ? (
+          <ActivityIndicator color={COLORS.teal} />
+        ) : (
+          <Text style={{ fontSize: 15, color: "#57534E", textAlign: "center" }}>
+            We couldn't find this storage order on your account.
+          </Text>
+        )}
+      </View>
+    );
+  }
 
   // items / pickup_info / delivery_info are stored as JSON strings in the
   // DB row, so they need a second parse pass here.
@@ -114,400 +135,102 @@ const StorageBookingDetails = () => {
           .join(" • ")
       : null;
 
+  const deliveryDate = parsedBooking.delivery_date ?? parsedBooking.delivery_info?.date;
+  const needsDelivery = !isDelivered && (!deliveryLocation || !deliveryDate || parsedBooking.delivery_info?.decideLater);
+  const status = isDelivered
+    ? { label: "Delivered", tone: "success", title: "Your items are back with you" }
+    : isPickupCompleted
+    ? { label: "In storage", tone: "success", title: "Your items are safe with us" }
+    : { label: "Awaiting pickup", tone: "warning", title: "We'll collect your items soon" };
+  const itemCount = (parsedBooking.items || []).reduce((n, i) => n + (Number(i.quantity) || 1), 0);
+  const openEdit = () =>
+    router.push({ pathname: "/StorageEdit", params: { booking: JSON.stringify(rawBooking) } });
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.background} />
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Order ID Card */}
-        <View style={styles.orderIdCard}>
-          <Text style={styles.orderIdLabel}>Order ID</Text>
-          <Text style={styles.orderId}>#{String(displayRef).slice(0, 13)}</Text>
-          <Text style={styles.orderDate}>
-            Storage placed on {formatDate(parsedBooking.order_date ?? parsedBooking.bookingDate)}
+    <SafeAreaView style={styles.screen}>
+      <StatusBar barStyle="dark-content" />
+      <ScreenHeader title="Storage order" subtitle={`#${String(displayRef).slice(0, 13)}`} />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <FadeIn style={{ gap: space.xs }}>
+          <StatusPill label={status.label} tone={status.tone} />
+          <Text style={type.display} accessibilityRole="header">{status.title}</Text>
+          <Text style={[type.caption, { color: colors.textSecondary }]}>
+            {itemCount} item{itemCount === 1 ? "" : "s"} · booked {formatDate(parsedBooking.order_date ?? parsedBooking.bookingDate)}
           </Text>
-        </View>
+        </FadeIn>
 
-        {/* Status Timeline */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Status Timeline</Text>
+        <Timeline
+          steps={[
+            { title: "Paid", subtitle: money(totalAmount), state: "done" },
+            {
+              title: isPickupCompleted ? "Picked up" : "Pickup",
+              subtitle: [formatDate(parsedBooking.pickup_date ?? parsedBooking.pickup_info?.date), pickupLocation].filter(Boolean).join(" · "),
+              state: isPickupCompleted ? "done" : "current",
+            },
+            {
+              title: isDelivered ? "Delivered" : needsDelivery ? "Choose delivery details" : "Delivery",
+              subtitle: [deliveryDate ? formatDate(deliveryDate) : null, deliveryLocation].filter(Boolean).join(" · ") || "Not set yet",
+              state: isDelivered ? "done" : isPickupCompleted ? "current" : "todo",
+            },
+          ]}
+        />
 
-          <View style={styles.timeline}>
-            {/* Pickup Status */}
-            <View style={styles.timelineItem}>
-              <View style={styles.timelineIconContainer}>
-                <View
-                  style={[
-                    styles.timelineIcon,
-                    {
-                      backgroundColor: isPickupCompleted
-                        ? COLORS.success
-                        : isPickupPending
-                        ? COLORS.primary
-                        : COLORS.textMuted,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={isPickupCompleted ? "checkmark" : "cube-outline"}
-                    size={20}
-                    color={COLORS.white}
-                  />
-                </View>
-                {!isDelivered && <View style={styles.timelineLine} />}
-              </View>
-
-              <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>
-                  {isPickupCompleted ? "Items Picked Up" : "Awaiting Pickup"}
-                </Text>
-                <Text style={styles.timelineLocation}>
-                  {pickupLocation || "Location pending"}
-                </Text>
-                <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.pickup_date ?? parsedBooking.pickup_info?.date)}
-                  {parsedBooking.pickup_date && ` • ${formatTime(parsedBooking.pickup_date)}`}
-                </Text>
-              </View>
+        {needsDelivery ? (
+          <View style={styles.action}>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={[type.bodyStrong, { color: colors.warningText, fontWeight: "800" }]}>Set your delivery details</Text>
+              <Text style={[type.caption, { color: colors.warningText }]}>So we can plan routes before you arrive.</Text>
             </View>
-
-            {/* Delivery Status */}
-            <View style={styles.timelineItem}>
-              <View style={styles.timelineIconContainer}>
-                <View
-                  style={[
-                    styles.timelineIcon,
-                    {
-                      backgroundColor: isDelivered
-                        ? COLORS.success
-                        : isPickupCompleted
-                        ? COLORS.primary
-                        : COLORS.textMuted,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={isDelivered ? "checkmark-circle" : "location-outline"}
-                    size={20}
-                    color={COLORS.white}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.timelineContent}>
-                <Text style={styles.timelineTitle}>
-                  {isDelivered ? "Items Delivered" : "Awaiting Delivery"}
-                </Text>
-                <Text style={styles.timelineLocation}>
-                  {deliveryLocation || "Location pending"}
-                </Text>
-                <Text style={styles.timelineDate}>
-                  {formatDate(parsedBooking.delivery_date ?? parsedBooking.delivery_info?.date)}
-                  {parsedBooking.delivery_date && ` • ${formatTime(parsedBooking.delivery_date)}`}
-                </Text>
-              </View>
-            </View>
+            <Button title="Set" size="sm" onPress={openEdit} />
           </View>
+        ) : !isDelivered ? (
+          <Button title="Change delivery details" variant="secondary" onPress={openEdit} />
+        ) : null}
 
-          {/* Progress Bar */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBarBg}>
-              <View
-                style={[
-                  styles.progressBarFill,
-                  { width: `${getProgress()}%` },
-                ]}
-              />
-            </View>
-            <Text style={styles.progressText}>{getProgress()}% Complete</Text>
-          </View>
-        </View>
+        <Divider />
 
-        {/* Stored Items */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Stored Items</Text>
-
-          {parsedBooking.items?.map((item, index) => (
+        <View style={{ gap: space.sm }}>
+          <Text style={type.heading}>Items</Text>
+          {(parsedBooking.items || []).map((item, index) => (
             <View key={item.id ?? index} style={styles.itemRow}>
               {item.image ? (
                 <Image source={{ uri: item.image }} style={styles.itemImage} />
               ) : (
-                <View style={[styles.itemImage, styles.itemImagePlaceholder]}>
-                  <Ionicons name="cube-outline" size={22} color="#9CA3AF" />
+                <View style={[styles.itemImage, { alignItems: "center", justifyContent: "center" }]}>
+                  <Ionicons name="cube-outline" size={20} color={colors.textSecondary} />
                 </View>
               )}
-              <View style={styles.itemDetails}>
-                <Text style={styles.itemName}>{item.category || item.name || "Item"}</Text>
-                <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
-              </View>
-              <Text style={styles.itemPrice}>
-                GH₵
-                {Number(
-                  item.totalPrice ?? (item.unitPrice ?? item.price ?? 0) * (item.quantity ?? 1)
-                ).toFixed(2)}
+              <Text style={[type.body, { flex: 1 }]}>{item.category || item.name || "Item"} × {item.quantity}</Text>
+              <Text style={type.body}>
+                {money(item.totalPrice ?? (item.unitPrice ?? item.price ?? 0) * (item.quantity ?? 1))}
               </Text>
             </View>
           ))}
-
-          <View style={styles.divider} />
-
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalAmount}>GH₵{totalAmount.toFixed(2)}</Text>
+            <Text style={[type.bodyStrong, { fontWeight: "800" }]}>Total paid</Text>
+            <Text style={[type.bodyStrong, { fontWeight: "800" }]}>{money(totalAmount)}</Text>
           </View>
         </View>
 
-        {/* Items Photo */}
-        {parsedBooking.image_url && (
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Items Photo</Text>
-            <Image source={{ uri: parsedBooking.image_url }} style={styles.storedImage} />
+        {parsedBooking.image_url ? (
+          <View style={{ gap: space.sm }}>
+            <Eyebrow>YOUR ITEMS PHOTO</Eyebrow>
+            <Image source={{ uri: parsedBooking.image_url }} style={styles.photo} accessibilityLabel="Photo of your stored items" />
           </View>
-        )}
-
-        {/* Location Details */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Location Details</Text>
-
-          {/* Pickup Location */}
-          <View style={styles.locationRow}>
-            <View style={[styles.locationIconBox, { backgroundColor: COLORS.success + "20" }]}>
-              <Ionicons name="cube-outline" size={24} color={COLORS.success} />
-            </View>
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>Pickup Location</Text>
-              <Text style={styles.locationValue}>{pickupLocation || "Pending"}</Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* Delivery Location */}
-          <View style={styles.locationRow}>
-            <View style={[styles.locationIconBox, { backgroundColor: COLORS.primary + "20" }]}>
-              <Ionicons name="location-outline" size={24} color={COLORS.primary} />
-            </View>
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>Delivery Location</Text>
-              <Text style={styles.locationValue}>{deliveryLocation || "Pending"}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={{ height: 20 }} />
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9FAFB",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  orderIdCard: {
-    backgroundColor: COLORS.background,
-    padding: 20,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  orderIdLabel: {
-    fontSize: 12,
-    color: COLORS.white,
-    opacity: 0.8,
-    marginBottom: 4,
-  },
-  orderId: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.white,
-    fontFamily: "monospace",
-    marginBottom: 8,
-  },
-  orderDate: {
-    fontSize: 12,
-    color: COLORS.white,
-    opacity: 0.9,
-  },
-  card: {
-    backgroundColor: COLORS.white,
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 12,
-    padding: 16,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.textDark,
-    marginBottom: 16,
-  },
-  timeline: {
-    marginBottom: 16,
-  },
-  timelineItem: {
-    flexDirection: "row",
-    marginBottom: 20,
-  },
-  timelineIconContainer: {
-    alignItems: "center",
-    marginRight: 16,
-  },
-  timelineIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  timelineLine: {
-    width: 2,
-    flex: 1,
-    backgroundColor: "#E5E7EB",
-    marginTop: 8,
-  },
-  timelineContent: {
-    flex: 1,
-  },
-  timelineTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: COLORS.textDark,
-    marginBottom: 4,
-  },
-  timelineLocation: {
-    fontSize: 14,
-    color: COLORS.textMuted,
-    marginBottom: 2,
-  },
-  timelineDate: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-  },
-  progressContainer: {
-    marginTop: 8,
-  },
-  progressBarBg: {
-    height: 8,
-    backgroundColor: "#E5E7EB",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  progressBarFill: {
-    height: "100%",
-    backgroundColor: COLORS.success,
-    borderRadius: 4,
-  },
-  progressText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginTop: 8,
-    textAlign: "center",
-  },
-  itemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-  itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: "#F3F4F6",
-    marginRight: 12,
-  },
-  itemImagePlaceholder: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  itemDetails: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.textDark,
-    marginBottom: 4,
-  },
-  itemQuantity: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
-  itemPrice: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORS.success,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#E5E7EB",
-    marginVertical: 12,
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.textDark,
-  },
-  totalAmount: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.background,
-  },
-  storedImage: {
-    width: "100%",
-    height: 250,
-    borderRadius: 8,
-    backgroundColor: "#F3F4F6",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  locationIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  locationInfo: {
-    flex: 1,
-  },
-  locationLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginBottom: 4,
-  },
-  locationValue: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: COLORS.textDark,
-    marginBottom: 4,
-  },
-  locationSubtext: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, paddingTop: space.xs, gap: space.xl, paddingBottom: space.xxxl },
+  action: { flexDirection: "row", alignItems: "center", gap: space.sm, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.warningBg },
+  itemRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  itemImage: { width: 44, height: 44, borderRadius: radius.sm, backgroundColor: colors.fill },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.borderStrong },
+  photo: { width: "100%", aspectRatio: 4 / 3, borderRadius: radius.lg, backgroundColor: colors.fill },
 });
 
 export default StorageBookingDetails;

@@ -7,6 +7,7 @@
 // Swap API_BASE_URL for however the rest of the app resolves its backend
 // origin.
 import API_BASE_URL from "./api";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 
 const BASE = `${API_BASE_URL}/api/transport-unigo`;
 
@@ -17,10 +18,25 @@ const BASE = `${API_BASE_URL}/api/transport-unigo`;
  */
 export const TRANSPORT_RETURN_SCHEME = "hostelhubb://transport/booking";
 
-async function request(path, options = {}) {
+/** Booking routes are tied to the signed-in user; search routes are public. */
+async function authHeader() {
+  const user = auth.currentUser;
+  if (!user) {
+    const err = new Error("Please log in to continue");
+    err.status = 401;
+    throw err;
+  }
+  return { Authorization: `Bearer ${await user.getIdToken(false)}` };
+}
+
+async function request(path, { authed = false, ...options } = {}) {
   const res = await fetch(`${BASE}${path}`, {
     ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: {
+      "Content-Type": "application/json",
+      ...(authed ? await authHeader() : {}),
+      ...(options.headers || {}),
+    },
   });
 
   let body = null;
@@ -59,15 +75,15 @@ export const getSeats = (tripId) => request(`/trips/${encodeURIComponent(tripId)
 // ── Booking & payment ────────────────────────────────────────────────────────
 
 /**
- * { busId, seatIds, passenger, partnerUserId } -> booking
+ * { busId, seatIds, passenger } -> booking
  * No seat is held until this succeeds; the hold then lasts ~5 minutes.
- * partnerUserId should be unguessable (a uuid / Firebase uid) since it
- * scopes listBookings().
+ * The backend sets partnerUserId from the login token.
  */
-export const createBooking = ({ busId, seatIds, passenger, partnerUserId }) =>
+export const createBooking = ({ busId, seatIds, passenger }) =>
   request("/bookings", {
+    authed: true,
     method: "POST",
-    body: JSON.stringify({ busId, seatIds, passenger, partnerUserId }),
+    body: JSON.stringify({ busId, seatIds, passenger }),
   });
 
 /**
@@ -76,7 +92,7 @@ export const createBooking = ({ busId, seatIds, passenger, partnerUserId }) =>
  * Re-asserts the seat hold and restarts the 5-minute clock.
  */
 export const startPayment = (groupRef) =>
-  request(`/bookings/${encodeURIComponent(groupRef)}/pay`, { method: "POST" });
+  request(`/bookings/${encodeURIComponent(groupRef)}/pay`, { authed: true, method: "POST" });
 
 /**
  * groupRef, { fresh } -> booking status
@@ -84,15 +100,14 @@ export const startPayment = (groupRef) =>
  * the payment provider instead of waiting on its webhook.
  */
 export const getBooking = (groupRef, { fresh } = {}) =>
-  request(`/bookings/${encodeURIComponent(groupRef)}${fresh ? "?fresh=1" : ""}`);
+  request(`/bookings/${encodeURIComponent(groupRef)}${fresh ? "?fresh=1" : ""}`, { authed: true });
 
 /** Frees held seats immediately instead of waiting out the 5-minute timeout. */
 export const cancelBooking = (groupRef) =>
-  request(`/bookings/${encodeURIComponent(groupRef)}/cancel`, { method: "POST" });
+  request(`/bookings/${encodeURIComponent(groupRef)}/cancel`, { authed: true, method: "POST" });
 
-/** partnerUserId -> Booking[], newest first. Excludes expired/failed. */
-export const listBookings = (partnerUserId) =>
-  request(`/bookings?${qs({ partnerUserId })}`);
+/** The signed-in user's bookings, newest first. Excludes expired/failed. */
+export const listBookings = () => request("/bookings", { authed: true });
 
 // ── Ticket assets ────────────────────────────────────────────────────────────
 

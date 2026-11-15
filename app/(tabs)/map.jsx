@@ -6,10 +6,10 @@ import { AccommodationContext } from "../../context/AccommodationContext";
 import { UserContext } from "../../context/UserContext";
 import ClientLogIn from "../(Client)/ClientLogIn";
 
-import HostelMarkers from "../../components/MapComponent/HostelMarkers";
-import UserLocationMarker from "../../components/MapComponent/UserLocationMarker";
-import HostelModal from "../../components/MapComponent/HostelModal";
-import CategoryTabs from "../../components/MapComponent/CategoryTabs";
+import HostelMarkers from "../../components/map/HostelMarkers";
+import UserLocationMarker from "../../components/map/UserLocationMarker";
+import HostelModal from "../../components/map/HostelModal";
+import CategoryTabs from "../../components/map/CategoryTabs";
 
 const GHANA_REGION = {
   latitude: 7.9465,

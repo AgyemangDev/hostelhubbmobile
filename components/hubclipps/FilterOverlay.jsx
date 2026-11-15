@@ -1,211 +1,147 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useContext, useState } from "react";
+import { Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import ClientLogIn from "../../app/(Client)/ClientLogIn";
+import { auth } from "../../lib/firebase/FirebaseConfig";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { institutions, roomTypes, buildingTypes } from "../../assets/data/data";
+import { UserContext } from "../../context/UserContext";
+import { Button, Chip, IconButton, PillTabs, Sheet } from "../ui/ds";
+import { onVideo, space, type } from "../../constants/theme";
 
 /**
- * FilterOverlay
+ * Top of the Hubclips feed: "For you / Near <your school>" tabs and a filter
+ * button, plus the filter sheet itself.
  *
- * Props
- * ─────
- * visible         boolean
- * onClose         () => void
- * filters         current filter object from context  { institution, accommodationType, priceRange, roomType }
- * onApplyFilters  (filters) => void   — context.applyFilters, triggers API refetch
- * onClearFilters  () => void          — context.clearFilters,  resets + refetches
- * onToggle        () => void          — opens / closes the sheet
- *
- * Strategy
- * ────────
- * We keep a LOCAL copy of filters only while the sheet is open so the user
- * can tap chips without firing a fetch on every tap.  When they press
- * "Apply Filters" we push the local copy to the context (which fires the
- * fetch).  "Clear All" calls onClearFilters directly and also resets local
- * state.
+ * Filters are drafted locally while the sheet is open, so tapping chips
+ * doesn't refetch on every tap; Apply pushes them to the context.
  */
-export default function FilterOverlay({
-  visible,
-  onClose,
-  filters,
-  onApplyFilters,
-  onClearFilters,
-  onToggle,
-}) {
-  // Local draft — synced from props when the modal opens
+export default function FilterOverlay({ visible, onClose, filters, onApplyFilters, onClearFilters, onToggle }) {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { userInfo } = useContext(UserContext);
+  const [showAuth, setShowAuth] = useState(false);
+
+  // Posting a room needs an account; ask signed-out students to log in first.
+  const startPosting = () => {
+    if (!auth.currentUser) return setShowAuth(true);
+    router.push("/IntroductionScreen");
+  };
   const [draft, setDraft] = useState(filters);
+  const school = userInfo?.institution;
 
-  // Keep draft in sync if the sheet is re-opened after an external change
-  // (e.g. institution switched via EmptyFeedState)
-  const handleOpen = () => setDraft(filters);
+  const activeCount = ["institution", "accommodationType", "roomType", "priceRange"].filter((k) => filters?.[k]).length;
+  // "Near <school>" uses the school saved on the student's profile
+  // (userInfo.institution). With no school filter set, the feed already
+  // defaults to that school, so that state counts as "near" too.
+  // "For you" sends an empty school, which the feed reads as all schools.
+  const tab = school && (filters?.institution === school || filters?.institution == null) ? "near" : "all";
 
-  const applyFilters = () => {
-    onApplyFilters(draft);
-    onClose();
-  };
+  const setTab = (next) => onApplyFilters({ ...filters, institution: next === "near" ? school : "" });
 
-  const clearFilters = () => {
-    onClearFilters();           // resets context + triggers fetch
-    setDraft({                  // also reset local draft
-      institution: null,
-      accommodationType: null,
-      priceRange: null,
-      roomType: null,
-    });
-  };
+  const toggle = (key, value) => setDraft((prev) => ({ ...prev, [key]: prev[key] === value ? null : value }));
 
-  // ── Chip renderer ──────────────────────────────────────────────────────────
-  const renderChips = (data, selectedKey, useLabel = false) => (
-    <View style={styles.chipContainer}>
-      {data.map((item) => {
-        const filterValue = useLabel ? item.label : item.value;
-        const isSelected  = draft[selectedKey] === filterValue;
-
-        return (
-          <TouchableOpacity
-            key={filterValue}
-            style={[styles.chip, isSelected && styles.chipSelected]}
-            onPress={() =>
-              setDraft((prev) => ({
-                ...prev,
-                [selectedKey]: isSelected ? null : filterValue,
-              }))
-            }
-          >
-            <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+  const Section = ({ title, data, k, useLabel }) => (
+    <View style={{ gap: space.sm }}>
+      <Text style={type.heading}>{title}</Text>
+      <View style={styles.chips}>
+        {data.map((item) => {
+          const v = useLabel ? item.label : item.value;
+          return <Chip key={v} label={item.label} selected={draft?.[k] === v} onPress={() => toggle(k, v)} />;
+        })}
+      </View>
     </View>
   );
 
   return (
     <>
-      {/* Filter toggle button (always visible over the feed) */}
-      <TouchableOpacity style={styles.filterButton} onPress={onToggle}>
-        <Ionicons name="filter" size={24} color="white" />
-      </TouchableOpacity>
-
-      <Modal
-        visible={visible}
-        animationType="slide"
-        transparent
-        onRequestClose={onClose}
-        onShow={handleOpen}       // sync draft every time sheet opens
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.title}>Choose Your Space</Text>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={28} color="#333" />
-              </TouchableOpacity>
+      <View style={[styles.top, { top: insets.top + space.xs }]} pointerEvents="box-none">
+        <PillTabs
+          tone="dark"
+          value={tab}
+          onChange={setTab}
+          options={[{ value: "all", label: "For you" }, ...(school ? [{ value: "near", label: `Near ${school}` }] : [])]}
+        />
+        <View style={{ flexDirection: "row", gap: space.xs }}>
+          <IconButton
+            icon="add"
+            color="#1C1917"
+            accessibilityLabel="Post a room as a clip"
+            onPress={startPosting}
+            style={styles.addBtn}
+          />
+          <View>
+          <IconButton
+            icon="options-outline"
+            color="#FFFFFF"
+            iconStyle={onVideo.text}
+            accessibilityLabel={activeCount ? `Filters, ${activeCount} on` : "Filters"}
+            onPress={() => {
+              setDraft(filters);
+              onToggle();
+            }}
+            style={styles.filterBtn}
+          />
+          {activeCount ? (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{activeCount}</Text>
             </View>
-
-            <ScrollView style={styles.filterList} showsVerticalScrollIndicator={false}>
-              <Text style={styles.sectionTitle}>Institution</Text>
-              {renderChips(institutions, "institution")}
-
-              <Text style={styles.sectionTitle}>Accommodation Type</Text>
-              {renderChips(buildingTypes, "accommodationType")}
-
-              <Text style={styles.sectionTitle}>Room Type</Text>
-              {renderChips(roomTypes, "roomType", true)}
-            </ScrollView>
-
-            {/* Footer */}
-            <View style={styles.footer}>
-              <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-                <Text style={styles.clearText}>Clear All</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-                <Text style={styles.applyText}>Apply Filters</Text>
-              </TouchableOpacity>
-            </View>
+          ) : null}
           </View>
-        </SafeAreaView>
+        </View>
+      </View>
+
+      <Sheet
+        visible={visible}
+        onClose={onClose}
+        title="Filter clips"
+        footer={
+          <View style={{ flexDirection: "row", gap: space.sm }}>
+            <Button
+              title="Clear"
+              variant="secondary"
+              style={{ flex: 1 }}
+              onPress={() => {
+                onClearFilters();
+                setDraft({ institution: null, accommodationType: null, priceRange: null, roomType: null });
+              }}
+            />
+            <Button
+              title="Show clips"
+              style={{ flex: 1.4 }}
+              onPress={() => {
+                onApplyFilters(draft);
+                onClose();
+              }}
+            />
+          </View>
+        }
+      >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: space.xl, paddingBottom: space.xs }}>
+          <Section title="School" data={institutions} k="institution" />
+          <Section title="Type of place" data={buildingTypes} k="accommodationType" />
+          <Section title="Room" data={roomTypes} k="roomType" useLabel />
+        </ScrollView>
+      </Sheet>
+
+      <Modal visible={showAuth} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAuth(false)}>
+        <ClientLogIn
+          onClose={() => {
+            setShowAuth(false);
+            if (auth.currentUser) router.push("/IntroductionScreen");
+          }}
+        />
       </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  filterButton: {
-    position: "absolute",
-    top: 50,
-    right: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 12,
-    borderRadius: 25,
-    zIndex: 1000,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "80%",
-    paddingBottom: 20,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  title: { fontSize: 22, fontWeight: "bold" },
-  filterList: { paddingHorizontal: 20, paddingTop: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: "600", marginVertical: 10 },
-  chipContainer: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    backgroundColor: "#f0f0f0",
-    marginBottom: 10,
-  },
-  chipSelected: { backgroundColor: "#ff385c" },
-  chipText: { fontSize: 14, color: "#333" },
-  chipTextSelected: { color: "white", fontWeight: "600" },
-  footer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  clearButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ff385c",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  clearText: { color: "#ff385c", fontWeight: "600" },
-  applyButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: "#ff385c",
-    alignItems: "center",
-    marginLeft: 10,
-  },
-  applyText: { color: "white", fontWeight: "600" },
+  top: { position: "absolute", left: space.md, right: space.sm, flexDirection: "row", alignItems: "center", justifyContent: "space-between", zIndex: 10 },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.xs },
+  filterBtn: { ...onVideo.button, borderWidth: 1, borderColor: "rgba(255,255,255,0.7)" },
+  // White with a shadow so it shows on dark and on white frames alike.
+  addBtn: { backgroundColor: "#FFFFFF", shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
+  badge: { position: "absolute", top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
+  badgeText: { fontSize: 11, fontWeight: "800", color: "#1C1917" },
 });

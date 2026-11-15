@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { UserContext } from "../../../context/UserContext";
-import FloatingLabelInput from "../../../components/InputFields/FormInput";
+import FloatingLabelInput from "../../../components/ui/inputs/FormInput";
 import COLORS from "../../../constants/Colors";
 
 const PersonalInfo = () => {

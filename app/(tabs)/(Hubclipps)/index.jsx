@@ -1,11 +1,12 @@
-import React, { useState, useRef, useContext, useCallback } from "react";
+import React, { useState, useRef, useContext, useCallback, useEffect, useMemo } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useHubclippsById } from "../../../hooks/hubclippsContext/useHubclippsById";
 import { FlatList, Dimensions, StatusBar } from "react-native";
 import HubClip from "../../../components/hubclipps/HubClip";
 import FilterOverlay from "../../../components/hubclipps/FilterOverlay";
-import AddAccommodationButton from "../../../components/ButtonComponents/AddAccommodationButton";
 import EmptyFeedState from "../../../components/hubclipps/EmptyFeedState";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
-import HubClipSkeleton from "../../../components/EmptyStates/HubClipSkeleton";
+import HubClipSkeleton from "../../../components/hubclipps/HubClipSkeleton";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -26,6 +27,44 @@ export default function HubClippsFeed() {
 
   const flatListRef = useRef(null);
 
+  // Opened from a shared link or notification (/clips/:id): show that clip
+  // first, fetching it if it isn't in the loaded page of the feed.
+  const { clip: linkedClipId } = useLocalSearchParams();
+  const { fetchById } = useHubclippsById();
+  const [linkedClip, setLinkedClip] = useState(null);
+
+  useEffect(() => {
+    if (!linkedClipId) {
+      setLinkedClip(null);
+      return;
+    }
+    const inFeed = hubclipps.find((c) => String(c.id) === String(linkedClipId));
+    if (inFeed) {
+      setLinkedClip(inFeed);
+      return;
+    }
+    let active = true;
+    fetchById(linkedClipId).then((found) => {
+      if (active && found) setLinkedClip(found);
+    });
+    return () => {
+      active = false;
+    };
+    // fetchById is recreated each render; the id is what matters here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedClipId]);
+
+  useEffect(() => {
+    if (!linkedClip) return;
+    setCurrentIndex(0);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, [linkedClip]);
+
+  const feed = useMemo(
+    () => (linkedClip ? [linkedClip, ...hubclipps.filter((c) => c.id !== linkedClip.id)] : hubclipps),
+    [linkedClip, hubclipps]
+  );
+
   // ─── Viewability ─────────────────────────────────────────────────────────────
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
@@ -37,7 +76,7 @@ export default function HubClippsFeed() {
     itemVisiblePercentThreshold: 80,
   }).current;
 
-  const isAtLastItem = currentIndex === hubclipps.length - 1;
+  const isAtLastItem = currentIndex === feed.length - 1;
 
   // ─── Pagination ───────────────────────────────────────────────────────────────
   const handleEndReached = useCallback(() => {
@@ -46,7 +85,7 @@ export default function HubClippsFeed() {
   }, [loading, hasMore, loadMore]);
 
   // Loading state
-  if (loading && hubclipps.length === 0) {
+  if (loading && feed.length === 0) {
   return (
     <>
       <StatusBar hidden />
@@ -56,7 +95,7 @@ export default function HubClippsFeed() {
 }
 
   // ─── Empty State ──────────────────────────────────────────────────────────────
-  if (!loading && hubclipps.length === 0) {
+  if (!loading && feed.length === 0) {
     return (
       <>
         <StatusBar hidden />
@@ -69,7 +108,6 @@ export default function HubClippsFeed() {
           onClearFilters={clearFilters}
           onToggle={() => setShowFilters(!showFilters)}
         />
-        <AddAccommodationButton />
       </>
     );
   }
@@ -79,7 +117,7 @@ export default function HubClippsFeed() {
       <StatusBar hidden />
       <FlatList
         ref={flatListRef}
-        data={hubclipps}
+        data={feed}
         keyExtractor={(item) => item.id}
         pagingEnabled
         snapToInterval={SCREEN_HEIGHT}
@@ -115,7 +153,6 @@ export default function HubClippsFeed() {
         onToggle={() => setShowFilters(!showFilters)}
       />
 
-      <AddAccommodationButton />
     </>
   );
 }

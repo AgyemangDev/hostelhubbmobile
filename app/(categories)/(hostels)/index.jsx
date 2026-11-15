@@ -12,7 +12,7 @@ import LastMinute from './LastMinute';
 import RecentlyViewed from './RecentlyViewed';
 import TopStays from './TopStays';
 import NewHostels from './newHostels';
-import TopTabBar from '../../../components/CategoriesComponents/TopTabBar';
+import TopTabBar from '../../../components/accommodation/browse/TopTabBar';
 
 const TABS = [
   { key: 'all', label: 'All Hostels' },

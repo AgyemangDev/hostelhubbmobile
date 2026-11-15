@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import COLORS from '../../constants/Colors';
-import { auth } from '../firebase/FirebaseConfig';
+import { auth } from '../../lib/firebase/FirebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from 'expo-router';
-import FormInput from "../../components/InputFields/FormInput";
+import FormInput from "../../components/ui/inputs/FormInput";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');

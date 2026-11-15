@@ -1,106 +1,22 @@
-"use client";
 import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
 import { Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons"; // For chevron icon
-import { useRouter } from "expo-router";
 import { StorageReservationProvider } from "../../context/StorageReservationContext";
 
-// Custom back button component
-const BackButton = () => {
-  const router = useRouter();
-  return (
-    <TouchableOpacity
-      style={styles.backButton}
-      onPress={() => router.back()}
-    >
-      <Ionicons name="chevron-back" size={24} color="black" />
-    </TouchableOpacity>
-  );
-};
-
-const _layout = () => {
+// Each storage screen draws its own StepHeader and PriceBar (components/ui/ds),
+// so the native header is off for the whole flow.
+export default function StorageLayout() {
   return (
     <StorageReservationProvider>
-      <Stack>
-        {/* Home / Landing Page */}
-        <Stack.Screen
-          name="index"
-          options={{ headerShown: false }}
-        />
-
-        {/* Items Selection */}
-        <Stack.Screen
-          name="ItemsSelection"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Select Items",
-          }}
-        />
-        <Stack.Screen
-          name="SchoolSelection"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Select School",
-          }}
-        />
-
-        {/* Pickup & Delivery Info */}
-        <Stack.Screen
-          name="PickupDeliveryInfo"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Pickup & Delivery",
-          }}
-        />
-
-        {/* Image Upload */}
-        <Stack.Screen
-          name="ImageUpload"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Upload Images",
-          }}
-        />
-
-        {/* Pickup & Delivery Info */}
-        <Stack.Screen
-          name="ReferralStep"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Enter Referral Code",
-          }}
-        />
-
-        {/* Review & Pay */}
-        <Stack.Screen
-          name="ReviewPay"
-          options={{
-            headerLeft: () => <BackButton />,
-            title: "Review & Pay",
-          }}
-        />
-
-        {/* Success Screen */}
-<Stack.Screen
-  name="SuccessScreen"
-  options={{
-    headerShown: false,      // Already hidden
-    gestureEnabled: false,    // Disable swipe back
-    headerLeft: null,         // No back button
-  }}
-/>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FFFFFF" } }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="SchoolSelection" />
+        <Stack.Screen name="ItemsSelection" />
+        <Stack.Screen name="PickupDeliveryInfo" />
+        <Stack.Screen name="ImageUpload" />
+        <Stack.Screen name="ReferralStep" />
+        <Stack.Screen name="ReviewPay" />
+        <Stack.Screen name="SuccessScreen" options={{ gestureEnabled: false }} />
       </Stack>
     </StorageReservationProvider>
   );
-};
-
-export default _layout;
-
-const styles = StyleSheet.create({
-  backButton: {
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
+}

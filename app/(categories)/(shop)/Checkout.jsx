@@ -2,10 +2,10 @@ import React from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../../../context/CartContext';
-import CheckoutHeader from '../../../components/CheckoutComponents/CheckoutHeader';
-import CheckoutItem from '../../../components/CheckoutComponents/CheckoutItem';
-import EmptyCart from '../../../components/CheckoutComponents/EmptyCart';
-import CheckoutButton from '../../../components/CheckoutComponents/CheckoutButton';
+import CheckoutHeader from '../../../components/shop/checkout/CheckoutHeader';
+import CheckoutItem from '../../../components/shop/checkout/CheckoutItem';
+import EmptyCart from '../../../components/shop/checkout/EmptyCart';
+import CheckoutButton from '../../../components/shop/checkout/CheckoutButton';
 import { useRouter } from 'expo-router';
 
 const CheckoutScreen = () => {

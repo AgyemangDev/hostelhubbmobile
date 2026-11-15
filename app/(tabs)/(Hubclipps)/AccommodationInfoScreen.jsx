@@ -1,148 +1,133 @@
 import React, { useContext, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
+import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
 import { ValidateHubclippsInfo } from "../../../utils/ValidationUtils/hubbclipsValidation";
-
-import FloatingLabelInput from "../../../components/InputFields/FormInput";
-import CustomDropdown from "../../../components/Dropdowns/CustomDropdown";
-import MultiSelectDropdown from "../../../components/Dropdowns/MultiSelectDropdown";
-import Button from "../../../components/ButtonComponents/ButtonComponent";
-
 import { institutions, roomTypes, amenitiesOptions, buildingTypes } from "../../../assets/data/data";
+import { Button, Chip, PriceBar, SelectField, StepHeader, TextField, money } from "../../../components/ui/ds";
+import { colors, space, type } from "../../../constants/theme";
 
-export default function AccofmmodationInfoScreen() {
+const FEE_RATE = 0.05;
+const AMENITIES_SHOWN = 8;
+
+export default function AccommodationInfoScreen() {
   const router = useRouter();
   const { draft, setDraft } = useContext(AddHubclippsContext);
+  const [showAllAmenities, setShowAllAmenities] = useState(false);
 
-  // Dropdown visibility states
-  const [institutionDropdown, setInstitutionDropdown] = useState(false);
-  const [roomTypeDropdown, setRoomTypeDropdown] = useState(false);
-  const [categoryDropdown, setCategoryDropdown] = useState(false);
-  const [amenitiesDropdown, setAmenitiesDropdown] = useState(false);
-
-  // Generic dropdown handler
-  const handleSelect = (key, value) => {
-    setDraft({ ...draft, [key]: value });
-  };
-
-  // Amenities multi-select toggle
+  const set = (key, value) => setDraft({ ...draft, [key]: value });
   const toggleAmenity = (value) => {
     const current = draft.amenities || [];
-    if (current.includes(value)) {
-      setDraft({ ...draft, amenities: current.filter((a) => a !== value) });
-    } else {
-      setDraft({ ...draft, amenities: [...current, value] });
-    }
+    set("amenities", current.includes(value) ? current.filter((a) => a !== value) : [...current, value]);
   };
 
-  // Continue button handler with validation
+  const price = Number(String(draft.price || "").replace(/[^0-9.]/g, "")) || 0;
+  const amenities = showAllAmenities ? amenitiesOptions : amenitiesOptions.slice(0, AMENITIES_SHOWN);
+
   const handleContinue = () => {
     const errors = ValidateHubclippsInfo(draft);
     if (errors.length > 0) {
-      Alert.alert("Incomplete Form", errors[0]); // show only the first error
+      Alert.alert("A few details missing", errors[0]);
       return;
     }
     router.push("/ManagerInfoScreen");
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
-          <Text style={styles.subtitle}>
-            Tell us about the room you're offering. Accurate details help students find the right fit.
+    <SafeAreaView style={styles.screen}>
+      <StepHeader step={1} total={4} />
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <Text style={type.display} accessibilityRole="header">Tell us about the room</Text>
+
+        <TextField
+          label="Hostel or house name"
+          value={draft.hostel_name}
+          onChangeText={(v) => set("hostel_name", v)}
+          placeholder="e.g. Nana Ama Hostel"
+          autoCapitalize="words"
+        />
+
+        <View style={styles.group}>
+          <Text style={styles.label}>Type of place</Text>
+          <View style={styles.chips}>
+            {buildingTypes.map((b) => (
+              <Chip key={b.value} label={b.label} selected={draft.category === b.value} onPress={() => set("category", b.value)} />
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.group}>
+          <Text style={styles.label}>Room</Text>
+          <View style={styles.chips}>
+            {roomTypes.map((r) => (
+              <Chip key={r.label} label={r.label} selected={draft.room_type === r.label} onPress={() => set("room_type", r.label)} />
+            ))}
+          </View>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: space.sm }}>
+          <View style={{ flex: 1 }}>
+            <TextField
+              label="Price per year (GH₵)"
+              value={String(draft.price ?? "")}
+              onChangeText={(v) => set("price", v.replace(/[^0-9]/g, ""))}
+              keyboardType="number-pad"
+              placeholder="0"
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <SelectField
+              label="School"
+              sheetTitle="Which school is it near?"
+              value={draft.institution}
+              options={institutions.map((i) => i.label)}
+              onChange={(v) => set("institution", v)}
+            />
+          </View>
+        </View>
+        {price ? (
+          <Text style={[type.caption, { color: colors.textSecondary, marginTop: -space.sm }]}>
+            Students see {money(price * (1 + FEE_RATE), { decimals: 0 })}: your price plus HostelHubb's 5% fee.
           </Text>
+        ) : null}
+
+        <TextField
+          label="Area"
+          value={draft.location}
+          onChangeText={(v) => set("location", v)}
+          placeholder="e.g. Ayeduase"
+          autoCapitalize="words"
+        />
+
+        <View style={styles.group}>
+          <Text style={styles.label}>What's included</Text>
+          <View style={styles.chips}>
+            {amenities.map((a) => (
+              <Chip
+                key={a.label}
+                label={a.label}
+                selected={(draft.amenities || []).includes(a.label)}
+                onPress={() => toggleAmenity(a.label)}
+              />
+            ))}
+            {amenitiesOptions.length > AMENITIES_SHOWN ? (
+              <Chip
+                label={showAllAmenities ? "Show fewer" : `+ ${amenitiesOptions.length - AMENITIES_SHOWN} more`}
+                onPress={() => setShowAllAmenities((v) => !v)}
+              />
+            ) : null}
+          </View>
         </View>
-
-        <View style={styles.formSection}>
-          <FloatingLabelInput
-            placeholder="Hostel Name"
-            value={draft.hostel_name}
-            onChangeText={(val) => setDraft({ ...draft, hostel_name: val })}
-          />
-
-          <CustomDropdown
-            placeholder="Category"
-            visible={categoryDropdown}
-            onPress={() => setCategoryDropdown(!categoryDropdown)}
-            data={buildingTypes.map((b) => b.value)}
-            selectedValue={draft.category}
-            onSelect={(val) => handleSelect("category", val)}
-          />
-
-          <CustomDropdown
-            placeholder="Room Type"
-            visible={roomTypeDropdown}
-            onPress={() => setRoomTypeDropdown(!roomTypeDropdown)}
-            data={roomTypes.map((r) => r.label)}
-            selectedValue={draft.room_type}
-            onSelect={(val) => handleSelect("room_type", val)}
-          />
-
-          <FloatingLabelInput
-            placeholder="Price"
-            value={draft.price}
-            onChangeText={(val) => setDraft({ ...draft, price: val })}
-            keyboardType="numeric"
-          />
-
-          <FloatingLabelInput
-            placeholder="Location"
-            value={draft.location}
-            onChangeText={(val) => setDraft({ ...draft, location: val })}
-          />
-
-          <CustomDropdown
-            placeholder="Institution"
-            visible={institutionDropdown}
-            onPress={() => setInstitutionDropdown(!institutionDropdown)}
-            data={institutions.map((i) => i.label)}
-            selectedValue={draft.institution}
-            onSelect={(val) => handleSelect("institution", val)}
-          />
-
-          <MultiSelectDropdown
-            placeholder="Amenities"
-            visible={amenitiesDropdown}
-            onPress={() => setAmenitiesDropdown(!amenitiesDropdown)}
-            data={amenitiesOptions.map((a) => a.label)}
-            selectedValues={draft.amenities || []}
-            onToggle={toggleAmenity}
-          />
-        </View>
-
-        <View style={{ height: 100 }} />
       </ScrollView>
-
-      {/* Sticky Continue Button */}
-      <View style={styles.stickyButton}>
-        <Button buttonText="Continue" onPressFunction={handleContinue} />
-      </View>
-    </View>
+      <PriceBar action={<Button title="Continue" onPress={handleContinue} />} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: "#fff" },
-  container: { flex: 1 },
-  contentContainer: { padding: 24, paddingTop: 32 },
-  header: { marginBottom: 32 },
-  subtitle: { fontSize: 16, lineHeight: 24, color: "#717171" },
-  formSection: { gap: 16 },
-  stickyButton: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-    paddingBottom: 12,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
+  group: { gap: space.xs },
+  label: { ...type.caption, fontWeight: "700", color: colors.text },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.xs },
 });

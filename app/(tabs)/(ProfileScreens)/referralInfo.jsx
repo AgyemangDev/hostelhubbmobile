@@ -11,11 +11,11 @@ import { UserContext } from '../../../context/UserContext';
 import API_BASE_URL from '../../../utils/api/api';
 import COLORS from '../../../constants/Colors';
 
-import ReferralHero from '../../../components/Hero/ReferralHero';
-import ReferralTabs from '../../../components/Tabs/ReferralTabs';
-import HowItWorks from '../../../components/UI/HowItWorks';
-import EarningsList from '../../../components/ShortlistComponents/EarningsList';
-import HostsList from '../../../components/ShortlistComponents/HostList';
+import ReferralHero from '../../../components/profile/referral/ReferralHero';
+import ReferralTabs from '../../../components/profile/referral/ReferralTabs';
+import HowItWorks from '../../../components/profile/referral/HowItWorks';
+import EarningsList from '../../../components/profile/referral/EarningsList';
+import HostsList from '../../../components/profile/referral/HostList';
 
 const ReferralProgram = () => {
   const { userInfo, user } = useContext(UserContext);

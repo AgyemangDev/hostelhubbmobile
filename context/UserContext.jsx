@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../app/firebase/FirebaseConfig";
+import { auth } from "../lib/firebase/FirebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import API_BASE_URL from "../utils/api/api";
 import { useAuthedEventSource } from "../hooks/realtime/useAuthedEventSource";

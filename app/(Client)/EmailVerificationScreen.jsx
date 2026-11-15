@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, Alert } from "react-native";
 import { getAuth, sendEmailVerification, reload } from "firebase/auth";
 import { useRouter } from "expo-router";
-import Button from "../../components/ButtonComponents/ButtonComponent";
+import Button from "../../components/ui/buttons/ButtonComponent";
 
 const EmailVerificationScreen = () => {
   const [sending, setSending] = useState(false);

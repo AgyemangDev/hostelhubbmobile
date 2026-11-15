@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, ActivityIndicator, FlatList, SafeAreaView, StatusBar } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../../../../context/UserContext';
-import DataOrderCard from '../../../../components/Cards/DataOrderCard';
+import DataOrderCard from '../../../../components/shop/data/DataOrderCard';
 import API_BASE_URL from '../../../../utils/api/api';
 
 const DataOrders = () => {
@@ -13,9 +13,10 @@ const DataOrders = () => {
   const fetchOrders = async () => {
     try {
       setLoadingOrders(true);
-      const response = await fetch(
-        `${API_BASE_URL}/api/data-orders/${user.uid}`
-      );
+      const token = await user.getIdToken(false);
+      const response = await fetch(`${API_BASE_URL}/api/data-orders/${user.uid}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data?.message || "Failed to load orders");

@@ -75,9 +75,20 @@ export const FavoritesProvider = ({ children }) => {
     return favorites.has(accommodationId);
   }, [favorites]);
 
-  // Get all favorite IDs as an array
+  // Hubclips share the same saved set, stored as "clip:<id>" so they never
+  // mix with accommodation ids (the saved hostels list fetches those by id).
+  const CLIP = 'clip:';
+  const clipKey = (id) => `${CLIP}${id}`;
+  const toggleClipFavorite = useCallback((clipId) => toggleFavorite(clipKey(clipId)), [toggleFavorite]);
+  const isClipFavorite = useCallback((clipId) => favorites.has(clipKey(clipId)), [favorites]);
+  const getFavoriteClipIds = useCallback(
+    () => Array.from(favorites).filter((id) => String(id).startsWith(CLIP)).map((id) => String(id).slice(CLIP.length)),
+    [favorites]
+  );
+
+  // Saved accommodation ids only (clips excluded).
   const getFavoriteIds = useCallback(() => {
-    return Array.from(favorites);
+    return Array.from(favorites).filter((id) => !String(id).startsWith(CLIP));
   }, [favorites]);
 
   // Clear all favorites
@@ -94,12 +105,15 @@ export const FavoritesProvider = ({ children }) => {
   }, [user?.uid]);
 
   const value = {
-    favorites: Array.from(favorites),
+    favorites: Array.from(favorites).filter((id) => !String(id).startsWith('clip:')),
     isLoading,
     toggleFavorite,
     isFavorite,
     getFavoriteIds,
     clearFavorites,
+    toggleClipFavorite,
+    isClipFavorite,
+    getFavoriteClipIds,
   };
 
   return (

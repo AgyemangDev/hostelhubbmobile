@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import React, { useState, useCallback, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import CardListScreen from '../../../components/Cards/VerticalScroll/CardListScreen';
+import CardListScreen from '../../../components/accommodation/cards/CardListScreen';
 import { shuffleArray } from '../../../utils/arrayUtils';
 
 const AllHostels = ({ hostels, loading, loadMore, hasMore }) => {

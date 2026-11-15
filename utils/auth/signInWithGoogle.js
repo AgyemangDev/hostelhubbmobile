@@ -2,7 +2,7 @@ import { useState } from "react";
 import * as WebBrowser from "expo-web-browser";
 import { signInWithCustomToken } from "firebase/auth";
 import { Alert } from "react-native";
-import { auth } from "../../app/firebase/FirebaseConfig";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 import API_BASE_URL from "../api/api";
 
 WebBrowser.maybeCompleteAuthSession();

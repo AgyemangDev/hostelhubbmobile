@@ -95,18 +95,21 @@ export default function HubClip({ item, height, isActive }) {
         }}
       />
 
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { bottom: TAB_BAR_HEIGHT + 92 }]}>
         <LeftInfo item={item} />
         <RightActions
           frontImage={item.front_image_url}
           views={item.views}
+          clipId={item.id}
+          title={item.hostel_name}
         />
       </View>
 
-      <View style={[styles.bottom, { bottom: TAB_BAR_HEIGHT + 10 }]}>
+      <View style={[styles.bottom, { bottom: TAB_BAR_HEIGHT + 18 }]}>
         <ReservationButton
           onPress={handleReserve}
           price={item.price}
+          title={item.hostel_name}
           onBookingComplete={handleBookingComplete}
         />
       </View>
@@ -121,16 +124,15 @@ const styles = StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    bottom: 170,
-    left: 15,
-    right: 15,
+    left: 16,
+    right: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-end",
   },
   bottom: {
     position: "absolute",
-    left: 15,
-    right: 15,
+    left: 16,
+    right: 16,
   },
 });

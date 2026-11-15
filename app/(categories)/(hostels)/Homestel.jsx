@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import React, { useMemo } from 'react';
-import CardListScreen from '../../../components/Cards/VerticalScroll/CardListScreen';
+import CardListScreen from '../../../components/accommodation/cards/CardListScreen';
 import { shuffleArray } from '../../../utils/arrayUtils';
 
 const Homestel = ({ hostels, loading, loadMore, hasMore }) => {

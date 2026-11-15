@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Text, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useCart } from '../../../context/CartContext';
-import ProductImages from '../../../components/ProductComponent/ProductImages';
-import ProductInfo from '../../../components/ProductComponent/ProductInfo';
-import ProductReviews from '../../../components/ProductComponent/ProductReviews';
-import AddToCartButton from '../../../components/ProductComponent/AddToCartButton';
-import CartHeader from '../../../components/ProductComponent/CartHeader';
+import ProductImages from '../../../components/shop/product/ProductImages';
+import ProductInfo from '../../../components/shop/product/ProductInfo';
+import ProductReviews from '../../../components/shop/product/ProductReviews';
+import AddToCartButton from '../../../components/shop/product/AddToCartButton';
+import CartHeader from '../../../components/shop/product/CartHeader';
 
 const ProductDetails = () => {
   const params = useLocalSearchParams();

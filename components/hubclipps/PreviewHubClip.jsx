@@ -1,183 +1,55 @@
-// components/hubclipps/PreviewHubClip.jsx
 import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { MaterialIcons, AntDesign, Ionicons } from "@expo/vector-icons";
+import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import VideoPlayer from "./VideoPlayer";
+import LeftInfo from "./LeftInfo";
+import { money } from "../ui/ds";
+import { colors, onVideo, radius, space } from "../../constants/theme";
 
-export default function PreviewHubClip({ item, height }) {
+const FEE_RATE = 0.05;
+
+/**
+ * A clip drawn with the same pieces as the live feed (video, LeftInfo, price
+ * and Reserve pill), so a poster sees exactly what students will see.
+ * The Reserve pill is drawn but not tappable here.
+ */
+export default function PreviewHubClip({ item, height = 420 }) {
+  const price = Number(item.price) || 0;
   return (
-    <View style={[styles.container, { height }]}>
-      {/* Video Player */}
+    <View style={[styles.frame, { height }]}>
       {item.video_url ? (
         <VideoPlayer uri={item.video_url} isActive />
       ) : (
         <View style={styles.noVideo}>
-          <Ionicons name="videocam-off-outline" size={60} color="#666" />
-          <Text style={styles.noVideoText}>No video uploaded</Text>
+          <Ionicons name="videocam-off-outline" size={40} color="#A8A29E" />
+          <Text style={styles.noVideoText}>No video yet</Text>
         </View>
       )}
-
-      {/* Overlay Content */}
-      <View style={styles.overlay}>
-        {/* Left Info */}
-        <View style={styles.leftInfo}>
-          <Text style={styles.title}>
-            {item.room_type || "Room Type"} • {item.category || "Category"}
-          </Text>
-
-          <View style={styles.locationRow}>
-            <MaterialIcons name="location-on" color="white" size={18} />
-            <Text style={styles.location}>
-              {item.location || "Location"} — {item.institution || "Institution"}
-            </Text>
-          </View>
-
-          {item.description && (
-            <Text style={styles.description} numberOfLines={2}>
-              {item.description}
-            </Text>
-          )}
-
-          {item.amenities?.length > 0 && (
-            <Text style={styles.amenities}>
-              Amenities: {item.amenities.join(", ")}
-            </Text>
-          )}
-
-          {item.price && (
-            <View style={styles.priceContainer}>
-              <Text style={styles.price}>GH₵{item.price}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Right UI Actions (Preview Only) */}
-        <View style={styles.rightActions}>
-          {item.front_image_url ? (
-            <Image source={{ uri: item.front_image_url }} style={styles.avatar} />
-          ) : (
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <MaterialIcons name="home" size={24} color="white" />
-            </View>
-          )}
-
-          {/* Heart icon (UI only) */}
-          <View style={styles.actionButton}>
-            <AntDesign name="heart" size={30} color="white" />
-          </View>
-        </View>
+      <View pointerEvents="none" style={styles.info}>
+        <LeftInfo item={item} />
       </View>
-
-      {/* Preview Watermark */}
-      <View style={styles.watermark}>
-        <Text style={styles.watermarkText}>PREVIEW</Text>
+      <View pointerEvents="none" style={styles.bar}>
+        <View>
+          <Text style={styles.price}>{money(price * (1 + FEE_RATE), { decimals: 0 })}</Text>
+          <Text style={styles.caption}>per year, fees included</Text>
+        </View>
+        <View style={styles.pill}>
+          <Text style={styles.pillText}>Reserve</Text>
+        </View>
       </View>
     </View>
   );
 }
 
-
+const shadow = onVideo.text;
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    backgroundColor: "#000",
-    overflow: "hidden",
-  },
-  noVideo: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#1a1a1a",
-  },
-  noVideoText: {
-    color: "#666",
-    fontSize: 16,
-    marginTop: 10,
-  },
-  overlay: {
-    position: "absolute",
-    bottom: 100,
-    left: 15,
-    right: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-  },
-  leftInfo: {
-    maxWidth: "70%",
-  },
-  title: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 5,
-  },
-  location: {
-    color: "white",
-    fontSize: 14,
-    marginLeft: 3,
-  },
-  description: {
-    color: "white",
-    fontSize: 14,
-    marginVertical: 5,
-    lineHeight: 18,
-  },
-  amenities: {
-    color: "#ddd",
-    fontSize: 12,
-    marginTop: 5,
-  },
-  priceContainer: {
-    marginTop: 8,
-    backgroundColor: "rgba(255, 56, 92, 0.9)",
-    alignSelf: "flex-start",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  price: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  rightActions: {
-    alignItems: "center",
-    gap: 20,
-  },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
-  avatarPlaceholder: {
-    backgroundColor: "#ff385c",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  actionButton: {
-    alignItems: "center",
-  },
-  watermark: {
-    position: "absolute",
-    top: 20,
-    left: 15,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  watermarkText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-    letterSpacing: 2,
-  },
+  frame: { width: "100%", borderRadius: radius.xl, overflow: "hidden", backgroundColor: "#1C1917" },
+  noVideo: { ...StyleSheet.absoluteFillObject, alignItems: "center", justifyContent: "center", gap: space.xs },
+  noVideoText: { color: "#D6D3D1", fontSize: 13, fontWeight: "600" },
+  info: { position: "absolute", left: space.md, right: space.md, bottom: 84 },
+  bar: { position: "absolute", left: space.md, right: space.md, bottom: space.md, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  price: { color: "#FFFFFF", fontSize: 18, fontWeight: "800", ...shadow },
+  caption: { color: "#E7E5E4", fontSize: 11, fontWeight: "600", ...shadow },
+  pill: { minHeight: 44, paddingHorizontal: space.lg, borderRadius: 22, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 4 },
+  pillText: { fontSize: 14, fontWeight: "800", color: colors.text },
 });

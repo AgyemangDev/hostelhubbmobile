@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import EventSource from "react-native-sse";
 import { onIdTokenChanged } from "firebase/auth";
-import { auth } from "../../app/firebase/FirebaseConfig";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 import API_BASE_URL from "../../utils/api/api";
 
 /**

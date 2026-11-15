@@ -9,7 +9,9 @@ export const useAccommodationById = (accommodationId) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!accommodationId || !user) {
+    // Listing details are public, so shared links open for signed-out
+    // visitors too; the token is sent when there is one.
+    if (!accommodationId) {
       setLoading(false);
       return;
     }
@@ -18,8 +20,7 @@ export const useAccommodationById = (accommodationId) => {
       setLoading(true);
 
       try {
-        // Get Firebase ID token from context user (with cache)
-        const idToken = await user.getIdToken(false);
+        const idToken = user ? await user.getIdToken(false) : null;
 
         // Call backend API
         const response = await fetch(
@@ -27,7 +28,7 @@ export const useAccommodationById = (accommodationId) => {
           {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${idToken}`,
+              ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
               'Content-Type': 'application/json',
             },
           }

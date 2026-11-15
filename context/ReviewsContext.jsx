@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { db } from '../app/firebase/FirebaseConfig';
+import { db } from '../lib/firebase/FirebaseConfig';
 import { collection, query, getDocs } from 'firebase/firestore'; // Import necessary Firestore functions
 import AsyncStorage from '@react-native-async-storage/async-storage';
 

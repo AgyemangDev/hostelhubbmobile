@@ -1,207 +1,183 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
-import { View, Image, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useIsFocused } from "@react-navigation/native";
 import { Video } from "expo-av";
-import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
-import { useRouter } from "expo-router";
-import Button from "../../../components/ButtonComponents/ButtonComponent";
 import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+import { useRouter } from "expo-router";
+import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
+import { Button, Notice, PressableScale, PriceBar, StatusPill, StepHeader } from "../../../components/ui/ds";
+import { colors, radius, space, type } from "../../../constants/theme";
+
+const MAX_VIDEO_MS = 90000; // 1 min 30 s
+
+function Section({ title, hint, children }) {
+  return (
+    <View style={{ gap: space.xs }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: space.sm }}>
+        <Text style={type.heading}>{title}</Text>
+        {hint ? <Text style={[type.caption, { color: colors.textSecondary }]}>{hint}</Text> : null}
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function EmptyPicker({ icon, title, subtitle, onPress, loading }) {
+  return (
+    <PressableScale onPress={onPress} disabled={loading} accessibilityRole="button" accessibilityLabel={title} style={styles.drop}>
+      {loading ? (
+        <ActivityIndicator color={colors.text} />
+      ) : (
+        <>
+          <View style={styles.dropIcon}>
+            <Ionicons name={icon} size={24} color={colors.text} />
+          </View>
+          <Text style={type.bodyStrong}>{title}</Text>
+          <Text style={[type.caption, { color: colors.textSecondary }]}>{subtitle}</Text>
+        </>
+      )}
+    </PressableScale>
+  );
+}
 
 export default function MediaScreen() {
   const isFocused = useIsFocused();
-  const { draft, setDraft } = useContext(AddHubclippsContext);
   const router = useRouter();
+  const { draft, setDraft } = useContext(AddHubclippsContext);
   const [videoLoading, setVideoLoading] = useState(false);
-
   const videoRef = useRef(null);
 
-  // Pause/play video when screen focus changes
+  // Pause the preview when the poster leaves this screen.
   useEffect(() => {
-    if (videoRef.current) {
-      if (isFocused) {
-        videoRef.current.playAsync?.();
-      } else {
-        videoRef.current.pauseAsync?.();
-      }
-    }
+    if (!videoRef.current) return;
+    if (isFocused) videoRef.current.playAsync?.();
+    else videoRef.current.pauseAsync?.();
   }, [isFocused, draft.video_url]);
 
-  // --- Image picker ---
-  const pickImage = async () => {
+  const ensurePermission = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Please grant photo library access to upload images.");
-      return;
+      Alert.alert("Permission needed", "Allow HostelHubb to use your photos in Settings.");
+      return false;
     }
+    return true;
+  };
 
+  const pickImage = async () => {
+    if (!(await ensurePermission())) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
-      allowsMultipleSelection: false,
+      allowsEditing: true,
+      aspect: [4, 3],
     });
-
-    if (!result.canceled) {
-      setDraft({ ...draft, front_image_url: result.assets[0].uri });
-    }
+    if (!result.canceled) setDraft({ ...draft, front_image_url: result.assets[0].uri });
   };
 
-  // --- Video picker ---
   const pickVideo = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission needed", "Please grant photo library access to upload videos.");
-      return;
-    }
-
+    if (!(await ensurePermission())) return;
     setVideoLoading(true);
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-      quality: 0.8,
-      allowsMultipleSelection: false,
-    });
-
-    if (!result.canceled) {
-      const videoAsset = result.assets[0];
-      const duration = videoAsset.duration || 0;
-
-      if (duration > 90000) {
-        setVideoLoading(false);
-        Alert.alert(
-          "Video too long",
-          "Please select or edit a video that is 1 minute 30 seconds or less."
-        );
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 0.8,
+        allowsMultipleSelection: false,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      if ((asset.duration || 0) > MAX_VIDEO_MS) {
+        Alert.alert("Video too long", "Choose or trim a video to 1 minute 30 seconds or less.");
         return;
       }
-
-      setDraft({ ...draft, video_url: videoAsset.uri });
+      setDraft({ ...draft, video_url: asset.uri });
+    } finally {
+      setVideoLoading(false);
     }
-    setVideoLoading(false);
   };
 
-  const removeImage = () => setDraft({ ...draft, front_image_url: null });
-  const removeVideo = () => setDraft({ ...draft, video_url: null });
-
-  // --- Validation ---
-  const isFormValid = () => draft.front_image_url && draft.video_url;
+  const ready = Boolean(draft.front_image_url && draft.video_url);
 
   const handleContinue = () => {
-    if (!isFormValid()) {
-      Alert.alert(
-        "Media missing",
-        "Please upload both a front image and a room tour video to continue."
-      );
+    if (!ready) {
+      Alert.alert("Add your photo and video", "Both a cover photo and a room tour video are needed.");
       return;
     }
     router.push("/Preview");
   };
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.subtitle}>
-            High-quality media helps students get a real feel for your space and increases interest in your listing.
-          </Text>
-        </View>
+    <SafeAreaView style={styles.screen}>
+      <StepHeader step={3} total={4} />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={type.display} accessibilityRole="header">Show students the room</Text>
 
-        {/* Image Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Front image</Text>
-          <Text style={styles.sectionHint}>
-            Choose a clear, well-lit photo that showcases your hostel's front image (not the room).
-          </Text>
-
-          {!draft.front_image_url ? (
-            <TouchableOpacity style={styles.uploadBox} onPress={pickImage} activeOpacity={0.7}>
-              <Ionicons name="image-outline" size={48} color="#DDDDDD" />
-              <Text style={styles.uploadText}>Tap to upload image</Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.previewContainer}>
-              <Image source={{ uri: draft.front_image_url }} style={styles.imagePreview} />
-              <TouchableOpacity style={styles.removeButton} onPress={removeImage}>
-                <Ionicons name="close-circle" size={28} color="#FF5A5F" />
-              </TouchableOpacity>
+        <Section title="Cover photo" hint="Shown before the video plays">
+          {draft.front_image_url ? (
+            <View>
+              <Image source={{ uri: draft.front_image_url }} style={styles.photo} accessibilityLabel="Cover photo" />
+              <StatusPill label="Added" tone="success" style={styles.pillOnMedia} />
+              <View style={styles.mediaAction}>
+                <Button title="Replace" variant="inverse" size="sm" onPress={pickImage} />
+              </View>
             </View>
-          )}
-        </View>
-
-        {/* Video Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Room tour video</Text>
-          <View style={styles.tipBox}>
-            <Ionicons name="bulb-outline" size={20} color="#717171" />
-            <Text style={styles.tipText}>
-              Keep it under 1 minute 30 seconds. Show all facilities and ensure the room is tidy and well-presented.
-            </Text>
-          </View>
-
-          {!draft.video_url ? (
-            <TouchableOpacity
-              style={styles.uploadBox}
-              onPress={pickVideo}
-              activeOpacity={0.7}
-              disabled={videoLoading}
-            >
-              <Ionicons name="videocam-outline" size={48} color="#DDDDDD" />
-              <Text style={styles.uploadText}>{videoLoading ? "Loading..." : "Tap to upload video"}</Text>
-              <Text style={styles.uploadSubtext}>Maximum 1 minute 30 seconds</Text>
-            </TouchableOpacity>
           ) : (
-            <View style={styles.previewContainer}>
+            <EmptyPicker icon="image-outline" title="Add a cover photo" subtitle="The front of the building works best" onPress={pickImage} />
+          )}
+        </Section>
+
+        <Section title="Room tour video" hint="Up to 1 min 30 s">
+          {draft.video_url ? (
+            <View>
               <Video
                 ref={videoRef}
                 source={{ uri: draft.video_url }}
-                style={styles.videoPreview}
+                style={styles.video}
                 useNativeControls
                 resizeMode="cover"
+                isLooping
               />
-              <TouchableOpacity style={styles.removeButton} onPress={removeVideo}>
-                <Ionicons name="close-circle" size={28} color="#FF5A5F" />
-              </TouchableOpacity>
+              <View style={styles.mediaAction}>
+                <Button title="Replace" variant="inverse" size="sm" onPress={pickVideo} />
+              </View>
             </View>
+          ) : (
+            <EmptyPicker
+              icon="videocam-outline"
+              title="Add a room tour video"
+              subtitle="From your gallery, 1 min 30 s or less"
+              onPress={pickVideo}
+              loading={videoLoading}
+            />
           )}
-        </View>
+        </Section>
 
-        <View style={{ height: 100 }} />
+        <Notice tone="info" title="Tips for a clip that gets booked">
+          Film in daylight, hold the phone upright(vertically, not horizontally), and walk slowly: door, bed, bathroom, then the view outside.
+        </Notice>
       </ScrollView>
-
-      {/* Sticky Continue Button */}
-      <View style={styles.stickyButton}>
-        <Button
-          buttonText="Continue"
-          onPressFunction={handleContinue}
-          variant={isFormValid() ? "default" : "inverted"}
-          customStyle={{ opacity: isFormValid() ? 1 : 0.4 }}
-        />
-      </View>
-    </View>
+      <PriceBar action={<Button title="Preview clip" onPress={handleContinue} disabled={!ready} />} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: "#fff" },
-  container: { flex: 1 },
-  contentContainer: { padding: 24, paddingTop: 32 },
-  header: { marginBottom: 32 },
-  subtitle: { fontSize: 16, lineHeight: 24, color: "#717171" },
-  section: { marginBottom: 32 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", color: "#222", marginBottom: 8 },
-  sectionHint: { fontSize: 14, color: "#717171", marginBottom: 16, lineHeight: 20 },
-  tipBox: { flexDirection: "row", backgroundColor: "#F7F7F7", padding: 12, borderRadius: 8, marginBottom: 16, alignItems: "flex-start" },
-  tipText: { fontSize: 13, color: "#717171", flex: 1, marginLeft: 8, lineHeight: 18 },
-  uploadBox: { borderWidth: 2, borderColor: "#DDDDDD", borderStyle: "dashed", borderRadius: 12, padding: 40, alignItems: "center", justifyContent: "center", backgroundColor: "#FAFAFA" },
-  uploadText: { fontSize: 16, color: "#717171", marginTop: 12, fontWeight: "500" },
-  uploadSubtext: { fontSize: 13, color: "#999", marginTop: 4 },
-  previewContainer: { position: "relative", borderRadius: 12, overflow: "hidden", borderWidth: 1, borderColor: "#E7E7E7" },
-  imagePreview: { width: "100%", height: 240, resizeMode: "cover" },
-  videoPreview: { width: "100%", height: 340 },
-  removeButton: { position: "absolute", top: 12, right: 12, backgroundColor: "#fff", borderRadius: 14 },
-  stickyButton: { position: "absolute", bottom: 0, left: 0, right: 0, padding: 10, paddingBottom: 10, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#F0F0F0" },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, gap: space.xl, paddingBottom: space.xxl },
+  drop: {
+    height: 170,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#A8A29E",
+    backgroundColor: colors.surfaceSunken,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+  },
+  dropIcon: { width: 52, height: 52, borderRadius: 26, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center", marginBottom: space.xs },
+  photo: { width: "100%", height: 190, borderRadius: radius.lg, backgroundColor: colors.fill },
+  video: { width: "100%", height: 300, borderRadius: radius.lg, backgroundColor: "#000000" },
+  pillOnMedia: { position: "absolute", top: space.sm, left: space.sm },
+  mediaAction: { position: "absolute", right: space.sm, bottom: space.sm },
 });

@@ -1,15 +1,16 @@
 import React, { useContext, useEffect, useState } from "react";
 import { View, StyleSheet, SafeAreaView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import AnimatedLoader from "../../components/Animation/AnimatedLoader";
-import AnimatedText from "../../components/Animation/AnimatedText";
-import BackgroundIcons from "../../components/Animation/BackgroundIcons";
+import AnimatedLoader from "../../components/ui/animation/AnimatedLoader";
+import AnimatedText from "../../components/ui/animation/AnimatedText";
+import BackgroundIcons from "../../components/ui/animation/BackgroundIcons";
 import { UserContext } from "../../context/UserContext";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 
 const Index = () => {
   const { user, isLoading } = useContext(UserContext);
   const router = useRouter();
+  const navigation = useNavigation();
   const [isReady, setIsReady] = useState(false); // Ensures delay + loading are both done
 
   useEffect(() => {
@@ -22,6 +23,9 @@ const Index = () => {
   }, []);
 
 useEffect(() => {
+  // When the app is opened from a link, the linked screen sits above this
+  // splash; don't replace it.
+  if (!navigation.isFocused()) return;
   if (isReady && !isLoading) {
     if (user) {
       if (user.emailVerified) {
@@ -33,7 +37,7 @@ useEffect(() => {
       router.replace("/FirstWelcomeScreen");
     }
   }
-}, [isReady, isLoading, user]);
+}, [isReady, isLoading, user, navigation]);
 
 
   // Always show splash while waiting

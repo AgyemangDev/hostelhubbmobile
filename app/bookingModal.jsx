@@ -6,12 +6,12 @@ import { UserContext } from "../context/UserContext";
 import { useAccommodationById } from "../hooks/accommodationContext/useAccommodationById";
 import { useBookingForm } from "../hooks/useBookingForm";
 import { useNotificationPermission } from "../hooks/notification/useNotificationPermission";
-import ProcessingState from "../components/BookingModalComponents/ProcessingState";
+import ProcessingState from "../components/accommodation/booking/ProcessingState";
 import { handleBookingProcess } from "../services/bookingServices";
 
-import BookingStepper from "../components/BookingModalComponents/BookingStepper";
-import SkeletonLoader from "../components/BookingModalComponents/LoadingState";
-import StepBookingSuccessScreen from "../components/BookingModalComponents/StepBookingSuccessScreen";
+import BookingStepper from "../components/accommodation/booking/BookingStepper";
+import SkeletonLoader from "../components/accommodation/booking/LoadingState";
+import StepBookingSuccessScreen from "../components/accommodation/booking/StepBookingSuccessScreen";
 
 const BOOKING_STEPS = {
   SELECT: "pending",

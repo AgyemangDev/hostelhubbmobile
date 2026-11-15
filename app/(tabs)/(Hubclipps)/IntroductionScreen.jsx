@@ -1,381 +1,85 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
-} from "react-native";
+import React, { useState } from "react";
+import { Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Button, Eyebrow, FadeIn, IconButton, PriceBar } from "../../../components/ui/ds";
+import { colors, radius, space, type } from "../../../constants/theme";
 
-import Button from "../../../components/ButtonComponents/ButtonComponent";
-import TermsLink from "../../../components/Links/TermsLink";
+const TERMS_URL = "https://hostelhubb.com/terms/hubclipps";
 
-const { width } = Dimensions.get("window");
-
-const FEATURES = [
-  {
-    icon: "🏠",
-    title: "Reach Verified Students",
-    desc: "Your listing goes directly to a trusted network of students actively looking for rooms.",
-  },
-  {
-    icon: "⚡",
-    title: "Seamless Handover",
-    desc: "We guide you through every step — from listing to handover — so nothing slips through.",
-  },
-  {
-    icon: "🔒",
-    title: "Safe & Trusted",
-    desc: "Every user is verified. Your details stay protected throughout the entire process.",
-  },
+const REASONS = [
+  { icon: "people-outline", title: "Seen by verified students", body: "Shown to students at your school who are looking right now." },
+  { icon: "shield-checkmark-outline", title: "Checked before it goes live", body: "Our team reviews every clip, usually within a day." },
+  { icon: "swap-horizontal-outline", title: "We guide the handover", body: "From the first request to keys changing hands." },
 ];
 
 export default function IntroductionScreen() {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
 
-  // Staggered entrance animations
-  const fadeHeader  = useRef(new Animated.Value(0)).current;
-  const slideHeader = useRef(new Animated.Value(24)).current;
-
-  const fadeCards  = FEATURES.map(() => useRef(new Animated.Value(0)).current);
-  const slideCards = FEATURES.map(() => useRef(new Animated.Value(20)).current);
-
-  const fadeTerms = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(fadeHeader,  { toValue: 1, duration: 500, useNativeDriver: true }),
-        Animated.timing(slideHeader, { toValue: 0, duration: 500, useNativeDriver: true }),
-      ]),
-      Animated.stagger(
-        100,
-        FEATURES.map((_, i) =>
-          Animated.parallel([
-            Animated.timing(fadeCards[i],  { toValue: 1, duration: 400, useNativeDriver: true }),
-            Animated.timing(slideCards[i], { toValue: 0, duration: 400, useNativeDriver: true }),
-          ])
-        )
-      ),
-      Animated.timing(fadeTerms, { toValue: 1, duration: 400, useNativeDriver: true }),
-    ]).start();
-  }, []);
-
-  const handleContinue = () => {
-    if (!agreed) {
-      Alert.alert("One more step", "Please read and accept the terms and conditions to continue.");
-      return;
-    }
-    router.push("/AccommodationInfoScreen");
-  };
-
   return (
-    <View style={styles.wrapper}>
-      {/* Decorative top-right blob */}
-      <View style={styles.blobTop} />
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Hero Header ── */}
-        <Animated.View
-          style={[
-            styles.header,
-            { opacity: fadeHeader, transform: [{ translateY: slideHeader }] },
-          ]}
-        >
-          <View style={styles.badgePill}>
-            <Text style={styles.badgeText}>HubClipps · Listings</Text>
-          </View>
-          <Text style={styles.title}>List your room,{"\n"}find the right fit.</Text>
-          <Text style={styles.subtitle}>
-            Leaving your accommodation? Hand it over smoothly through HubClipps — the trusted student accommodation platform.
+    <SafeAreaView style={styles.screen}>
+      <View style={styles.top}>
+        <IconButton icon="close" accessibilityLabel="Close" onPress={() => router.back()} />
+      </View>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <FadeIn style={{ gap: space.xs }}>
+          <Eyebrow>HUBCLIPS · POST A ROOM</Eyebrow>
+          <Text style={styles.title} accessibilityRole="header">Moving out? Find the next student for your room.</Text>
+          <Text style={[type.body, { color: colors.textSecondary }]}>
+            Post a short video tour. Students near your campus book through HostelHubb, and we handle the rest.
           </Text>
-        </Animated.View>
+        </FadeIn>
 
-        {/* ── Feature Cards ── */}
-        <View style={styles.cardsSection}>
-          {FEATURES.map((f, i) => (
-            <Animated.View
-              key={i}
-              style={[
-                styles.card,
-                { opacity: fadeCards[i], transform: [{ translateY: slideCards[i] }] },
-              ]}
-            >
-              <View style={styles.cardIconWrap}>
-                <Text style={styles.cardIcon}>{f.icon}</Text>
+        <FadeIn delay={80} style={{ gap: space.lg }}>
+          {REASONS.map((r) => (
+            <View key={r.title} style={styles.reason}>
+              <View style={styles.reasonIcon}>
+                <Ionicons name={r.icon} size={20} color={colors.text} />
               </View>
-              <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>{f.title}</Text>
-                <Text style={styles.cardDesc}>{f.desc}</Text>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={type.bodyStrong}>{r.title}</Text>
+                <Text style={[type.caption, { color: colors.textSecondary }]}>{r.body}</Text>
               </View>
-            </Animated.View>
+            </View>
           ))}
-        </View>
-
-        {/* ── Terms Card ── */}
-        <Animated.View style={[styles.termsCard, { opacity: fadeTerms }]}>
-          <View style={styles.termsHeader}>
-            <View style={styles.termsDot} />
-            <Text style={styles.termsTitle}>Before you continue</Text>
-          </View>
-
-          <Text style={styles.termsBody}>
-            By listing your accommodation on HubClipps, you agree to provide accurate
-            information about your room and its availability. You are responsible for
-            ensuring you have the right to sublet or transfer your accommodation contract.
-            {"\n\n"}
-            All listings will be reviewed to ensure they meet our community standards before appearing on our platform.
-            You must respond to inquiries within 24 hours if we find a match for you.
-            {"\n\n"}
-            Read all of our terms and conditions by clicking on terms and conditions and agree before moving on.
-          </Text>
-
-          {/* Checkbox row — uses your TermsLink component */}
-          <TouchableOpacity
-            style={styles.checkRow}
-            onPress={() => setAgreed(!agreed)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, agreed && styles.checkboxOn]}>
-              {agreed && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <View style={styles.checkLabelRow}>
-              <Text style={styles.checkLabel}>I agree to the </Text>
-              <TermsLink
-                link="https://hostelhubb.com/terms/hubclipps"
-                text="terms and conditions"
-              />
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-
-        {/* Spacer clears sticky bar */}
-        <View style={{ height: 112 }} />
+        </FadeIn>
       </ScrollView>
 
-      {/* ── Sticky Bottom Button — uses your Button component ── */}
-      <View style={styles.stickyBar}>
-        <Button
-          buttonText="Continue"
-          onPressFunction={handleContinue}
-          variant={agreed ? "default" : "inverted"}
-          customStyle={{ opacity: agreed ? 1 : 0.45 }}
-        />
-      </View>
-    </View>
+      <PriceBar>
+        <View style={{ flex: 1, gap: space.sm }}>
+          <Pressable
+            onPress={() => setAgreed((v) => !v)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: agreed }}
+            style={styles.agree}
+          >
+            <View style={[styles.box, agreed && styles.boxOn]}>
+              {agreed ? <Ionicons name="checkmark" size={14} color={colors.textInverse} /> : null}
+            </View>
+            <Text style={[type.caption, { flex: 1, color: colors.text }]}>
+              I have the right to offer this room and agree to the{" "}
+              <Text style={{ fontWeight: "700", textDecorationLine: "underline" }} onPress={() => Linking.openURL(TERMS_URL)}>
+                Hubclips listing terms
+              </Text>
+              .
+            </Text>
+          </Pressable>
+          <Button title="Get started" disabled={!agreed} onPress={() => router.push("/AccommodationInfoScreen")} />
+        </View>
+      </PriceBar>
+    </SafeAreaView>
   );
 }
 
-/* ─────────────────────────────────────────
-   Design tokens
-───────────────────────────────────────── */
-const CREAM      = "#FAF8F4";
-const INK        = "#1A1A2E";
-const BRAND      = "#2D6BE4";
-const BRAND_LIGHT = "#EEF3FD";
-const MUTED      = "#6B7280";
-const BORDER     = "#E8E4DD";
-
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-  },
-
-  /* Background blob */
-  blobTop: {
-    position: "absolute",
-    top: -80,
-    right: -60,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: BRAND_LIGHT,
-    opacity: 0.55,
-  },
-
-  scrollContent: {
-    paddingHorizontal: 22,
-    paddingTop: 64,
-  },
-
-  /* ── Header ── */
-  header: {
-    marginBottom: 32,
-  },
-  badgePill: {
-    alignSelf: "flex-start",
-    backgroundColor: BRAND_LIGHT,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginBottom: 16,
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: BRAND,
-    letterSpacing: 0.7,
-    textTransform: "uppercase",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: INK,
-    lineHeight: 40,
-    letterSpacing: -0.5,
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 15,
-    color: MUTED,
-    lineHeight: 23,
-    fontWeight: "400",
-  },
-
-  /* ── Feature Cards ── */
-  cardsSection: {
-    gap: 12,
-    marginBottom: 28,
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
-    shadowColor: INK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-    gap: 14,
-  },
-  cardIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: BRAND_LIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardIcon: { fontSize: 20 },
-  cardText: { flex: 1 },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: INK,
-    marginBottom: 3,
-  },
-  cardDesc: {
-    fontSize: 13,
-    color: MUTED,
-    lineHeight: 19,
-    fontWeight: "400",
-  },
-
-  /* ── Terms Card ── */
-  termsCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: BORDER,
-    shadowColor: INK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  termsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 12,
-  },
-  termsDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: BRAND,
-  },
-  termsTitle: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: INK,
-    textTransform: "uppercase",
-    letterSpacing: 0.6,
-  },
-  termsBody: {
-    fontSize: 13,
-    color: MUTED,
-    lineHeight: 21,
-    marginBottom: 20,
-    fontWeight: "400",
-  },
-
-  /* Checkbox */
-  checkRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: BORDER,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxOn: {
-    backgroundColor: BRAND,
-    borderColor: BRAND,
-  },
-  checkmark: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "800",
-    lineHeight: 14,
-  },
-  checkLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-    flex: 1,
-  },
-  checkLabel: {
-    fontSize: 14,
-    color: INK,
-    fontWeight: "400",
-  },
-
-  /* ── Sticky Bottom Bar ── */
-  stickyBar: {
-    position: "absolute",
-    bottom: -30,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 22,
-    paddingBottom: 36,
-    paddingTop: 16,
-    backgroundColor: CREAM,
-    borderTopWidth: 1,
-    borderTopColor: BORDER,
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  top: { paddingHorizontal: space.xs, paddingTop: space.xxs },
+  scroll: { padding: space.lg, paddingTop: space.xs, gap: space.xxl, paddingBottom: space.xxl },
+  title: { fontSize: 30, lineHeight: 36, fontWeight: "800", letterSpacing: -0.5, color: colors.text },
+  reason: { flexDirection: "row", gap: space.sm + 2, alignItems: "flex-start" },
+  reasonIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
+  agree: { flexDirection: "row", gap: space.sm, alignItems: "flex-start", minHeight: 44 },
+  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#A8A29E", alignItems: "center", justifyContent: "center", marginTop: 1 },
+  boxOn: { backgroundColor: colors.text, borderColor: colors.text },
 });

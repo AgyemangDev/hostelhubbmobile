@@ -25,7 +25,11 @@
         "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
         "NSPhotoLibraryUsageDescription": "Hostelhubb needs access to your photo library to allow you to upload images of your receipt",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": [
+        "applinks:hostelhubb.com",
+        "applinks:www.hostelhubb.com"
+      ]
     },
     "android": {
       "permissions": [
@@ -55,8 +59,91 @@
               "pathPrefix": "/hostel"
             },
             {
-              "scheme": "hostelhubb",
-              "host": "*"
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/hostels"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/clips"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/storage"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/transport"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/bookings"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/wallet"
+            },
+            {
+              "scheme": "https",
+              "host": "hostelhubb.com",
+              "pathPrefix": "/refer"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/hostel"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/hostels"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/clips"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/storage"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/transport"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/bookings"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/wallet"
+            },
+            {
+              "scheme": "https",
+              "host": "www.hostelhubb.com",
+              "pathPrefix": "/refer"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "hostelhubb"
             }
           ],
           "category": [
@@ -84,25 +171,7 @@
         "projectId": "08c63846-777e-4efa-b66c-cd905718a34c"
       },
       "router": {
-        "origin": false,
-        "links": [
-          {
-            "prefix": "hostelhubb://",
-            "screens": {
-              "Details": {
-                "path": "Details/:id"
-              }
-            }
-          },
-          {
-            "prefix": "https://hostelhubb.com",
-            "screens": {
-              "Details": {
-                "path": "hostel/:id"
-              }
-            }
-          }
-        ]
+        "origin": false
       }
     },
     "runtimeVersion": {

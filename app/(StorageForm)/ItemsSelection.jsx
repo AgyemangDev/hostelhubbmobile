@@ -1,11 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, Alert, StyleSheet, Text, ActivityIndicator } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import ItemCard from "../../components/Storage/ItemCard";
-import BottomButton from "../../components/ButtonComponents/BottomButton";
+import ItemCard from "../../components/storage/ItemCard";
+import { Button, EmptyState, FadeIn, PriceBar, StepHeader, money } from "../../components/ui/ds";
+import { colors, space, type } from "../../constants/theme";
+import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 
 import { fetchStorageItems } from "../../utils/storageItems";
 
@@ -77,71 +79,57 @@ export default function ItemsSelection() {
     router.push("PickupDeliveryInfo");
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#0B7A6F" />
-        <Text style={{ marginTop: 10 }}>Loading items...</Text>
-      </View>
-    );
-  }
+  const count = reservation.items.reduce((n, i) => n + i.quantity, 0);
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.screen}>
+      <StepHeader step={stepOf("ItemsSelection")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.scroll}>
-        {storageItems.map((item) => {
-          const selectedItem = getSelectedItem(item.id);
+        <View style={{ gap: space.xs }}>
+          <Text style={type.display} accessibilityRole="header">What are you storing?</Text>
+          <Text style={[type.body, { color: colors.textSecondary }]}>Tap a photo to see the size.</Text>
+        </View>
 
-          return (
-            <ItemCard
-              key={item.id}
-              item={item}
-              selectedItem={selectedItem}
-              onSelect={() => toggleSelect(item)}
-              onIncrease={() =>
-                upsertItem({
-                  ...selectedItem,
-                  quantity: selectedItem.quantity + 1,
-                })
-              }
-              onDecrease={() => {
-                if (selectedItem.quantity === 1) {
-                  removeItem(item.id);
-                } else {
-                  upsertItem({
-                    ...selectedItem,
-                    quantity: selectedItem.quantity - 1,
-                  });
-                }
-              }}
-            />
-          );
-        })}
+        {loading ? (
+          <ActivityIndicator color={colors.brand} style={{ marginTop: space.xl }} />
+        ) : storageItems.length === 0 ? (
+          <EmptyState icon="cube-outline" title="No items to show" body="We couldn't load storage items. Pull down or try again shortly." />
+        ) : (
+          <FadeIn>
+            {storageItems.map((item, index) => {
+              const selectedItem = getSelectedItem(item.id);
+              return (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  last={index === storageItems.length - 1}
+                  selectedItem={selectedItem}
+                  onSelect={() => toggleSelect(item)}
+                  onIncrease={() => upsertItem({ ...selectedItem, quantity: selectedItem.quantity + 1 })}
+                  onDecrease={() => {
+                    if (selectedItem.quantity === 1) removeItem(item.id);
+                    else upsertItem({ ...selectedItem, quantity: selectedItem.quantity - 1 });
+                  }}
+                />
+              );
+            })}
+            <Text style={[type.caption, { color: colors.textSecondary, marginTop: space.md }]}>
+              Prices are set by HostelHubb and checked again when you pay.
+            </Text>
+          </FadeIn>
+        )}
       </ScrollView>
 
-      {/* Sticky button with total price */}
-      <View style={styles.stickyButton}>
-        <BottomButton
-          buttonText={hasItems ? `Continue - GH₵ ${totalAmount.toFixed(2)}` : "Continue"}
-          onPressFunction={proceed}
-        />
-      </View>
-    </View>
+      <PriceBar
+        amount={money(totalAmount)}
+        caption={count ? `${count} item${count === 1 ? "" : "s"}` : "Nothing added yet"}
+        action={<Button title="Continue" onPress={proceed} disabled={!hasItems} style={{ paddingHorizontal: space.xl }} />}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f6f6f6" },
-
-  scroll: {
-    padding: 16,
-    paddingBottom: 160,
-  },
-
-  stickyButton: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
 });

@@ -1,7 +1,7 @@
 import { signInWithCustomToken } from "firebase/auth";
 import { Alert } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { auth } from "../../app/firebase/FirebaseConfig";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 import API_BASE_URL from "../api/api";
 
 /**

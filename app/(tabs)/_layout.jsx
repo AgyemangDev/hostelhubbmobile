@@ -1,9 +1,13 @@
 import { StyleSheet, View } from 'react-native';
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import { Ionicons, Octicons } from '@expo/vector-icons';
-import { WhatsAppButton } from '../../components/ButtonComponents/WhatsAppButton';
+import { WhatsAppButton } from '../../components/ui/buttons/WhatsAppButton';
 
 const Layout = () => {
+  // The floating WhatsApp button is hidden everywhere in Hubclips (feed and
+  // posting screens): it covers the video and the clip's own actions.
+  const segments = useSegments();
+  const inHubclips = segments.includes('(Hubclipps)');
   return (
     <View style={{ flex: 1 }}>
       <Tabs
@@ -76,9 +80,11 @@ const Layout = () => {
         />
       </Tabs>
 
-      <View style={styles.fab} pointerEvents="box-none">
-        <WhatsAppButton size={60} />
-      </View>
+      {inHubclips ? null : (
+        <View style={styles.fab} pointerEvents="box-none">
+          <WhatsAppButton size={60} />
+        </View>
+      )}
     </View>
   );
 };

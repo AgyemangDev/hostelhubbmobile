@@ -1,11 +1,11 @@
 import React, { useContext, useCallback, useState } from "react";
 import { View, SafeAreaView } from "react-native";
-import ReusableTabs from "../../../components/Tabs/ReusableTabs";
+import ReusableTabs from "../../../components/ui/tabs/ReusableTabs";
 import AllBookings from "./AllBookings";
 import PaidBookings from "./PaidBookings";
 import { UserContext } from "../../../context/UserContext";
 import { useBookingsContext } from "../../../context/BookingsContext";
-import NoAccountPrompt from "../../../components/Authentication/NoAccountPrompt";
+import NoAccountPrompt from "../../../components/auth/NoAccountPrompt";
 
 const Index = ({ navigation }) => {
   const { userInfo } = useContext(UserContext);

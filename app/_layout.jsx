@@ -4,9 +4,9 @@ import * as Linking from "expo-linking";
 import Toast from "react-native-toast-message";
 import { setupProviders } from "../utils/providers";
 import { checkForAppUpdates } from "../utils/update";
-import MainLayout from "../components/MainLayout";
-import ReviewPromptWrapper from "../Global/ReviewPromptWrapper";
-import notificationService from "./firebase/notificationService";
+import MainLayout from "../components/layout/MainLayout";
+import ReviewPromptWrapper from "../components/layout/ReviewPromptWrapper";
+import notificationService from "../lib/firebase/notificationService";
 import { AppState } from "react-native";
 import { extractReferralCode, savePendingReferral } from "../utils/referralStorage";
 

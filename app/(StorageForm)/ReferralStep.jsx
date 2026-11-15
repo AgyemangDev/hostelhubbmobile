@@ -1,11 +1,12 @@
 import { useState, useContext, useEffect } from "react";
-import { View, Text, TextInput, StyleSheet, ActivityIndicator, Pressable, Share } from "react-native";
+import { SafeAreaView, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import Button from "../../components/ButtonComponents/ButtonComponent";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import { UserContext } from "../../context/UserContext";
-import COLORS from "../../constants/Colors";
+import { Button, Card, FadeIn, Notice, PriceBar, StepHeader, TextField } from "../../components/ui/ds";
+import { colors, radius, space, type } from "../../constants/theme";
+import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 import API_BASE_URL from "../../utils/api/api";
 import {
   clearPendingReferral,
@@ -110,143 +111,68 @@ export default function ReferralStep() {
       console.warn("Failed to open share sheet:", e);
     }
   };
-
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Were you referred?</Text>
-        <Text style={styles.subtitle}>
-          If someone gave you a referral code, enter it below to credit them.
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Enter referral code"
-          placeholderTextColor={COLORS.placeholder}
-          autoCapitalize="characters"
-          value={code}
-          editable={!checking}
-          onChangeText={(text) => {
-            setCode(text);
-            setMatched(null);
-            setError(null);
-          }}
-        />
-
-        {checking && <ActivityIndicator color={COLORS.primary} style={{ marginTop: 12 }} />}
-
-        {!checking && matched && (
-          <View style={styles.matchBox}>
-            <Text style={styles.matchText}>
-              Referred by {matched.firstname} {matched.surname}
-            </Text>
-          </View>
-        )}
-
-        {!checking && error && <Text style={styles.errorText}>{error}</Text>}
-
-        {!matched && (
-          <Button
-            buttonText={checking ? "Checking..." : "Check code"}
-            disabled={checking || !code.trim()}
-            onPressFunction={handleCheck}
-          />
-        )}
-
-        {/* Share & earn section */}
-        <View style={styles.shareCard}>
-          <Text style={styles.shareTitle}>Share &amp; earn</Text>
-          <Text style={styles.shareBody}>
-            Invite friends with your referral code. When they book, you earn a share of
-            HostelHubb's revenue from that booking — they never pay extra.
+    <SafeAreaView style={styles.screen}>
+      <StepHeader step={stepOf("ReferralStep")} total={STORAGE_TOTAL_STEPS} />
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={{ gap: space.xs }}>
+          <Text style={type.display} accessibilityRole="header">Referred by a friend?</Text>
+          <Text style={[type.body, { color: colors.textSecondary }]}>
+            Enter their code and they earn a reward when you pay. It doesn't change your price.
           </Text>
-
-          <View style={styles.codeRow}>
-            <View style={styles.codePill}>
-              <Text style={styles.codeText}>{myReferralCode}</Text>
-            </View>
-
-            <Pressable onPress={handleShare} style={styles.iconButton}>
-              <Ionicons name="share-social-outline" size={20} color={COLORS.teal} />
-            </Pressable>
-          </View>
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <Button
-          buttonText={matched ? "Continue" : "I wasn't referred"}
-          onPressFunction={matched ? confirmReferrer : skipReferral}
-          buttonStyle={!matched ? styles.skipButton : undefined}
-          textStyle={!matched ? styles.skipButtonText : undefined}
-        />
-      </View>
-    </View>
+        <View style={{ gap: space.sm }}>
+          <TextField
+            label="Friend's referral code"
+            value={code}
+            onChangeText={(t) => {
+              setCode(t);
+              setMatched(null);
+              setError(null);
+            }}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            placeholder="e.g. KOFI26"
+            returnKeyType="search"
+            onSubmitEditing={handleCheck}
+            error={error}
+          />
+          {!matched ? (
+            <Button title="Check code" variant="secondary" onPress={handleCheck} loading={checking} disabled={!code.trim()} />
+          ) : null}
+        </View>
+
+        {matched ? (
+          <FadeIn>
+            <Notice tone="success" title={`${[matched.firstname, matched.surname].filter(Boolean).join(" ")} will get the reward`}>
+              Continue to confirm. You can still skip if this isn't right.
+            </Notice>
+          </FadeIn>
+        ) : null}
+
+        <Card style={styles.mine}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={[type.label, { color: colors.textSecondary }]}>YOUR CODE</Text>
+            <Text style={[type.title, { letterSpacing: 1 }]}>{myReferralCode}</Text>
+            <Text style={[type.caption, { color: colors.textSecondary }]}>Share it and earn 5% when friends pay.</Text>
+          </View>
+          <Button title="Share" icon="share-outline" variant="secondary" size="sm" onPress={handleShare} />
+        </Card>
+      </ScrollView>
+
+      <PriceBar>
+        <View style={{ flex: 1, flexDirection: "row", gap: space.sm }}>
+          <Button title="Skip" variant="secondary" onPress={skipReferral} style={{ flex: 1 }} />
+          <Button title="Continue" onPress={confirmReferrer} disabled={!matched} style={{ flex: 1.4 }} />
+        </View>
+      </PriceBar>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: { flex: 1, backgroundColor: "#FDFBFA", justifyContent: "space-between" },
-  container: { padding: 20 },
-  title: { fontSize: 21, fontWeight: "700", marginBottom: 6, color: COLORS.textDark },
-  subtitle: { fontSize: 14, color: COLORS.textMuted, marginBottom: 22, lineHeight: 19 },
-  input: {
-    borderWidth: 1.5,
-    borderColor: "#E7E2E2",
-    backgroundColor: "#FBF8F8",
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    marginBottom: 16,
-    color: COLORS.textDark,
-  },
-  matchBox: {
-    backgroundColor: COLORS.success,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 16,
-    shadowColor: COLORS.success,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  matchText: { color: COLORS.white, fontWeight: "600" },
-  errorText: { color: COLORS.button, marginBottom: 16, fontSize: 13 },
-
-  shareCard: {
-    marginTop: 20,
-    backgroundColor: "#F3F8F6",
-    borderWidth: 1,
-    borderColor: "#DCEBE6",
-    borderRadius: 14,
-    padding: 18,
-  },
-  shareTitle: { fontSize: 15, fontWeight: "700", color: COLORS.teal, marginBottom: 6 },
-  shareBody: { fontSize: 13, color: COLORS.textMuted, lineHeight: 19 },
-  codeRow: { flexDirection: "row", alignItems: "center", marginTop: 14, gap: 8 },
-  codePill: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: COLORS.teal,
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
-  codeText: { fontSize: 15, fontWeight: "700", color: COLORS.teal, letterSpacing: 1.5 },
-  iconButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: "#DCEBE6",
-  },
-
-  footer: { padding: 20, gap: 10 },
-  skipButton: { backgroundColor: "transparent", borderWidth: 1, borderColor: COLORS.textMuted },
-  skipButtonText: { color: COLORS.textMuted },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, gap: space.xl, paddingBottom: space.xxl },
+  mine: { flexDirection: "row", alignItems: "center", gap: space.md, borderRadius: radius.lg },
 });

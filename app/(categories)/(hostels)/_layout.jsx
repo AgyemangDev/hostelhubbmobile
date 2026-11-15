@@ -1,7 +1,7 @@
 // app/(categories)/(hostels)/_layout.jsx
 import { Stack } from 'expo-router';
 import { SafeAreaView, View } from 'react-native';
-import SearchBar from '../../../components/SearchComponents/SearchInput';
+import SearchBar from '../../../components/accommodation/search/SearchInput';
 import { useRouter } from 'expo-router'; // ✅ Change this
 
 export default function HostelLayout() {

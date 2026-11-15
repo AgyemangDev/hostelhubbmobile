@@ -45,7 +45,7 @@ export function useResumePayment() {
           if (status.status === "success") {
             onDone?.("success");
             router.push({
-              pathname: "/(categories)/(transport)/Ticket",
+              pathname: "/(categories)/(transport)/unigo/Ticket",
               params: { groupRef, justPaid: "1" },
             });
             return;

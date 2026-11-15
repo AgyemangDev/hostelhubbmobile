@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 import LottieView from "lottie-react-native";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../../constants/Colors";
-import Button from "../../../components/ButtonComponents/ButtonComponent";
+import Button from "../../../components/ui/buttons/ButtonComponent";
 import { useRouter } from "expo-router";
 
 const WHAT_NEXT = [

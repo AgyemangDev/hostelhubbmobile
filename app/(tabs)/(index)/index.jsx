@@ -5,15 +5,15 @@ import {
   SafeAreaView,
   ScrollView,
 } from "react-native";
-import CustomHeader from "../../../components/Headers/CustomHeader";
-import HorizontalScrollCardComponent from "../../../components/HomeComponents/HorizontalScrollCardComponent";
-import CategoryNavigationCards from "../../../components/HomeComponents/CategoryNavigationCards";
-import BenefitSlider from "../../../components/Sliders/BenefitSlider";
+import HomeHeader from "../../../components/home/HomeHeader";
+import HorizontalScrollCardComponent from "../../../components/home/HorizontalScrollCardComponent";
+import CategoryNavigationCards from "../../../components/home/CategoryNavigationCards";
+import BenefitSlider from "../../../components/home/BenefitSlider";
 import { hostelBenefits } from "../../../assets/data/SlideData";
-import StorageBannerSlider from "../../../components/Sliders/StorageBannerSlider";
-import notificationService from "../../firebase/notificationService";
+import StorageBannerSlider from "../../../components/home/StorageBannerSlider";
+import notificationService from "../../../lib/firebase/notificationService";
 import { UserContext } from "../../../context/UserContext";
-import NotificationPromptBanner from "../../../components/BannerComponents/Notificationpromptbanner";
+import NotificationPromptBanner from "../../../components/home/Notificationpromptbanner";
 
 const Index = () => {
   const { user, userInfo, patchUserData } = useContext(UserContext);
@@ -74,7 +74,7 @@ const Index = () => {
         stickyHeaderIndices={[0]}
       >
         <View style={styles.headerWrapper}>
-          <CustomHeader />
+          <HomeHeader />
         </View>
 
         {showNotificationPrompt && (

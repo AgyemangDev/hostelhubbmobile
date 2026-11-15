@@ -1,104 +1,45 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { onVideo } from "../../constants/theme";
 
-const CATEGORY_LABELS = {
-  hostel: "Hostel",
-  homestel: "Homestel",
-  apartment: "Apartment",
-};
+const CATEGORY_LABELS = { hostel: "Hostel", homestel: "Homestel", apartment: "Apartment" };
 
-function CategoryTag({ category }) {
-  const label =
-    CATEGORY_LABELS[category?.toLowerCase()] ||
-    category?.charAt(0).toUpperCase() + category?.slice(1);
-
-  const tagColors = {
-    hostel: { bg: "rgba(255,180,0,0.25)", border: "#FFB400", text: "#FFD966" },
-    homestel: { bg: "rgba(100,200,150,0.25)", border: "#64C896", text: "#90DEB8" },
-    apartment: { bg: "rgba(100,160,255,0.25)", border: "#64A0FF", text: "#99C0FF" },
-  };
-
-  const colors = tagColors[category?.toLowerCase()] || {
-    bg: "rgba(255,255,255,0.15)",
-    border: "rgba(255,255,255,0.4)",
-    text: "#fff",
-  };
-
-  return (
-    <View
-      style={{
-        alignSelf: "flex-start",
-        backgroundColor: colors.bg,
-        borderWidth: 1,
-        borderColor: colors.border,
-        borderRadius: 6,
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-      }}
-    >
-      <Text style={{ color: colors.text, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 }}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function AmenitiesList({ amenities }) {
-  const [expanded, setExpanded] = useState(false);
-
-  const preview = amenities.slice(0, 6).join(" · ");
-  const full = amenities.join(" · ");
-
-  return (
-    <TouchableOpacity activeOpacity={0.8} onPress={() => setExpanded(!expanded)} style={{ marginTop: 10 }}>
-      <Text
-        style={{ color: "#fff", fontSize: 12, lineHeight: 18 }}
-        numberOfLines={expanded ? undefined : 3}
-      >
-        {amenities.join(" · ")}
-      </Text>
-      <Text style={{ color: "#aaa", fontSize: 11, marginTop: 3, fontStyle: "italic" }}>
-        {expanded ? "Show less ↑" : "Show more ↓"}
-      </Text>
-    </TouchableOpacity>
-  );
-}
-
+/** Bottom-left of a clip: place, room, location, amenities (tap to expand). */
 export default function LeftInfo({ item }) {
+  const [expanded, setExpanded] = useState(false);
+  const category = CATEGORY_LABELS[item.category?.toLowerCase()] || item.category;
+  const amenities = Array.isArray(item.amenities) ? item.amenities : [];
+  const title = item.hostel_name || [item.room_type, category].filter(Boolean).join(" · ");
+
   return (
-    <View style={{ maxWidth: "75%" }}>
-     
-
-<View
-  style={{
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",
-  }}
->
-  <Text
-    style={{
-      color: "white",
-      fontSize: 18,
-      fontWeight: "bold",
-      marginRight: 8,
-    }}
-  >
-    {item.room_type}
-  </Text>
-
-  <CategoryTag category={item.category} />
-</View>
-
-      <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-        <MaterialIcons name="location-on" color="white" size={14} />
-        <Text style={{ color: "white", fontSize: 13, marginLeft: 2 }}>
-          {item.location} — {item.institution}
+    <View style={styles.wrap}>
+      <Text style={styles.title} numberOfLines={2}>{title}</Text>
+      <Text style={styles.meta} numberOfLines={1}>
+        {[item.room_type, category].filter(Boolean).join(" · ")}
+      </Text>
+      <View style={styles.row}>
+        <Ionicons name="location-outline" size={14} color="#FFFFFF" style={shadow} />
+        <Text style={styles.meta} numberOfLines={1}>
+          {[item.location, item.institution].filter(Boolean).join(" · ")}
         </Text>
       </View>
-
-      <AmenitiesList amenities={item.amenities} />
+      {amenities.length ? (
+        <Pressable onPress={() => setExpanded((v) => !v)} accessibilityRole="button" accessibilityLabel={expanded ? "Show fewer amenities" : "Show all amenities"} hitSlop={6}>
+          <Text style={styles.amenities} numberOfLines={expanded ? undefined : 1}>
+            {amenities.join(" · ")}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
+
+const shadow = onVideo.text;
+const styles = StyleSheet.create({
+  wrap: { flex: 1, gap: 4, paddingRight: 12 },
+  title: { color: "#FFFFFF", fontSize: 22, lineHeight: 27, fontWeight: "800", letterSpacing: -0.2, ...shadow },
+  meta: { color: "#E7E5E4", fontSize: 14, fontWeight: "600", ...shadow },
+  row: { flexDirection: "row", alignItems: "center", gap: 4 },
+  amenities: { color: "#E7E5E4", fontSize: 13, lineHeight: 18, fontWeight: "500", marginTop: 2, ...shadow },
+});

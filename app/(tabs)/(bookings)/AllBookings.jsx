@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import Colors from "../../../constants/Colors";
-import BookingList from "../../../components/BookingsComponent/BookingList";
-import EmptyState from "../../../components/BookingsComponent/EmptyState";
+import BookingList from "../../../components/bookings/BookingList";
+import EmptyState from "../../../components/bookings/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
-import BookingsSkeleton from "../../../components/Loading/BookingsSkeleton";
+import BookingsSkeleton from "../../../components/bookings/BookingsSkeleton";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
-import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage";
+import ErrorMessage from "../../../components/ui/feedback/ErrorMessage";
 
 const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =

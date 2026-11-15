@@ -13,7 +13,7 @@ import {
 import React, { useRef } from "react";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { ExternalLink } from "@/components/ExternalLink";
+import { ExternalLink } from "@/components/ui/links/ExternalLink";
 import { BlurView } from "expo-blur";
 
 const { width, height } = Dimensions.get("window");

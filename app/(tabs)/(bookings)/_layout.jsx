@@ -33,7 +33,7 @@ const _layout = () => {
       />
       <Stack.Screen
         name="StorageBookingDetails"
-        options={{ header: () => <CustomHeader title="Storage Details" showBack /> }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PaidBookings"

@@ -5,13 +5,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import FormInput from '../../../components/InputFields/FormInput';
-import FormDropdown from '../../../components/InputFields/FormDropDown';
-import CheckoutButton from '../../../components/CheckoutComponents/CheckoutButton';
+import FormInput from '../../../components/ui/inputs/FormInput';
+import FormDropdown from '../../../components/ui/inputs/FormDropDown';
+import CheckoutButton from '../../../components/shop/checkout/CheckoutButton';
 import { Ionicons } from '@expo/vector-icons';
 import { UserContext } from '../../../context/UserContext';
 import { WalletContext } from '../../../context/WalletContext';
-import OverlayLoader from '../../../components/Animation/OverlayLoader';
+import OverlayLoader from '../../../components/ui/animation/OverlayLoader';
 import axios from 'axios';
 
 const PaymentScreen = () => {

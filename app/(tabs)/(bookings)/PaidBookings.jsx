@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl } from "react-native";
-import PaidBookingList from "../../../components/BookingsComponent/PaidBookingList";
-import EmptyState from "../../../components/BookingsComponent/EmptyState";
+import PaidBookingList from "../../../components/bookings/PaidBookingList";
+import EmptyState from "../../../components/bookings/EmptyState";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
-import ErrorMessage from "../../../components/ErrorMessage/ErrorMessage"
+import ErrorMessage from "../../../components/ui/feedback/ErrorMessage"
 import Colors from "../../../constants/Colors";
 
 const PaidBookings = ({ navigation, refreshing, onRefresh }) => {

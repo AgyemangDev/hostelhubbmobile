@@ -1,7 +1,7 @@
 // hooks/transport/useFetchTransportBookings.js
 import { useState, useEffect, useCallback } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../app/firebase/FirebaseConfig";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 import { listBookings } from "../../utils/api/transportUnigo";
 
 /**
@@ -28,7 +28,7 @@ export const useFetchTransportBookings = () => {
     setError(null);
 
     try {
-      const data = await listBookings(user.uid);
+      const data = await listBookings();
       setBookings((data || []).map((booking) => ({ ...booking, type: "transport" })));
     } catch (err) {
       console.error("Error fetching transport bookings:", err);

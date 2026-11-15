@@ -12,15 +12,15 @@ import { useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 import COLORS from "../../constants/Colors";
-import FormInput from "../../components/InputFields/FormInput";
-import Button from "../../components/ButtonComponents/ButtonComponent";
-import SocialAuthButtons from "../../components/ButtonComponents/SocialAuthButtons";
+import FormInput from "../../components/ui/inputs/FormInput";
+import Button from "../../components/ui/buttons/ButtonComponent";
+import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
 import { UserContext } from "../../context/UserContext";
 
 import { signInWithEmail, loadSavedCredentials } from "../../utils/auth/signInwithEmail";
 import { useGoogleAuth } from "../../utils/auth/signInWithGoogle";
 import { signInWithApple } from "../../utils/auth/signInWithApple";
-import TermsLink from "../../components/Links/TermsLink";
+import TermsLink from "../../components/ui/links/TermsLink";
 
 const ClientLogIn = () => {
   const navigation = useNavigation();

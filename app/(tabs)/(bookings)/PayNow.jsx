@@ -26,7 +26,7 @@ import {
   BookingDetails,
   AmountSection,
   ReferralSection,
-} from "../../../components/PayNowComponents/payNowComponent";
+} from "../../../components/bookings/payNowComponent";
 
 /* ─── Main screen ─────────────────────────────────────────────────────────── */
 const PayNow = () => {

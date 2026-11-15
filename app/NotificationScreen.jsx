@@ -5,8 +5,8 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import NotificationItem from "../components/NotificationComponent/NotificationItem";
-import EmptyState from "../components/NotificationComponent/EmptyState";
+import NotificationItem from "../components/notifications/NotificationItem";
+import EmptyState from "../components/notifications/EmptyState";
 
 const NotificationsScreen = () => {
   const [notifications, setNotifications] = useState([]);

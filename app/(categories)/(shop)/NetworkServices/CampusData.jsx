@@ -3,11 +3,11 @@ import {
   ScrollView, StyleSheet, View, Text,
   TouchableOpacity, ActivityIndicator,
 } from "react-native";
-import EmptyState from "../../../../components/BookingsComponent/EmptyState";
+import EmptyState from "../../../../components/bookings/EmptyState";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import PackageCard from "../../../../components/Cards/PackageCard";
-import DataPurchasingModal from "../../../../components/modals/DataPurchasingModal";
+import PackageCard from "../../../../components/shop/data/PackageCard";
+import DataPurchasingModal from "../../../../components/shop/data/DataPurchasingModal";
 import API_BASE_URL from "../../../../utils/api/api";
 
 // All networks available — driven by your backend

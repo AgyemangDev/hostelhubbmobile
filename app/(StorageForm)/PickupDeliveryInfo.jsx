@@ -1,15 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import DateSelector from "../../components/Storage/DateSelector";
-import LocationSelector from "../../components/Storage/LocationSelector";
-import BottomButton from "../../components/ButtonComponents/BottomButton";
-import SectionCard from "../../components/Storage/SectionCard";
-import ToggleRow from "../../components/Storage/ToggleRow";
-import LocationSummaryCard from "../../components/Storage/LocationSummaryCard";
-import COLORS from "../../constants/Colors";
+import DateSelector from "../../components/storage/DateSelector";
+import LocationSelector from "../../components/storage/LocationSelector";
+import SectionCard from "../../components/storage/SectionCard";
+import ToggleRow from "../../components/storage/ToggleRow";
+import LocationSummaryCard from "../../components/storage/LocationSummaryCard";
+import { Button, PriceBar, StepHeader, money } from "../../components/ui/ds";
+import { colors, space, type } from "../../constants/theme";
+import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
 import API_BASE_URL from "../../utils/api/api";
 
@@ -97,14 +98,22 @@ export default function PickupDeliveryInfo() {
     pickupInfo?.room,
   ]);
 
+  const total = (reservation.items || []).reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const header = <StepHeader step={stepOf("PickupDeliveryInfo")} total={STORAGE_TOTAL_STEPS} />;
+
   if (scheduleLoading || !schedule) {
     return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Loading storage cycle…</Text>
-          <Text style={styles.subtitle}>Loading the dates and pickup points for {reservation.school?.code || "your school"}.</Text>
+      <SafeAreaView style={styles.screen}>
+        {header}
+        <View style={styles.loading}>
+          {scheduleLoading ? <ActivityIndicator color={colors.brand} /> : null}
+          <Text style={[type.body, { color: colors.textSecondary, textAlign: "center" }]}>
+            {scheduleLoading
+              ? `Loading the storage dates for ${reservation.school?.code || "your school"}…`
+              : "Your school's storage dates aren't set yet. Please check back soon."}
+          </Text>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -145,147 +154,76 @@ export default function PickupDeliveryInfo() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Pickup &amp; delivery</Text>
-          <Text style={styles.subtitle}>
-            Choose when and where we should collect and return your items.
-          </Text>
-        </View>
+    <SafeAreaView style={styles.screen}>
+      {header}
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <Text style={type.display} accessibilityRole="header">When should we come?</Text>
 
-        <SectionCard icon="cube-outline" title="Pickup" subtitle="Where we'll collect your items">
+        <SectionCard first title="Pickup" subtitle="When and where we collect your items">
           <DateSelector
-            placeholder="Pickup date"
+            placeholder="Pickup day"
             value={pickupInfo?.date}
             minDate={schedule.pickupMinDate}
             maxDate={schedule.pickupMaxDate}
-            onChange={(date) =>
-              updateReservation({ pickupInfo: { ...pickupInfo, date } })
-            }
+            onChange={(date) => updateReservation({ pickupInfo: { ...pickupInfo, date } })}
           />
-
           <LocationSelector
-            placeholder="Select pickup location"
+            placeholder="Choose a pickup spot"
             value={pickupInfo}
             selectedType="pickup"
             points={points}
-            onSelectLocation={(val) =>
-              updateReservation({ pickupInfo: { ...pickupInfo, ...val } })
-            }
+            onSelectLocation={(val) => updateReservation({ pickupInfo: { ...pickupInfo, ...val } })}
           />
         </SectionCard>
 
-        <SectionCard icon="car-outline" title="Delivery" subtitle="Where we'll return your items">
-          <View style={styles.toggleGroup}>
-            <ToggleRow
-              label="Deliver to the same location"
-              description="Reuses your pickup hall, hostel and room automatically."
-              value={sameAsPickup}
-              onValueChange={handleToggleSameAsPickup}
-              disabled={decideLater}
-            />
-            <View style={styles.toggleDivider} />
-            <ToggleRow
-              label="I don't know my delivery hostel yet"
-              description="You can add it later — we'll follow up before the return date."
-              value={decideLater}
-              onValueChange={handleToggleDecideLater}
-            />
-          </View>
-
+        <SectionCard title="Delivery" subtitle="When and where we bring them back">
+          <ToggleRow
+            label="Same spot as pickup"
+            description="Uses your pickup hall, hostel and room."
+            value={sameAsPickup}
+            onValueChange={handleToggleSameAsPickup}
+            disabled={decideLater}
+          />
+          <ToggleRow
+            label="Decide later"
+            description="Not sure where you'll stay next term? Add it from your booking."
+            value={decideLater}
+            onValueChange={handleToggleDecideLater}
+          />
           <DateSelector
-            placeholder="Delivery date"
+            placeholder="Delivery day"
             value={deliveryInfo?.date}
             minDate={schedule.deliveryMinDate}
             maxDate={schedule.deliveryMaxDate}
-            onChange={(date) =>
-              updateReservation({ deliveryInfo: { ...deliveryInfo, date } })
-            }
+            onChange={(date) => updateReservation({ deliveryInfo: { ...deliveryInfo, date } })}
           />
-
           {decideLater ? null : sameAsPickup ? (
-            <LocationSummaryCard
-              info={pickupInfo}
-              onEdit={() => setSameAsPickup(false)}
-            />
+            <LocationSummaryCard info={pickupInfo} onEdit={() => setSameAsPickup(false)} />
           ) : (
             <LocationSelector
-              placeholder="Select delivery location"
+              placeholder="Choose a delivery spot"
               value={deliveryInfo}
               selectedType="delivery"
               points={points}
               onSelectLocation={(val) =>
-                updateReservation({
-                  deliveryInfo: { ...deliveryInfo, decideLater: false, ...val },
-                })
+                updateReservation({ deliveryInfo: { ...deliveryInfo, decideLater: false, ...val } })
               }
             />
           )}
         </SectionCard>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <BottomButton buttonText="Continue" onPressFunction={proceed} />
-      </View>
-    </View>
+      <PriceBar
+        amount={money(total)}
+        caption={pickupInfo?.date ? `Pickup ${pickupInfo.date}` : "Choose a pickup day"}
+        action={<Button title="Continue" onPress={proceed} style={{ paddingHorizontal: space.xl }} />}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-
-  scroll: {
-    padding: 20,
-    paddingBottom: 120,
-    gap: 16,
-  },
-
-  header: {
-    marginBottom: 4,
-  },
-
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: COLORS.textDark,
-    marginBottom: 6,
-  },
-
-  subtitle: {
-    fontSize: 14.5,
-    color: COLORS.textMuted,
-    lineHeight: 21,
-  },
-
-  toggleGroup: {
-    borderRadius: 14,
-    paddingVertical: 6,
-  },
-
-  toggleDivider: {
-    height: 1,
-    backgroundColor: "#ECECEC",
-    marginVertical: 10,
-  },
-
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e5e5",
-    paddingTop: 4,
-    paddingHorizontal: 4,
-    paddingBottom: 4,
-  },
+  screen: { flex: 1, backgroundColor: colors.background },
+  scroll: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
+  loading: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.md, padding: space.xl },
 });

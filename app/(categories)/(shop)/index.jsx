@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
 import { View, StyleSheet, FlatList, SafeAreaView, Platform,StatusBar} from 'react-native';
-import ShopHeader from '../../../components/Headers/ShopHeader';
-import ProductCard from '../../../components/Cards/VerticalScroll/ProductCard';
+import ShopHeader from '../../../components/shop/ShopHeader';
+import ProductCard from '../../../components/shop/product/ProductCard';
 import { useProducts } from '../../../context/ProductContext';
-import CartHeader from '../../../components/ProductComponent/CartHeader';
-import DataBannerCard from '../../../components/Cards/DataBannerCard';
+import CartHeader from '../../../components/shop/product/CartHeader';
+import DataBannerCard from '../../../components/shop/data/DataBannerCard';
 
 const Index = () => {
   const { products } = useProducts();

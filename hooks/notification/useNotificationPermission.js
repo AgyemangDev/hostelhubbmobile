@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Alert, Linking, Platform } from "react-native";
 import * as Notifications from 'expo-notifications';
 import { UserContext } from "../../context/UserContext";
-import notificationService from "../../app/firebase/notificationService";
+import notificationService from "../../lib/firebase/notificationService";
 
 /**
  * Custom hook to handle notification permissions

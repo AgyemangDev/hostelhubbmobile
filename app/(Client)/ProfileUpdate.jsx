@@ -11,8 +11,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { UserContext } from "../../context/UserContext";
-import CustomInput from "../../components/InputFields/CustomInput";
-import CustomDropdown from "../../components/Dropdowns/CustomDropdown";
+import CustomInput from "../../components/ui/inputs/CustomInput";
+import CustomDropdown from "../../components/ui/dropdowns/CustomDropdown";
 import COLORS from "../../constants/Colors";
 
 const GENDER_OPTIONS = ["Male", "Female"];

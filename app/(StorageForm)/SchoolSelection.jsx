@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import BottomButton from "../../components/ButtonComponents/BottomButton";
 import API_BASE_URL from "../../utils/api/api";
+import { Button, EmptyState, FadeIn, ListRow, PriceBar, StepHeader } from "../../components/ui/ds";
+import { colors, radius, space, type } from "../../constants/theme";
+import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 
 export default function SchoolSelection() {
   const router = useRouter();
@@ -21,19 +23,16 @@ export default function SchoolSelection() {
       .then((data) => {
         const availableSchools = data.schools || [];
         setSchools(availableSchools);
-
         // Replace any cached school snapshot with the current server record,
         // or clear it if the school is no longer accepting bookings.
         if (reservation.school?.id) {
-          const currentSchool = availableSchools.find(
-            (school) => school.id === reservation.school.id
-          );
+          const currentSchool = availableSchools.find((school) => school.id === reservation.school.id);
           updateReservation({ school: currentSchool || null });
         }
       })
       .catch((error) => Alert.alert("Unable to load schools", error.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const proceed = () => {
     if (!reservation.school) {
@@ -44,62 +43,60 @@ export default function SchoolSelection() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.screen}>
+      <StepHeader step={stepOf("SchoolSelection")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Which school are you from?</Text>
-        <Text style={styles.subtitle}>
-          Your pickup and delivery dates depend on the storage cycle for your school.
-        </Text>
-        {loading ? <ActivityIndicator size="large" color="#0B7A6F" /> : schools.map((school) => {
-          const selected = reservation.school?.id === school.id;
-          return (
-            <TouchableOpacity
-              key={school.id}
-              onPress={() => updateReservation({ school })}
-              style={[styles.card, selected && styles.selected]}
-            >
-              <View style={styles.radio}>{selected ? <View style={styles.radioFill} /> : null}</View>
-              {school.logo_url?.trim() && !failedLogos[school.id] ? (
-                <Image
-                  source={{ uri: school.logo_url.trim() }}
-                  style={styles.logo}
-                  resizeMode="contain"
-                  onError={() => setFailedLogos((current) => ({ ...current, [school.id]: true }))}
+        <View style={{ gap: space.xs }}>
+          <Text style={type.display} accessibilityRole="header">Which school are you at?</Text>
+          <Text style={[type.body, { color: colors.textSecondary }]}>
+            Pickup and delivery dates follow your school's storage window.
+          </Text>
+        </View>
+
+        {loading ? (
+          <ActivityIndicator color={colors.brand} style={{ marginTop: space.xl }} />
+        ) : schools.length === 0 ? (
+          <EmptyState icon="school-outline" title="No schools open right now" body="Storage bookings open again before the next break." />
+        ) : (
+          <FadeIn>
+            {schools.map((school, i) => {
+              const showLogo = school.logo_url?.trim() && !failedLogos[school.id];
+              return (
+                <ListRow
+                  key={school.id}
+                  title={school.name}
+                  subtitle={school.code}
+                  last={i === schools.length - 1}
+                  selected={reservation.school?.id === school.id}
+                  onPress={() => updateReservation({ school })}
+                  leading={
+                    showLogo ? (
+                      <Image
+                        source={{ uri: school.logo_url.trim() }}
+                        style={styles.logo}
+                        resizeMode="contain"
+                        onError={() => setFailedLogos((c) => ({ ...c, [school.id]: true }))}
+                      />
+                    ) : (
+                      <View style={[styles.logo, styles.logoFallback]}>
+                        <Text style={[type.caption, { fontWeight: "800" }]}>{school.code?.slice(0, 2)}</Text>
+                      </View>
+                    )
+                  }
                 />
-              ) : (
-                <View style={styles.logoFallback}><Text style={styles.logoFallbackText}>{school.code?.slice(0, 2)}</Text></View>
-              )}
-              <View style={styles.cardText}>
-                <Text style={styles.schoolName}>{school.name}</Text>
-                <Text style={styles.schoolCode}>{school.code}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-        {!loading && schools.length === 0 && <Text style={styles.empty}>No schools are currently accepting storage bookings.</Text>}
+              );
+            })}
+          </FadeIn>
+        )}
       </ScrollView>
-      <View style={styles.footer}>
-        <BottomButton buttonText="Continue" onPressFunction={proceed} />
-      </View>
-    </View>
+      <PriceBar action={<Button title="Continue" onPress={proceed} disabled={!reservation.school} />} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f6f6f6" },
-  content: { padding: 20, paddingBottom: 120, gap: 14 },
-  title: { fontSize: 24, fontWeight: "700", color: "#17202a" },
-  subtitle: { fontSize: 15, color: "#68727d", lineHeight: 22, marginBottom: 8 },
-  card: { flexDirection: "row", alignItems: "center", backgroundColor: "#fff", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#e5e7eb" },
-  selected: { borderColor: "#0B7A6F", backgroundColor: "#f0fdfa" },
-  radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: "#0B7A6F", alignItems: "center", justifyContent: "center", marginRight: 12 },
-  radioFill: { width: 12, height: 12, borderRadius: 6, backgroundColor: "#0B7A6F" },
-  logo: { width: 48, height: 48, borderRadius: 12, marginRight: 12, backgroundColor: "#eef7f5" },
-  logoFallback: { width: 48, height: 48, borderRadius: 12, marginRight: 12, backgroundColor: "#d9f2ed", alignItems: "center", justifyContent: "center" },
-  logoFallbackText: { color: "#0B7A6F", fontWeight: "800" },
-  cardText: { flex: 1 },
-  schoolName: { fontSize: 16, fontWeight: "600", color: "#17202a" },
-  schoolCode: { marginTop: 4, color: "#0B7A6F", fontWeight: "700", fontSize: 12 },
-  empty: { color: "#68727d", textAlign: "center", marginTop: 30 },
-  footer: { position: "absolute", bottom: 0, left: 0, right: 0 },
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { padding: space.lg, gap: space.xl, paddingBottom: space.xxl },
+  logo: { width: 44, height: 44, borderRadius: radius.md, backgroundColor: colors.fill },
+  logoFallback: { alignItems: "center", justifyContent: "center" },
 });

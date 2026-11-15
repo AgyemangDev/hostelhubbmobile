@@ -1,7 +1,7 @@
 import { signInWithCustomToken, sendEmailVerification } from "firebase/auth";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../../app/firebase/FirebaseConfig";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 import API_BASE_URL from "../api/api";
 
 /**

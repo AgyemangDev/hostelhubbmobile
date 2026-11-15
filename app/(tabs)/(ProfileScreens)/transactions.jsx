@@ -1,8 +1,8 @@
 import React from "react";
 import { View } from "react-native";
-import ReusableTabs from "../../../components/Tabs/ReusableTabs";
-import TransactionsMade from "../../../components/ProfileComponent/TransactionsMade";
-import RewardsTab from "../../../components/ProfileComponent/RewardsTab";
+import ReusableTabs from "../../../components/ui/tabs/ReusableTabs";
+import TransactionsMade from "../../../components/profile/TransactionsMade";
+import RewardsTab from "../../../components/profile/RewardsTab";
 
 const TransactionsPage = () => {
   const tabs = [

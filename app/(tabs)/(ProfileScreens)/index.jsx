@@ -12,13 +12,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { UserContext } from "../../../context/UserContext";
 import { useNavigation } from "expo-router";
-import LogoutButton from "../../../components/LogoutButton";
-import DeleteAccountButton from "../../../components/ButtonComponents/DeleteButton";
+import LogoutButton from "../../../components/profile/LogoutButton";
+import DeleteAccountButton from "../../../components/profile/DeleteButton";
 import styles from "../../../assets/Styles/ProfileStyles";
-import ProfileLinkItem from "../../../components/ProfileComponent/ProfileLinkItem";
+import ProfileLinkItem from "../../../components/profile/ProfileLinkItem";
 import * as Updates from "expo-updates";
 import Constants from "expo-constants";
-import NoAccountPrompt from "../../../components/Authentication/NoAccountPrompt";
+import NoAccountPrompt from "../../../components/auth/NoAccountPrompt";
 
 const Profile = () => {
   const { userInfo } = useContext(UserContext);
