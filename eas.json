@@ -5,6 +5,7 @@
   },
   "build": {
     "production": {
+      "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "397953583899-ct9sqh87dh4ftv28qn8g8nk7llo7u7ei.apps.googleusercontent.com",

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Hostelhubb",
     "slug": "hostelhubb",
-    "version": "4.0.3",
+    "version": "4.1.0",
     "scheme": "hostelhubb",
     "platforms": [
       "ios",
@@ -18,8 +18,7 @@
       },
       "bundleIdentifier": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./GoogleService-Info.plist",
-      "buildNumber": "40",
-      "version": "4.0.3",
+      "version": "4.1.0",
       "supportsTablet": false,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Hostelhubb needs access to your location to show hostels near you.",
@@ -47,7 +46,6 @@
       },
       "package": "com.Hostelhubb.Hostelhubb",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 40,
       "intentFilters": [
         {
           "action": "VIEW",
@@ -161,7 +159,24 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              {
+                "name": "GoogleUtilities",
+                "modular_headers": true
+              },
+              {
+                "name": "RecaptchaInterop",
+                "modular_headers": true
+              }
+            ]
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

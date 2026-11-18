@@ -20,11 +20,13 @@ eas build --platform android --profile production
 eas build --platform android --profile apk
 eas build --profile apk --platform android
 
-## Current Build Numbers
-# android  buildNumber=34  version=3.7.0
-# ios      buildNumber=34  version=3.7.0
+## Build numbers
+# Managed by EAS (eas.json: appVersionSource "remote" + production "autoIncrement").
+# Every production build takes the next number automatically. Check with:
+#   eas build:version:get
+# Don't put buildNumber / versionCode in app.json — EAS ignores them.
 
-## Rule: bump version + buildNumber in app.json before every native build
+## Rule: bump "version" in app.json before every native store release
 ## Rule: minimumAppVersion in app.json extra must be updated before native build if forcing upgrades
 
 ## Dev
