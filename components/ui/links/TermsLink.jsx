@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { ExternalLink } from "@/components/ui/links/ExternalLink";
-import COLORS from '../../../constants/Colors';
+import { colors } from "../../../constants/theme";
 
 const TermsLink = ({ link, text, color }) => {
   return (
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   linkText: {
-    color: COLORS.background, // Default color
+    color: colors.brand, // Default color
     fontSize: 13,
     textAlign: 'center',
     fontWeight: '600',

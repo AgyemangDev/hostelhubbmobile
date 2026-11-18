@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import { View, StyleSheet, FlatList, SafeAreaView, Platform,StatusBar} from 'react-native';
-import ShopHeader from '../../../components/shop/ShopHeader';
-import ProductCard from '../../../components/shop/product/ProductCard';
+import ShopHeader from '../../../components/headers/shop/ShopHeader';
+import ProductCard from '../../../components/cards/shop/ProductCard';
 import { useProducts } from '../../../context/ProductContext';
-import CartHeader from '../../../components/shop/product/CartHeader';
-import DataBannerCard from '../../../components/shop/data/DataBannerCard';
+import CartHeader from '../../../components/headers/shop/CartHeader';
+import DataBannerCard from '../../../components/banners/shop/DataBannerCard';
+import { colors } from "../../../constants/theme";
 
 const Index = () => {
   const { products } = useProducts();
@@ -52,7 +53,7 @@ export default Index;
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {

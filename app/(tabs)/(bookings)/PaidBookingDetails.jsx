@@ -4,7 +4,7 @@ import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { UserContext } from "../../../context/UserContext";
 import API_BASE_URL from "../../../utils/api/api";
-import COLORS from "../../../constants/Colors";
+import { colors } from "../../../constants/theme";
 
 const TEAL = "#0D9488";
 
@@ -84,7 +84,7 @@ const PaidBookingDetails = () => {
         <Text style={styles.title}>{name}</Text>
 
         <View style={styles.paidBadge}>
-          <Ionicons name="checkmark-circle" size={13} color="#fff" />
+          <Ionicons name="checkmark-circle" size={13} color={colors.textInverse} />
           <Text style={styles.paidBadgeText}>Paid</Text>
         </View>
 
@@ -125,7 +125,7 @@ const PaidBookingDetails = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#F9FAFB",
+    backgroundColor: colors.surfaceSunken,
     paddingBottom: 32,
   },
   centered: {
@@ -135,19 +135,19 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 14,
-    color: "#B91C1C",
+    color: colors.danger,
   },
   image: {
     width: "100%",
     height: 200,
-    backgroundColor: "#F0FDFA",
+    backgroundColor: colors.brandSoft,
   },
   imagePlaceholder: {
     justifyContent: "center",
     alignItems: "center",
   },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: TEAL,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 19,
     fontWeight: "700",
-    color: "#111827",
+    color: colors.text,
     marginBottom: 8,
   },
   paidBadge: {
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   paidBadgeText: {
-    color: "#fff",
+    color: colors.textInverse,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -181,16 +181,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: "#F3F4F6",
+    borderTopColor: colors.border,
   },
   label: {
     fontSize: 13,
-    color: "#6B7280",
+    color: colors.textSecondary,
   },
   value: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#111827",
+    color: colors.text,
   },
 });
 

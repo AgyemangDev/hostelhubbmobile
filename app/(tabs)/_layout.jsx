@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { Tabs, useSegments } from 'expo-router';
 import { Ionicons, Octicons } from '@expo/vector-icons';
-import { WhatsAppButton } from '../../components/ui/buttons/WhatsAppButton';
+import { WhatsAppButton } from '../../components/buttons/support/WhatsAppButton';
+import { colors } from "../../constants/theme";
 
 const Layout = () => {
   // The floating WhatsApp button is hidden everywhere in Hubclips (feed and
@@ -12,9 +13,9 @@ const Layout = () => {
     <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0F6E56',
+          tabBarActiveTintColor: colors.brand,
           tabBarStyle: {
-            backgroundColor: '#ffff',
+            backgroundColor: colors.surface,
           },
           gestureEnabled: false,
         }}

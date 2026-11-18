@@ -6,12 +6,13 @@ import { UserContext } from "../context/UserContext";
 import { useAccommodationById } from "../hooks/accommodationContext/useAccommodationById";
 import { useBookingForm } from "../hooks/useBookingForm";
 import { useNotificationPermission } from "../hooks/notification/useNotificationPermission";
-import ProcessingState from "../components/accommodation/booking/ProcessingState";
+import ProcessingState from "../components/feedback/accommodation/ProcessingState";
 import { handleBookingProcess } from "../services/bookingServices";
 
-import BookingStepper from "../components/accommodation/booking/BookingStepper";
-import SkeletonLoader from "../components/accommodation/booking/LoadingState";
-import StepBookingSuccessScreen from "../components/accommodation/booking/StepBookingSuccessScreen";
+import BookingStepper from "../components/steps/accommodation/BookingStepper";
+import SkeletonLoader from "../components/skeletons/accommodation/BookingFormSkeleton";
+import StepBookingSuccessScreen from "../components/steps/accommodation/StepBookingSuccessScreen";
+import { colors } from "../constants/theme";
 
 const BOOKING_STEPS = {
   SELECT: "pending",
@@ -88,14 +89,14 @@ const BookingModal = () => {
   };
 
 if (loading) return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+  <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
     <SkeletonLoader />
   </SafeAreaView>
 );
 
 if (currentStep === BOOKING_STEPS.PROCESSING)
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
       <ProcessingState message="Finalizing your booking..." />
     </SafeAreaView>
   );
@@ -115,7 +116,7 @@ if (currentStep === BOOKING_STEPS.PROCESSING)
     );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
       <BookingStepper
         hostelData={{ ...hostelData, paymentRanges }}
         formData={formData}

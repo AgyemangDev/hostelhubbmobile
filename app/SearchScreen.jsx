@@ -4,12 +4,13 @@ import React, { useContext } from "react";
 import { View, StyleSheet, Text, SafeAreaView, Platform } from "react-native";
 import { colors, space, type } from "../constants/theme";
 import { AccommodationContext } from "../context/AccommodationContext";
-import CardListScreen from "../components/accommodation/cards/CardListScreen";
-import SearchBar from "../components/accommodation/search/SearchInput";
-import EmptyFeedState from "../components/hubclipps/EmptyFeedState"
-import FilterSheet from "../components/accommodation/search/FilterSheet";
-import FilterButton from "../components/accommodation/search/FilterButton";
+import CardListScreen from "../components/lists/accommodation/CardListScreen";
+import EmptyFeedState from "../components/feedback/hubclipps/EmptyFeedState"
+import FilterSheet from "../components/sheets/accommodation/FilterSheet";
+import FilterButton from "../components/buttons/accommodation/FilterButton";
 import { useState } from "react";
+import { SearchField } from "../components/ui";
+import { useLocalSearchParams } from "expo-router";
 
 const SearchScreen = () => {
   const {
@@ -24,7 +25,9 @@ const SearchScreen = () => {
     filters,
   } = useContext(AccommodationContext);
 
-  const [filterOpen, setFilterOpen] = useState(false);
+  // Home's filter button opens this screen with ?filters=1 to go straight to the sheet.
+  const { filters: openFilters } = useLocalSearchParams();
+  const [filterOpen, setFilterOpen] = useState(openFilters === "1");
 
   const dataToShow = searchQuery ? searchAccommodations : accommodations;
   const isLoading = searchQuery ? searchLoading : loading;
@@ -44,7 +47,8 @@ const SearchScreen = () => {
       {/* SEARCH + FILTER ROW */}
       <View style={styles.searchRow}>
         <View style={styles.searchFlex}>
-          <SearchBar
+          <SearchField
+            autoFocus
             placeholder="Hostel, area or school"
             value={searchQuery}
             onChangeText={setSearchQuery}

@@ -11,9 +11,9 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../../constants/Colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Divider, Eyebrow, FadeIn, ScreenHeader, StatusPill, Timeline, money } from "../../../components/ui/ds";
+import { Button, Divider, FadeIn, ScreenHeader, StatusPill, Timeline, Eyebrow } from "../../../components/ui";
+import { money } from "../../../utils/formatMoney";
 import { colors, radius, space, type } from "../../../constants/theme";
 import { useBookingsContext } from "../../../context/BookingsContext";
 
@@ -45,11 +45,11 @@ const StorageBookingDetails = () => {
 
   if (!rawBooking) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#fff" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: colors.surface }}>
         {loading ? (
-          <ActivityIndicator color={COLORS.teal} />
+          <ActivityIndicator color={colors.brand} />
         ) : (
-          <Text style={{ fontSize: 15, color: "#57534E", textAlign: "center" }}>
+          <Text style={{ fontSize: 15, color: colors.textSecondary, textAlign: "center" }}>
             We couldn't find this storage order on your account.
           </Text>
         )}

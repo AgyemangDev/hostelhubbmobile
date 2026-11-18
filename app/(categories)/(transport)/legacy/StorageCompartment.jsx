@@ -1,14 +1,18 @@
 import React, { useState } from "react";
 import {
-  View, Text, ScrollView, StyleSheet,
-  Platform, TouchableOpacity,
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import COLORS from "../../../../constants/Colors";
-import StorageCard from "../../../../components/transport/cards/StorageCard";
+import StorageCard from "../../../../components/cards/transport/StorageCard";
 import { storageItems, luggageItem } from "../../../../assets/data/transport/storageItem";
+import { Button } from "../../../../components/ui";
+import { colors } from "../../../../constants/theme";
 
 const ALL_ITEMS = [luggageItem, ...storageItems];
 
@@ -72,7 +76,7 @@ const StorageCompartment = () => {
         {totalItems > 0 && (
           <View style={styles.summary}>
             <View style={styles.summaryHeader}>
-              <Ionicons name="receipt-outline" size={18} color={COLORS.primary} />
+              <Ionicons name="receipt-outline" size={18} color={colors.brand} />
               <Text style={styles.summaryTitle}>Order Summary</Text>
             </View>
 
@@ -128,14 +132,7 @@ const StorageCompartment = () => {
         </View>
 
         {/* Continue button */}
-        <TouchableOpacity
-          style={styles.btn}
-          onPress={handleContinue}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.btnText}>Continue</Text>
-          <Ionicons name="arrow-forward" size={16} color={COLORS.white} />
-        </TouchableOpacity>
+        <Button title="Continue" icon="arrow-forward" iconPosition="right" onPress={handleContinue} />
       </View>
     </View>
   );
@@ -144,53 +141,53 @@ const StorageCompartment = () => {
 export default StorageCompartment;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFF" },
+  container: { flex: 1, backgroundColor: colors.surfaceSunken },
   scroll: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 32, gap: 12 },
 
   header: { marginBottom: 8 },
-  title: { fontSize: 20, fontWeight: "700", color: COLORS.textDark, marginBottom: 4 },
-  subtitle: { fontSize: 13, color: "#6B7280" },
+  title: { fontSize: 20, fontWeight: "700", color: colors.text, marginBottom: 4 },
+  subtitle: { fontSize: 13, color: colors.textSecondary },
 
   // Summary card
   summary: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: colors.border,
     gap: 8,
     marginTop: 4,
   },
   summaryHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 },
-  summaryTitle: { fontSize: 14, fontWeight: "600", color: COLORS.textDark },
+  summaryTitle: { fontSize: 14, fontWeight: "600", color: colors.text },
   summaryRow: { flexDirection: "row", justifyContent: "space-between" },
-  summaryText: { fontSize: 13, color: "#4B5563" },
-  summaryHandling: { fontSize: 13, fontWeight: "500", color: COLORS.primary },
+  summaryText: { fontSize: 13, color: colors.textSecondary },
+  summaryHandling: { fontSize: 13, fontWeight: "500", color: colors.brand },
   summaryTotalRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingTop: 10,
     marginTop: 4,
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
+    borderTopColor: colors.border,
   },
-  totalLabel: { fontSize: 15, fontWeight: "700", color: COLORS.textDark },
-  totalAmount: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
+  totalLabel: { fontSize: 15, fontWeight: "700", color: colors.text },
+  totalAmount: { fontSize: 16, fontWeight: "800", color: colors.brand },
 
   // Footer
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
+    borderTopColor: colors.border,
     gap: 12,
   },
 
   // Price breakdown pill row
   priceBreakdown: {
     flexDirection: "row",
-    backgroundColor: "#F4F6FB",
+    backgroundColor: colors.fill,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
@@ -204,7 +201,7 @@ const styles = StyleSheet.create({
   },
   priceItemLabel: {
     fontSize: 11,
-    color: "#9CA3AF",
+    color: colors.textMuted,
     fontWeight: "500",
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -212,24 +209,24 @@ const styles = StyleSheet.create({
   priceItemValue: {
     fontSize: 14,
     fontWeight: "700",
-    color: COLORS.textDark,
+    color: colors.text,
   },
   priceDivider: {
     width: 1,
     height: 28,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: colors.fill,
   },
   grandLabel: {
-    color: COLORS.primary,
+    color: colors.brand,
   },
   grandValue: {
     fontSize: 16,
-    color: COLORS.primary,
+    color: colors.brand,
   },
 
   // Button
   btn: {
-    backgroundColor: COLORS.button,
+    backgroundColor: colors.brand,
     paddingVertical: 15,
     borderRadius: 16,
     flexDirection: "row",
@@ -238,7 +235,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   btnText: {
-    color: COLORS.white,
+    color: colors.textInverse,
     fontWeight: "700",
     fontSize: 16,
   },

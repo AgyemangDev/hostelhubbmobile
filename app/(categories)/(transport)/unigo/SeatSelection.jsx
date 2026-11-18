@@ -5,18 +5,17 @@ import {
   StatusBar,
   View,
   Text,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import COLORS from "../../../../constants/Colors";
-import BusHeader from "../../../../components/transport/BusHeader";
-import SeatLegend from "../../../../components/transport/Seatlegend";
-import BusLayout from "../../../../components/transport/BusLayout";
-import SeatSelectionSkeleton from "../../../../components/transport/SeatSelectionSkeleton";
-import BookingFooter from "../../../../components/transport/BookingFooter";
-import { Button, EmptyState } from "../../../../components/ui/ds";
+import BusHeader from "../../../../components/headers/transport/BusHeader";
+import SeatLegend from "../../../../components/seats/transport/SeatLegend";
+import BusLayout from "../../../../components/seats/transport/BusLayout";
+import SeatSelectionSkeleton from "../../../../components/skeletons/transport/SeatSelectionSkeleton";
+import BookingFooter from "../../../../components/bars/transport/BookingFooter";
+import { Button, EmptyState } from "../../../../components/ui";
 import { getSeats } from "../../../../utils/api/transportUnigo";
+import { colors } from "../../../../constants/theme";
 
 /** Booking more than this in one payment gets unwieldy, and UniGo caps it too. */
 const MAX_SEATS = 10;
@@ -98,7 +97,7 @@ const SeatSelection = () => {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
       {bus && <BusHeader bus={bus} />}
       <SeatLegend />
@@ -143,7 +142,7 @@ export default SeatSelection;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
   },
   body: {
     alignItems: "center",
@@ -160,28 +159,28 @@ const styles = StyleSheet.create({
   },
   centreText: {
     fontSize: 14,
-    color: COLORS.textMuted,
+    color: colors.textSecondary,
   },
   errorText: {
     fontSize: 15,
-    color: COLORS.error,
+    color: colors.danger,
     textAlign: "center",
     fontWeight: "600",
   },
   retry: {
-    backgroundColor: COLORS.button,
+    backgroundColor: colors.brand,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 16,
   },
   retryText: {
-    color: "#fff",
+    color: colors.textInverse,
     fontWeight: "700",
   },
   limitNote: {
     marginTop: 16,
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: colors.textSecondary,
     textAlign: "center",
   },
 });

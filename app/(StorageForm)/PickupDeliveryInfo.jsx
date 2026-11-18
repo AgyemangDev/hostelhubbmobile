@@ -1,18 +1,22 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import DateSelector from "../../components/storage/DateSelector";
-import LocationSelector from "../../components/storage/LocationSelector";
-import SectionCard from "../../components/storage/SectionCard";
-import ToggleRow from "../../components/storage/ToggleRow";
-import LocationSummaryCard from "../../components/storage/LocationSummaryCard";
-import { Button, PriceBar, StepHeader, money } from "../../components/ui/ds";
+import DateSelector from "../../components/forms/storage/DateSelector";
+import LocationSelector from "../../components/forms/storage/LocationSelector";
+import LocationSummaryCard from "../../components/cards/storage/LocationSummaryCard";
+import { Button, PriceBar, Section, StepHeader, ToggleRow } from "../../components/ui";
+import { money } from "../../utils/formatMoney";
 import { colors, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
-import { validatePickupDeliveryForm } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
+import { getPickupDeliveryIssues } from "../../utils/ValidationUtils/validatePickupDeliveryForm";
+import PickupDeliverySkeleton from "../../components/skeletons/storage/PickupDeliverySkeleton";
 import API_BASE_URL from "../../utils/api/api";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function PickupDeliveryInfo() {
   const router = useRouter();
@@ -25,6 +29,35 @@ export default function PickupDeliveryInfo() {
   const decideLater = !!reservation.deliveryInfo?.decideLater;
   const pickupInfo = reservation.pickupInfo;
   const deliveryInfo = reservation.deliveryInfo;
+
+  // Field errors only show after the first Continue attempt, then update
+  // live so each one clears as soon as it's filled in.
+  const [showErrors, setShowErrors] = useState(false);
+  const scrollRef = useRef(null);
+  const contentRef = useRef(null);
+  const fieldRefs = useRef({});
+  const registerField = (key) => (node) => {
+    if (node) fieldRefs.current[key] = node;
+    else delete fieldRefs.current[key];
+  };
+  const issues = getPickupDeliveryIssues({ pickupInfo, deliveryInfo });
+  const errorFor = (key) => {
+    if (!showErrors) return undefined;
+    const hit = issues.find((i) => i.key === key);
+    return hit ? `Add your ${hit.label.toLowerCase()}` : undefined;
+  };
+  const locationErrors = (prefix) =>
+    ["area", "offCampusArea", "hostel", "room"].reduce((acc, f) => ({ ...acc, [f]: errorFor(`${prefix}.${f}`) }), {});
+
+  const scrollToField = (key) => {
+    const node = fieldRefs.current[key];
+    if (!node || !contentRef.current || !scrollRef.current) return;
+    node.measureLayout(
+      contentRef.current,
+      (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(y - space.lg, 0), animated: true }),
+      () => {}
+    );
+  };
 
   // Pickup/delivery date ranges are admin-configurable from
   // /storage/manage on the management system — fetch the current range
@@ -101,16 +134,22 @@ export default function PickupDeliveryInfo() {
   const total = (reservation.items || []).reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
   const header = <StepHeader step={stepOf("PickupDeliveryInfo")} total={STORAGE_TOTAL_STEPS} />;
 
-  if (scheduleLoading || !schedule) {
+  if (scheduleLoading) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
+        {header}
+        <PickupDeliverySkeleton />
+      </SafeAreaView>
+    );
+  }
+
+  if (!schedule) {
+    return (
+      <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
         {header}
         <View style={styles.loading}>
-          {scheduleLoading ? <ActivityIndicator color={colors.brand} /> : null}
           <Text style={[type.body, { color: colors.textSecondary, textAlign: "center" }]}>
-            {scheduleLoading
-              ? `Loading the storage dates for ${reservation.school?.code || "your school"}…`
-              : "Your school's storage dates aren't set yet. Please check back soon."}
+            Your school's storage dates aren't set yet. Please check back soon.
           </Text>
         </View>
       </SafeAreaView>
@@ -118,10 +157,18 @@ export default function PickupDeliveryInfo() {
   }
 
   const proceed = () => {
-    const error = validatePickupDeliveryForm({ pickupInfo, deliveryInfo });
-
-    if (error) {
-      Alert.alert("Missing information", error);
+    if (issues.length) {
+      setShowErrors(true);
+      const first = issues[0].key;
+      Alert.alert(
+        issues.length === 1 ? `Add your ${issues[0].label.toLowerCase()}` : "A few details are missing",
+        issues.length === 1
+          ? "Fill it in to continue."
+          : `Please add:\n\n${issues.map((i) => `• ${i.label}`).join("\n")}`,
+        [{ text: "OK", onPress: () => scrollToField(first) }]
+      );
+      // Start scrolling straight away too, so the field is in view behind the alert.
+      requestAnimationFrame(() => scrollToField(first));
       return;
     }
 
@@ -154,63 +201,75 @@ export default function PickupDeliveryInfo() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       {header}
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={type.display} accessibilityRole="header">When should we come?</Text>
+      <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <View ref={contentRef} collapsable={false} style={styles.scroll}>
+          <Text style={type.display} accessibilityRole="header">When should we come?</Text>
 
-        <SectionCard first title="Pickup" subtitle="When and where we collect your items">
-          <DateSelector
-            placeholder="Pickup day"
-            value={pickupInfo?.date}
-            minDate={schedule.pickupMinDate}
-            maxDate={schedule.pickupMaxDate}
-            onChange={(date) => updateReservation({ pickupInfo: { ...pickupInfo, date } })}
-          />
-          <LocationSelector
-            placeholder="Choose a pickup spot"
-            value={pickupInfo}
-            selectedType="pickup"
-            points={points}
-            onSelectLocation={(val) => updateReservation({ pickupInfo: { ...pickupInfo, ...val } })}
-          />
-        </SectionCard>
-
-        <SectionCard title="Delivery" subtitle="When and where we bring them back">
-          <ToggleRow
-            label="Same spot as pickup"
-            description="Uses your pickup hall, hostel and room."
-            value={sameAsPickup}
-            onValueChange={handleToggleSameAsPickup}
-            disabled={decideLater}
-          />
-          <ToggleRow
-            label="Decide later"
-            description="Not sure where you'll stay next term? Add it from your booking."
-            value={decideLater}
-            onValueChange={handleToggleDecideLater}
-          />
-          <DateSelector
-            placeholder="Delivery day"
-            value={deliveryInfo?.date}
-            minDate={schedule.deliveryMinDate}
-            maxDate={schedule.deliveryMaxDate}
-            onChange={(date) => updateReservation({ deliveryInfo: { ...deliveryInfo, date } })}
-          />
-          {decideLater ? null : sameAsPickup ? (
-            <LocationSummaryCard info={pickupInfo} onEdit={() => setSameAsPickup(false)} />
-          ) : (
+          <Section variant="divided" first title="Pickup" subtitle="When and where we collect your items">
+            <View ref={registerField("pickup.date")} collapsable={false}>
+              <DateSelector
+                placeholder="Pickup day"
+                error={errorFor("pickup.date")}
+                value={pickupInfo?.date}
+                minDate={schedule.pickupMinDate}
+                maxDate={schedule.pickupMaxDate}
+                onChange={(date) => updateReservation({ pickupInfo: { ...pickupInfo, date } })}
+              />
+            </View>
             <LocationSelector
-              placeholder="Choose a delivery spot"
-              value={deliveryInfo}
-              selectedType="delivery"
+              placeholder="Choose a pickup spot"
+              errors={locationErrors("pickup")}
+              registerField={(f, node) => registerField(`pickup.${f}`)(node)}
+              value={pickupInfo}
+              selectedType="pickup"
               points={points}
-              onSelectLocation={(val) =>
-                updateReservation({ deliveryInfo: { ...deliveryInfo, decideLater: false, ...val } })
-              }
+              onSelectLocation={(val) => updateReservation({ pickupInfo: { ...pickupInfo, ...val } })}
             />
-          )}
-        </SectionCard>
+          </Section>
+
+          <Section variant="divided" title="Delivery" subtitle="When and where we bring them back">
+            <ToggleRow
+              label="Same spot as pickup"
+              description="Uses your pickup hall, hostel and room."
+              value={sameAsPickup}
+              onValueChange={handleToggleSameAsPickup}
+              disabled={decideLater}
+            />
+            <ToggleRow
+              label="Decide later"
+              description="Not sure where you'll stay next term? Add it from your booking."
+              value={decideLater}
+              onValueChange={handleToggleDecideLater}
+            />
+            <View ref={registerField("delivery.date")} collapsable={false}>
+              <DateSelector
+                placeholder="Delivery day"
+                error={errorFor("delivery.date")}
+                value={deliveryInfo?.date}
+                minDate={schedule.deliveryMinDate}
+                maxDate={schedule.deliveryMaxDate}
+                onChange={(date) => updateReservation({ deliveryInfo: { ...deliveryInfo, date } })}
+              />
+            </View>
+            {decideLater ? null : sameAsPickup ? (
+              <LocationSummaryCard info={pickupInfo} onEdit={() => setSameAsPickup(false)} />
+            ) : (
+              <LocationSelector
+                placeholder="Choose a delivery spot"
+                errors={locationErrors("delivery")}
+                registerField={(f, node) => registerField(`delivery.${f}`)(node)}
+                value={deliveryInfo}
+                selectedType="delivery"
+                points={points}
+                onSelectLocation={(val) =>
+                  updateReservation({ deliveryInfo: { ...deliveryInfo, decideLater: false, ...val } })
+                }
+              />
+            )}
+          </Section>
+        </View>
       </ScrollView>
 
       <PriceBar

@@ -1,38 +1,18 @@
 // /wallet — referral earnings balance and protected withdrawals.
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Linking,
-  Pressable,
-  RefreshControl,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { ActivityIndicator, Linking, RefreshControl, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { UserContext } from "../context/UserContext";
 import { WalletContext } from "../context/WalletContext";
-import { Button, Card, Divider, Notice, ScreenHeader, Segmented, TextField } from "../components/ui/ds";
-import { colors, radius, space, type } from "../constants/theme";
-import {
-  getPayoutMethod,
-  listPayoutBanks,
-  listWithdrawals,
-  requestWithdrawal,
-  savePayoutMethod,
-} from "../services/walletService";
+import { Button, Chip, Eyebrow, Notice, ScreenHeader, Section, Text, TextField } from "../components/ui";
+import PayoutMethodForm from "../components/forms/wallet/PayoutMethodForm";
+import PayoutAccountCard from "../components/cards/wallet/PayoutAccountCard";
+import WithdrawalRow from "../components/lists/wallet/WithdrawalRow";
+import { money } from "../utils/formatMoney";
+import { colors, space } from "../constants/theme";
+import { getPayoutMethod, listWithdrawals, requestWithdrawal } from "../services/walletService";
 
-const money = (n) => `GH₵ ${Number(n || 0).toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const FALLBACK_SUPPORT = "https://wa.me/233245746198";
 
-const STATUS = {
-  processing: { label: "Processing", color: colors.warningText, bg: colors.warningBg },
-  success: { label: "Sent", color: colors.success, bg: colors.successBg },
-  failed: { label: "Failed, refunded", color: colors.danger, bg: colors.dangerBg },
-  reversed: { label: "Reversed, refunded", color: colors.danger, bg: colors.dangerBg },
-};
 
 export default function WalletScreen() {
   const { user } = useContext(UserContext);
@@ -117,7 +97,7 @@ export default function WalletScreen() {
       <SafeAreaView style={styles.screen}>
         <ScreenHeader title="Wallet" />
         <View style={styles.center}>
-          <Text style={[type.body, { color: colors.textSecondary }]}>Log in to see your wallet.</Text>
+          <Text tone="secondary">Log in to see your wallet.</Text>
         </View>
       </SafeAreaView>
     );
@@ -132,11 +112,11 @@ export default function WalletScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.balanceBlock}>
-          <Text style={[type.label, { color: colors.textSecondary }]}>AVAILABLE BALANCE</Text>
+          <Eyebrow>AVAILABLE BALANCE</Eyebrow>
           <Text style={styles.balance} accessibilityLabel={`Available balance ${money(balance)}`}>
             {money(balance)}
           </Text>
-          <Text style={[type.caption, { color: colors.textSecondary }]}>From referral rewards</Text>
+          <Text variant="caption" tone="secondary">From referral rewards</Text>
         </View>
 
         {result ? (
@@ -176,18 +156,7 @@ export default function WalletScreen() {
           />
         ) : (
           <>
-            <Card>
-              <View style={styles.rowBetween}>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={[type.label, { color: colors.textSecondary }]}>PAY OUT TO</Text>
-                  <Text style={type.bodyStrong}>{method.account_name}</Text>
-                  <Text style={[type.caption, { color: colors.textSecondary }]}>
-                    {method.bank_name} · {method.account_number}
-                  </Text>
-                </View>
-                <Button title="Change" variant="ghost" onPress={() => setEditing(true)} style={{ minHeight: 44 }} />
-              </View>
-            </Card>
+            <PayoutAccountCard method={method} onChange={() => setEditing(true)} />
 
             <View style={{ gap: space.sm }}>
               <TextField
@@ -201,19 +170,9 @@ export default function WalletScreen() {
               />
               <View style={styles.chips}>
                 {[50, 100, 200].map((v) => (
-                  <Pressable
-                    key={v}
-                    onPress={() => setAmount(String(Math.min(v, balance)))}
-                    style={styles.chip}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Withdraw GH₵${v}`}
-                  >
-                    <Text style={[type.caption, { fontWeight: "700" }]}>GH₵ {v}</Text>
-                  </Pressable>
+                  <Chip key={v} label={`GH₵ ${v}`} accessibilityLabel={`Withdraw GH₵${v}`} onPress={() => setAmount(String(Math.min(v, balance)))} />
                 ))}
-                <Pressable onPress={() => setAmount(String(balance))} style={styles.chip} accessibilityRole="button">
-                  <Text style={[type.caption, { fontWeight: "700" }]}>All</Text>
-                </Pressable>
+                <Chip label="All" accessibilityLabel="Withdraw all" onPress={() => setAmount(String(balance))} />
               </View>
               <Button
                 title={inFlight ? "A withdrawal is processing" : "Withdraw"}
@@ -225,136 +184,27 @@ export default function WalletScreen() {
           </>
         )}
 
-        <View style={{ gap: space.sm }}>
-          <Text style={type.heading}>Withdrawals</Text>
+        <Section title="Withdrawals" gap={space.sm}>
           {history.length === 0 ? (
-            <Text style={[type.caption, { color: colors.textSecondary }]}>No withdrawals yet.</Text>
+            <Text variant="caption" tone="secondary">No withdrawals yet.</Text>
           ) : (
-            history.map((h, i) => {
-              const s = STATUS[h.status] || STATUS.processing;
-              return (
-                <View key={h.id}>
-                  {i > 0 ? <Divider /> : null}
-                  <View style={[styles.rowBetween, { paddingVertical: space.sm }]}>
-                    <View style={{ gap: 2 }}>
-                      <Text style={type.bodyStrong}>{money(h.amount)}</Text>
-                      <Text style={[type.caption, { color: colors.textSecondary }]}>
-                        {new Date(h.created_at).toLocaleDateString("en-GH", { day: "numeric", month: "short", year: "numeric" })}
-                        {h.payout_snapshot?.bank_name ? ` · ${h.payout_snapshot.bank_name}` : ""}
-                      </Text>
-                    </View>
-                    <View style={[styles.badge, { backgroundColor: s.bg }]}>
-                      <Text style={[type.label, { color: s.color }]}>{s.label}</Text>
-                    </View>
-                  </View>
-                </View>
-              );
-            })
+            history.map((h, i) => <WithdrawalRow key={h.id} withdrawal={h} first={i === 0} />)
           )}
-        </View>
+        </Section>
 
-        <Pressable onPress={() => Linking.openURL(supportUrl)} style={styles.helpRow} accessibilityRole="link">
-          <Ionicons name="logo-whatsapp" size={18} color={colors.text} />
-          <Text style={[type.caption, { fontWeight: "700", textDecorationLine: "underline" }]}>
-            Problem with a withdrawal? Chat with customer care
-          </Text>
-        </Pressable>
+        <Button
+          title="Problem with a withdrawal? Chat with customer care"
+          variant="ghost"
+          size="sm"
+          icon="logo-whatsapp"
+          onPress={() => Linking.openURL(supportUrl)}
+          style={{ alignSelf: "flex-start" }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function PayoutMethodForm({ user, onSaved, onCancel }) {
-  const [kind, setKind] = useState("mobile_money");
-  const [banks, setBanks] = useState([]);
-  const [bankCode, setBankCode] = useState(null);
-  const [accountNumber, setAccountNumber] = useState("");
-  const [accountName, setAccountName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    setBanks([]);
-    setBankCode(null);
-    listPayoutBanks(user, kind)
-      .then((d) => setBanks(d.banks || []))
-      .catch((e) => setError(e.message));
-  }, [user, kind]);
-
-  const save = async () => {
-    setSaving(true);
-    setError(null);
-    try {
-      const { payoutMethod } = await savePayoutMethod(user, { type: kind, bankCode, accountNumber, accountName });
-      onSaved(payoutMethod);
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Card style={{ gap: space.md }}>
-      <View style={{ gap: 4 }}>
-        <Text style={type.heading}>Where should we send your money?</Text>
-        <Text style={[type.caption, { color: colors.textSecondary }]}>
-          Payouts go only to an account in your own name.
-        </Text>
-      </View>
-      <Segmented
-        value={kind}
-        onChange={setKind}
-        options={[
-          { value: "mobile_money", label: "Mobile money" },
-          { value: "ghipss", label: "Bank account" },
-        ]}
-      />
-      <View style={{ gap: 6 }}>
-        <Text style={[type.caption, { fontWeight: "700" }]}>{kind === "mobile_money" ? "Network" : "Bank"}</Text>
-        {banks.length === 0 ? (
-          <ActivityIndicator color={colors.brand} style={{ alignSelf: "flex-start" }} />
-        ) : (
-          <View style={styles.chips}>
-            {banks.map((b) => {
-              const selected = b.code === bankCode;
-              return (
-                <Pressable
-                  key={b.code}
-                  onPress={() => setBankCode(b.code)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ selected }}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                >
-                  <Text style={[type.caption, { fontWeight: "700", color: selected ? colors.onBrand : colors.text }]}>
-                    {b.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-      </View>
-      <TextField
-        label={kind === "mobile_money" ? "Mobile money number" : "Account number"}
-        value={accountNumber}
-        onChangeText={(t) => setAccountNumber(t.replace(/[^0-9]/g, ""))}
-        keyboardType="number-pad"
-        placeholder={kind === "mobile_money" ? "024 000 0000" : "Account number"}
-      />
-      <TextField
-        label="Name on the account"
-        value={accountName}
-        onChangeText={setAccountName}
-        autoCapitalize="words"
-        hint="We check this with your provider where we can."
-      />
-      {error ? <Notice tone="danger">{error}</Notice> : null}
-      <Button title="Save payout account" onPress={save} loading={saving} disabled={!bankCode || accountNumber.length < 9} />
-      {onCancel ? <Button title="Cancel" variant="ghost" onPress={onCancel} /> : null}
-    </Card>
-  );
-}
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
@@ -362,18 +212,5 @@ const styles = StyleSheet.create({
   content: { padding: space.lg, paddingTop: space.xs, gap: space.xl, paddingBottom: space.xxxl },
   balanceBlock: { gap: 4, paddingVertical: space.sm },
   balance: { fontSize: 40, lineHeight: 46, fontWeight: "800", color: colors.text, letterSpacing: -0.8 },
-  rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.sm },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.xs },
-  chip: {
-    minHeight: 40,
-    paddingHorizontal: space.sm + 2,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  chipSelected: { backgroundColor: colors.text, borderColor: colors.text },
-  badge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill },
-  helpRow: { flexDirection: "row", alignItems: "center", gap: space.xs, minHeight: 44 },
 });

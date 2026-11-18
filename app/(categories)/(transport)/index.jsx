@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useRouter } from "expo-router";
 import { getTransportProvider } from "../../../utils/api/transportConfig";
-import COLORS from "../../../constants/Colors";
+import { colors } from "../../../constants/theme";
 
 /** Forwards to whichever transport provider the dashboard has switched on. */
 export default function TransportEntry() {
@@ -19,8 +19,8 @@ export default function TransportEntry() {
   }, [router]);
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fff" }}>
-      <ActivityIndicator color={COLORS.teal} />
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface }}>
+      <ActivityIndicator color={colors.brand} />
     </View>
   );
 }

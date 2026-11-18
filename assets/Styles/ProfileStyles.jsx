@@ -1,5 +1,5 @@
 import { StyleSheet, Platform, Dimensions } from "react-native";
-import COLORS from "../../constants/Colors";
+import { colors } from "../../constants/theme";
 
 const { height } = Dimensions.get("window");
 const headerMarginTop = height * 0.05; // 5% of screen height
@@ -7,7 +7,7 @@ const headerMarginTop = height * 0.05; // 5% of screen height
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
   },
   scrollContainer: {
     padding: 16,
@@ -31,16 +31,16 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.background,
+    color: colors.brand,
   },
   profileSub: {
     fontSize: 14,
-    color: COLORS.background,
+    color: colors.brand,
     paddingTop: 2,
   },
   adContainer: {
     flexDirection: "column",
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     padding: 16,
     borderRadius: 8,
     shadowColor: "#000",
@@ -70,12 +70,12 @@ const styles = StyleSheet.create({
   adTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: COLORS.background,
+    color: colors.brand,
     marginBottom: 4,
   },
   adDescription: {
     fontSize: 14,
-    color: "#555",
+    color: colors.textSecondary,
   },
   linksContainer: {
     justifyContent: "space-between",
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: colors.border,
   },
   linkDetails: {
     flexDirection: "row",
@@ -95,19 +95,19 @@ const styles = StyleSheet.create({
   linkLabel: {
     fontSize: 18,
     marginLeft: 16,
-    color: COLORS.background,
+    color: colors.brand,
   },
   linkDetailsButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0D9488",
+    backgroundColor: colors.brand,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 10,
     justifyContent: "center",
   },
   linkButtonText: {
-    color: "#fff",
+    color: colors.textInverse,
     fontSize: 18,
     marginLeft: 8,
   },
@@ -127,14 +127,14 @@ const styles = StyleSheet.create({
   width: 50,
   height: 50,
   borderRadius: 25, // Makes it circular
-  backgroundColor: COLORS.background, // Use your theme color
+  backgroundColor: colors.brand, // Use your theme color
   justifyContent: "center",
   alignItems: "center",
   marginRight: 12, // Space between circle and text
 },
 
 avatarLetter: {
-  color: "#fff", // White letter inside the circle
+  color: colors.textInverse, // White letter inside the circle
   fontSize: 20,
   fontWeight: "bold",
 },

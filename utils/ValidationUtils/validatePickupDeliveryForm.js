@@ -1,55 +1,40 @@
-// validationFormStorage.js
+// validatePickupDeliveryForm.js
+//
+// getPickupDeliveryIssues returns EVERY missing field, in screen order, as
+// { key, label }. `key` is "<pickup|delivery>.<field>" so the screen can
+// highlight that field and scroll to it; `label` is the human wording used
+// in the alert ("Pickup room number").
 
-export const validatePickupDeliveryForm = ({ pickupInfo, deliveryInfo }) => {
-  // Validate pickup date
-  if (!pickupInfo?.date) {
-    return "Please select a pickup date";
+const locationIssues = (info, prefix, noun) => {
+  const issues = [];
+  if (!info?.area) {
+    issues.push({ key: `${prefix}.area`, label: `${noun} spot` });
+    return issues;
   }
-
-  // Validate delivery date
-  if (!deliveryInfo?.date) {
-    return "Please select a delivery date";
+  if (info.area === "Off Campus") {
+    if (!info.offCampusArea) issues.push({ key: `${prefix}.offCampusArea`, label: `${noun} off-campus area` });
+    if (!info.hostel?.trim()) issues.push({ key: `${prefix}.hostel`, label: `${noun} hostel name` });
   }
+  if (!info.room?.trim()) issues.push({ key: `${prefix}.room`, label: `${noun} room number` });
+  return issues;
+};
 
-  // Validate pickup location - must have area
-  if (!pickupInfo?.area) {
-    return "Please select a pickup location";
-  }
+export const getPickupDeliveryIssues = ({ pickupInfo, deliveryInfo }) => {
+  const issues = [];
 
-  // If pickup is off-campus, validate off-campus details
-  if (pickupInfo.area === "Off Campus") {
-    if (!pickupInfo.offCampusArea) {
-      return "Please select an off-campus area for pickup";
-    }
-    if (!pickupInfo.hostel?.trim()) {
-      return "Please enter your hostel name for pickup";
-    }
-  }
+  if (!pickupInfo?.date) issues.push({ key: "pickup.date", label: "Pickup day" });
+  issues.push(...locationIssues(pickupInfo, "pickup", "Pickup"));
 
-  if (!pickupInfo?.room?.trim()) {
-    return "Please enter your room number for pickup";
-  }
+  if (!deliveryInfo?.date) issues.push({ key: "delivery.date", label: "Delivery day" });
+  // Delivery location can be deferred if the user doesn't know their next
+  // hostel yet — skip location/room checks when decideLater is set.
+  if (!deliveryInfo?.decideLater) issues.push(...locationIssues(deliveryInfo, "delivery", "Delivery"));
 
-  // Delivery location can be deferred if the user doesn't know their
-  // next hostel yet — skip location/room checks when decideLater is set.
-  if (!deliveryInfo?.decideLater) {
-    if (!deliveryInfo?.area) {
-      return "Please select a delivery location";
-    }
+  return issues;
+};
 
-    if (deliveryInfo.area === "Off Campus") {
-      if (!deliveryInfo.offCampusArea) {
-        return "Please select an off-campus area for delivery";
-      }
-      if (!deliveryInfo.hostel?.trim()) {
-        return "Please enter your hostel name for delivery";
-      }
-    }
-
-    if (!deliveryInfo?.room?.trim()) {
-      return "Please enter your room number for delivery";
-    }
-  }
-
-  return null; // All validations passed
+/** Legacy single-message form (used by StorageEdit). Null when valid. */
+export const validatePickupDeliveryForm = (form) => {
+  const [first] = getPickupDeliveryIssues(form);
+  return first ? `Please add your ${first.label.toLowerCase()}` : null;
 };

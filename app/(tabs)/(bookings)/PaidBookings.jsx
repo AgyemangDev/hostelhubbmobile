@@ -1,11 +1,10 @@
 import React, { useMemo } from "react";
 import { View, StyleSheet, ActivityIndicator, Text, ScrollView, RefreshControl } from "react-native";
-import PaidBookingList from "../../../components/bookings/PaidBookingList";
-import EmptyState from "../../../components/bookings/EmptyState";
+import PaidBookingList from "../../../components/lists/bookings/PaidBookingList";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
-import ErrorMessage from "../../../components/ui/feedback/ErrorMessage"
-import Colors from "../../../constants/Colors";
+import { EmptyState } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -36,8 +35,8 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
   if (loading && !refreshing) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#10B981" />
-        <Text style={{ marginTop: 10, color: "#666" }}>Loading paid bookings...</Text>
+        <ActivityIndicator size="large" color={colors.success} />
+        <Text style={{ marginTop: 10, color: colors.textSecondary }}>Loading paid bookings...</Text>
       </View>
     );
   }
@@ -45,9 +44,9 @@ const PaidBookings = ({ navigation, refreshing, onRefresh }) => {
 if (error) {
   return (
     <View style={[styles.container, styles.centered]}>
-      <ErrorMessage
+      <EmptyState illustration="error"
         title="Couldn't load your bookings"
-        message="We're currently having trouble fetching your bookings. If it persists, kindly contact customer care."
+        body="We're currently having trouble fetching your bookings. If it persists, kindly contact customer care."
       />
     </View>
   );
@@ -60,7 +59,7 @@ if (error) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#10B981"]} />}
         style={styles.container}
       >
-        <EmptyState message="No Paid Bookings Found." />
+        <EmptyState illustration="empty" title="No Paid Bookings Found." />
       </ScrollView>
     );
   }
@@ -79,7 +78,7 @@ if (error) {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: colors.surface },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 

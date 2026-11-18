@@ -9,18 +9,16 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
-import COLORS from "../../constants/Colors";
-import FormInput from "../../components/ui/inputs/FormInput";
-import Button from "../../components/ui/buttons/ButtonComponent";
-import SocialAuthButtons from "../../components/auth/SocialAuthButtons";
+import SocialAuthButtons from "../../components/buttons/auth/SocialAuthButtons";
 import { UserContext } from "../../context/UserContext";
 
 import { signInWithEmail, loadSavedCredentials } from "../../utils/auth/signInwithEmail";
 import { useGoogleAuth } from "../../utils/auth/signInWithGoogle";
 import { signInWithApple } from "../../utils/auth/signInWithApple";
 import TermsLink from "../../components/ui/links/TermsLink";
+import { Button, CheckboxRow, TextField } from "../../components/ui";
+import { colors } from "../../constants/theme";
 
 const ClientLogIn = () => {
   const navigation = useNavigation();
@@ -87,34 +85,24 @@ const handleAppleSignIn = async () => {
         <Text style={styles.subheading}>Sign in or create an account</Text>
 
         <View style={styles.formArea}>
-          <FormInput
-            placeholder="Email"
+          <TextField
+            label="Email"
             keyboardType="email-address"
             autoCapitalize="none"
             value={email}
             onChangeText={setEmail}
           />
 
-          <FormInput
-            placeholder="Password"
+          <TextField
+            label="Password"
             value={password}
             onChangeText={setPassword}
-            isPasswordInput
-            isPasswordVisible={passwordVisible}
-            togglePasswordVisibility={() => setPasswordVisible(!passwordVisible)}
+          secureTextEntry={!passwordVisible}
+            right={<TextField.Icon icon={passwordVisible ? "eye-outline" : "eye-off-outline"} onPress={() => setPasswordVisible(!passwordVisible)} />}
           />
 
           <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.rememberRow}
-              onPress={() => setRememberMe(!rememberMe)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                {rememberMe && <Ionicons name="checkmark" size={12} color="#fff" />}
-              </View>
-              <Text style={styles.rememberText}>Remember me</Text>
-            </TouchableOpacity>
+            <CheckboxRow checked={rememberMe} onChange={setRememberMe} label="Remember me" variant="compact" />
 
             {/* <TouchableOpacity onPress={() => navigation.replace("(Client)/ForgotPassword")} activeOpacity={0.7}>
               <Text style={styles.forgotPassword}>Forgot password?</Text>
@@ -122,8 +110,8 @@ const handleAppleSignIn = async () => {
           </View>
 
           <Button
-            buttonText={loading ? "Please wait…" : "Continue"}
-            onPressFunction={handleContinue}
+            title={loading ? "Please wait…" : "Continue"}
+            onPress={handleContinue}
             disabled={loading}
           />
 
@@ -149,7 +137,7 @@ const handleAppleSignIn = async () => {
     <TermsLink
       text="Terms of Service"
       link="https://hostelhubb.com/terms"
-      color="#1a1a1a"
+      color={colors.text}
     />
 
     <Text style={styles.andText}>and</Text>
@@ -157,7 +145,7 @@ const handleAppleSignIn = async () => {
     <TermsLink
       text="Privacy Policy"
       link="https://hostelhubb.com/privacy-policy"
-      color="#1a1a1a"
+      color={colors.text}
     />
   </View>
 </View>
@@ -170,7 +158,7 @@ const handleAppleSignIn = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
@@ -178,7 +166,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: colors.fill,
     alignSelf: "center",
     marginTop: 12,
     marginBottom: 4,
@@ -192,13 +180,13 @@ const styles = StyleSheet.create({
     fontSize: 27,
     paddingTop:100,
     fontWeight: "700",
-    color: "#1a1a1a",
+    color: colors.text,
     letterSpacing: -0.5,
     marginBottom: 4,
   },
   subheading: {
     fontSize: 16,
-    color: "#888",
+    color: colors.textMuted,
     marginBottom: 24,
   },
   formArea: {
@@ -225,15 +213,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   checkboxChecked: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.text,
   },
   rememberText: {
     fontSize: 13,
-    color: "#1a1a1a",
+    color: colors.text,
   },
   forgotPassword: {
     fontSize: 13,
-    color: COLORS.link,
+    color: colors.brand,
   },
   divider: {
     flexDirection: "row",
@@ -248,7 +236,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 12,
-    color: "#888",
+    color: colors.textMuted,
   },
   termsContainer: {
   alignItems: "center",
@@ -264,12 +252,12 @@ linksRow: {
 
 andText: {
   fontSize: 12,
-  color: "#aaa",
+  color: colors.textMuted,
 },
 
 terms: {
   fontSize: 12,
-  color: "#aaa",
+  color: colors.textMuted,
   textAlign: "center",
 },
 });

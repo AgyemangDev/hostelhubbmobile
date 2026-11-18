@@ -1,10 +1,10 @@
 import { useState, useContext, useEffect } from "react";
-import { SafeAreaView, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import { UserContext } from "../../context/UserContext";
-import { Button, Card, FadeIn, Notice, PriceBar, StepHeader, TextField } from "../../components/ui/ds";
+import { Button, PriceBar, StepHeader } from "../../components/ui";
 import { colors, radius, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 import API_BASE_URL from "../../utils/api/api";
@@ -12,6 +12,11 @@ import {
   clearPendingReferral,
   getPendingReferral,
 } from "../../utils/referralStorage";
+import ReferralCodeField from "../../components/forms/referral/ReferralCodeField";
+import MyReferralCodeCard from "../../components/cards/referral/MyReferralCodeCard";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function ReferralStep() {
   const router = useRouter();
@@ -112,7 +117,7 @@ export default function ReferralStep() {
     }
   };
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("ReferralStep")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={{ gap: space.xs }}>
@@ -122,43 +127,20 @@ export default function ReferralStep() {
           </Text>
         </View>
 
-        <View style={{ gap: space.sm }}>
-          <TextField
-            label="Friend's referral code"
-            value={code}
-            onChangeText={(t) => {
-              setCode(t);
-              setMatched(null);
-              setError(null);
-            }}
-            autoCapitalize="characters"
-            autoCorrect={false}
-            placeholder="e.g. KOFI26"
-            returnKeyType="search"
-            onSubmitEditing={handleCheck}
-            error={error}
-          />
-          {!matched ? (
-            <Button title="Check code" variant="secondary" onPress={handleCheck} loading={checking} disabled={!code.trim()} />
-          ) : null}
-        </View>
+        <ReferralCodeField
+          code={code}
+          onChangeCode={(t) => {
+            setCode(t);
+            setMatched(null);
+            setError(null);
+          }}
+          checking={checking}
+          match={matched}
+          error={error}
+          onCheck={handleCheck}
+        />
 
-        {matched ? (
-          <FadeIn>
-            <Notice tone="success" title={`${[matched.firstname, matched.surname].filter(Boolean).join(" ")} will get the reward`}>
-              Continue to confirm. You can still skip if this isn't right.
-            </Notice>
-          </FadeIn>
-        ) : null}
-
-        <Card style={styles.mine}>
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={[type.label, { color: colors.textSecondary }]}>YOUR CODE</Text>
-            <Text style={[type.title, { letterSpacing: 1 }]}>{myReferralCode}</Text>
-            <Text style={[type.caption, { color: colors.textSecondary }]}>Share it and earn 5% when friends pay.</Text>
-          </View>
-          <Button title="Share" icon="share-outline" variant="secondary" size="sm" onPress={handleShare} />
-        </Card>
+        <MyReferralCodeCard code={myReferralCode} onShare={handleShare} />
       </ScrollView>
 
       <PriceBar>
@@ -174,5 +156,4 @@ export default function ReferralStep() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: space.lg, gap: space.xl, paddingBottom: space.xxl },
-  mine: { flexDirection: "row", alignItems: "center", gap: space.md, borderRadius: radius.lg },
 });

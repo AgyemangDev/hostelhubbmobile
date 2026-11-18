@@ -9,13 +9,19 @@ import {
 } from 'react-native';
 import { UserContext } from '../../../context/UserContext';
 import API_BASE_URL from '../../../utils/api/api';
-import COLORS from '../../../constants/Colors';
 
-import ReferralHero from '../../../components/profile/referral/ReferralHero';
-import ReferralTabs from '../../../components/profile/referral/ReferralTabs';
-import HowItWorks from '../../../components/profile/referral/HowItWorks';
-import EarningsList from '../../../components/profile/referral/EarningsList';
-import HostsList from '../../../components/profile/referral/HostList';
+import ReferralHero from '../../../components/banners/referral/ReferralHero';
+import HowItWorks from '../../../components/sections/referral/HowItWorks';
+import EarningsList from '../../../components/lists/referral/EarningsList';
+import HostsList from '../../../components/lists/referral/HostsList';
+import { Tabs } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
+
+const REFERRAL_TABS = [
+  { value: 'how', label: 'How it works' },
+  { value: 'earnings', label: 'Earnings' },
+  { value: 'hosts', label: 'My hosts' },
+];
 
 const ReferralProgram = () => {
   const { userInfo, user } = useContext(UserContext);
@@ -71,21 +77,21 @@ const ReferralProgram = () => {
           onShare={shareCode}
         />
 
-        <ReferralTabs tab={tab} setTab={setTab} />
+        <Tabs variant="underline" stretch options={REFERRAL_TABS} value={tab} onChange={setTab} style={{ marginHorizontal: 20, marginTop: 4 }} />
 
         <View style={s.content}>
           {tab === 'how' && <HowItWorks />}
 
           {tab === 'earnings' &&
             (loading ? (
-              <ActivityIndicator color={COLORS.teal} style={{ marginTop: 48 }} />
+              <ActivityIndicator color={colors.brand} style={{ marginTop: 48 }} />
             ) : (
               <EarningsList earnings={earnings} />
             ))}
 
           {tab === 'hosts' &&
             (loading ? (
-              <ActivityIndicator color={COLORS.teal} style={{ marginTop: 48 }} />
+              <ActivityIndicator color={colors.brand} style={{ marginTop: 48 }} />
             ) : (
               <HostsList hosts={hosts} />
             ))}
@@ -100,7 +106,7 @@ export default ReferralProgram;
 const s = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   content: {
     paddingHorizontal: 20,

@@ -1,31 +1,25 @@
 import React, { useEffect, useContext, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Linking,
-  StatusBar,
-  Animated,
-} from "react-native";
+import { View, StyleSheet, StatusBar, Animated } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 
 import { UserContext } from "../../context/UserContext";
 import { useAccommodationById } from "../../hooks/accommodationContext/useAccommodationById";
 
-import HostelImageGallery from "../../components/accommodation/details/HostelImageGallery";
-import LoadingScreen from "../../components/accommodation/details/LoadingScreen";
-import HostelInfo from "../../components/accommodation/details/HostelInfo";
-import PaymentRange from "../../components/accommodation/details/PaymentRange";
-import Amenities from "../../components/accommodation/details/Amenities";
-import AccommodationRules from "../../components/accommodation/details/AccommodationRules";
-import BookingButton from "../../components/accommodation/details/BookingButton";
-import ReviewsModal from "../../components/accommodation/details/ReviewsModal";
-import HostelDetailsHeader from "../../components/accommodation/details/HostelDetailsHeader";
+import HostelImageGallery from "../../components/media/accommodation/HostelImageGallery";
+import HostelDetailsSkeleton from "../../components/skeletons/accommodation/HostelDetailsSkeleton";
+import HostelInfo from "../../components/sections/accommodation/HostelInfo";
+import PaymentRange from "../../components/sections/accommodation/PaymentRange";
+import Amenities from "../../components/sections/accommodation/Amenities";
+import AccommodationRules from "../../components/sections/accommodation/AccommodationRules";
+import ReserveBar from "../../components/bars/accommodation/ReserveBar";
+import { Notice } from "../../components/ui";
+import { listingFacts } from "../../utils/listingFacts";
+import ReviewsModal from "../../components/sheets/accommodation/ReviewsModal";
+import HostelDetailsHeader from "../../components/headers/accommodation/HostelDetailsHeader";
 
 import { updateHostelViewCount } from "../../utils/hostelViewCountUtil";
+import { colors, space } from "../../constants/theme";
 
 const DetailsScreen = () => {
   // `id` is the route segment (/hostel/:id). It may be an accommodation id or,
@@ -52,11 +46,11 @@ const DetailsScreen = () => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
-  // Profile data (balance, noofbooking, paymentstatus, ...) now arrives via
+  // Profile data (name, phone, ...) now arrives via
   // UserContext's SSE push connection instead of a focus-triggered refetch.
 
   if (loading || !hostel) {
-    return <LoadingScreen message="Loading hostel details..." />;
+    return <HostelDetailsSkeleton />;
   }
 
   const buildPaymentRanges = (roomTypes = []) =>
@@ -73,12 +67,10 @@ const DetailsScreen = () => {
     }, {});
 
 
-const handleBookingPress = () => {
-  if (!hostel.accommodation_availability) {
-    Alert.alert("Oops! Hostel Fully Booked", "This hostel is currently full.", [{ text: "OK" }]);
-    return;
-  }
+const facts = listingFacts(hostel);
+  const fullyBooked = hostel.accommodation_availability === false || facts.roomsLeft === 0;
 
+  const handleBookingPress = () => {
   router.push({
     pathname: "/bookingModal",
     params: { hostelId: hostel.id }
@@ -126,57 +118,35 @@ const handleBookingPress = () => {
             hostelDescription={hostel?.description || ""}
           />
 
-{/* <TouchableOpacity onPress={() => setIsModalVisible(true)}>
-  <Text style={styles.reviewsLink}>See all reviews</Text>
-</TouchableOpacity> */}
-
           <ReviewsModal
             visible={isModalVisible}
             onClose={() => setIsModalVisible(false)}
             hostelId={hostelId}
           />
 
-          {Object.keys(paymentRanges).length ? <PaymentRange paymentRanges={paymentRanges} /> : <Text style={styles.missingData}>Room pricing has not been provided yet.</Text>}
+          {Object.keys(paymentRanges).length ? (
+            <PaymentRange paymentRanges={paymentRanges} />
+          ) : (
+            <Notice style={styles.missingData}>Room pricing has not been provided yet.</Notice>
+          )}
           <Amenities amenities={hostel?.amenities || []} />
           <AccommodationRules rules={hostel?.accommodation_rules || {}} />
         </View>
       </Animated.ScrollView>
 
-      <View style={styles.fixedBookingButtonContainer}>
-        <BookingButton onPress={handleBookingPress} />
+      <View style={styles.reserveBar}>
+        <ReserveBar fromPrice={facts.fromPrice} roomsLeft={facts.roomsLeft} fullyBooked={fullyBooked} onReserve={handleBookingPress} />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: colors.surface },
   scrollViewContent: { paddingBottom: 120 },
-  components: { marginHorizontal: 10 },
-  missingData: { marginVertical: 18, color: "#777", fontSize: 14, lineHeight: 21 },
-  fixedBookingButtonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 10,
-    backgroundColor: "#fff",
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  reviewsLink: {
-  fontSize: 13,
-  color: "#888",
-  textDecorationLine: "underline",
-  marginTop: -26,
-  marginBottom: 16,
-},
+  components: { marginHorizontal: space.md },
+  missingData: { marginTop: space.md, marginBottom: space.xl },
+  reserveBar: { position: "absolute", bottom: 0, left: 0, right: 0 },
 });
 
 export default DetailsScreen;

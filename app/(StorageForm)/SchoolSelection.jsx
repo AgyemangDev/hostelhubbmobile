@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import API_BASE_URL from "../../utils/api/api";
-import { Button, EmptyState, FadeIn, ListRow, PriceBar, StepHeader } from "../../components/ui/ds";
+import SchoolListSkeleton from "../../components/skeletons/storage/SchoolListSkeleton";
+import { Button, EmptyState, FadeIn, ListRow, PriceBar, StepHeader } from "../../components/ui";
 import { colors, radius, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function SchoolSelection() {
   const router = useRouter();
@@ -43,7 +48,7 @@ export default function SchoolSelection() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("SchoolSelection")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={{ gap: space.xs }}>
@@ -54,7 +59,7 @@ export default function SchoolSelection() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color={colors.brand} style={{ marginTop: space.xl }} />
+          <SchoolListSkeleton />
         ) : schools.length === 0 ? (
           <EmptyState icon="school-outline" title="No schools open right now" body="Storage bookings open again before the next break." />
         ) : (

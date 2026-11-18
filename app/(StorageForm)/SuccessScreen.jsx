@@ -1,12 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import { Linking, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import LottieView from "lottie-react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import { STORAGE_WHATSAPP_GROUP_URL } from "../../constants/storageWhatsapp";
-import { Button, FadeIn, ListRow, PriceBar, Timeline, money } from "../../components/ui/ds";
+import { Button, FadeIn, ListRow, PriceBar, Timeline } from "../../components/ui";
+import { money } from "../../utils/formatMoney";
 import { colors, radius, space, type } from "../../constants/theme";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function SuccessScreen() {
   const router = useRouter();
@@ -30,7 +35,7 @@ export default function SuccessScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <LottieView
           ref={animationRef}
@@ -113,5 +118,5 @@ const styles = StyleSheet.create({
   animation: { width: 140, height: 140, alignSelf: "center" },
   receipt: { gap: space.sm, padding: space.md, borderRadius: radius.lg, backgroundColor: colors.surfaceSunken, borderWidth: 1, borderColor: colors.border },
   receiptRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space.md },
-  waIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: "#E7F7EF", alignItems: "center", justifyContent: "center" },
+  waIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center" },
 });

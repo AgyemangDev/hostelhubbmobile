@@ -51,7 +51,7 @@ export default function MainLayout() {
         <Stack.Screen name="(StorageForm)" />
         <Stack.Screen name="Shortlist" />
         <Stack.Screen name="NotificationScreen" />
-        <Stack.Screen name="allPhotos" />
+        <Stack.Screen name="allPhotos" options={{ presentation: "fullScreenModal", animation: "fade" }} />
         <Stack.Screen name="bookingModal" />
         <Stack.Screen name="hostel/[id]" />
         <Stack.Screen name="wallet" />

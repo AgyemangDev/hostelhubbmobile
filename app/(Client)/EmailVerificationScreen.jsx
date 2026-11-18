@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Image, StyleSheet, Alert } from "react-native";
 import { getAuth, sendEmailVerification, reload } from "firebase/auth";
 import { useRouter } from "expo-router";
-import Button from "../../components/ui/buttons/ButtonComponent";
+import { Button } from "../../components/ui";
+import { colors } from "../../constants/theme";
 
 const EmailVerificationScreen = () => {
   const [sending, setSending] = useState(false);
@@ -69,14 +70,14 @@ const EmailVerificationScreen = () => {
         </Text>
 
         <Button
-          buttonText={sending ? "Sending..." : "Send Verification Email"}
-          onPressFunction={handleSendVerification}
-          customStyle={{ marginBottom: 15 }}
+          title={sending ? "Sending..." : "Send Verification Email"}
+          onPress={handleSendVerification}
+          style={{ marginBottom: 15 }}
         />
 
         <Button
-          buttonText="Go to Login Page"
-          onPressFunction={handleGoToLogin}
+          title="Go to Login Page"
+          onPress={handleGoToLogin}
         />
       </View>
     </View>
@@ -84,11 +85,11 @@ const EmailVerificationScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", backgroundColor: "#fff" },
+  container: { flex: 1, justifyContent: "center", backgroundColor: colors.surface },
   content: { alignItems: "center", paddingHorizontal: 30 },
   image: { width: 250, height: 250, marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: "700", color: "#1a1a2e", marginBottom: 10, textAlign: "center" },
-  text: { fontSize: 15, color: "#555", textAlign: "center", marginBottom: 30, lineHeight: 22 },
+  title: { fontSize: 24, fontWeight: "700", color: colors.text, marginBottom: 10, textAlign: "center" },
+  text: { fontSize: 15, color: colors.textSecondary, textAlign: "center", marginBottom: 30, lineHeight: 22 },
 });
 
 export default EmailVerificationScreen;

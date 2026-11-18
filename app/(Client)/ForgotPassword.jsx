@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   Image,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-} from 'react-native';
+} from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import COLORS from '../../constants/Colors';
 import { auth } from '../../lib/firebase/FirebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from 'expo-router';
-import FormInput from "../../components/ui/inputs/FormInput";
+import { Button, TextField } from "../../components/ui";
+import { colors } from "../../constants/theme";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -58,16 +57,14 @@ const ForgotPassword = () => {
             />
 
             {/* ✅ Use FormInput instead of TextInput */}
-            <FormInput
-              placeholder="Enter your email"
+            <TextField
+              label="Enter your email"
               keyboardType="email-address"
               value={email}
               onChangeText={setEmail}
             />
 
-            <TouchableOpacity style={styles.resetButton} onPress={handleResetPassword}>
-              <Text style={styles.buttonText}>Reset</Text>
-            </TouchableOpacity>
+            <Button title="Reset" onPress={handleResetPassword} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -78,7 +75,7 @@ const ForgotPassword = () => {
 export default ForgotPassword;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white },
+  container: { flex: 1, backgroundColor: colors.surface },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -86,15 +83,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   content: { width: '100%', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold', color: COLORS.button, marginBottom: 8 },
-  subtitle: { fontSize: 16, color: COLORS.textMuted, textAlign: 'center', marginBottom: 40 },
+  title: { fontSize: 24, fontWeight: 'bold', color: colors.brand, marginBottom: 8 },
+  subtitle: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', marginBottom: 40 },
   image: { width: '100%', height: 250, resizeMode: 'contain', marginBottom: 24 },
   resetButton: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.brand,
     paddingVertical: 14,
     width: '100%',
     borderRadius: 10,
     alignItems: 'center',
   },
-  buttonText: { fontSize: 18, color: COLORS.white, fontWeight: 'bold' },
+  buttonText: { fontSize: 18, color: colors.textInverse, fontWeight: 'bold' },
 });

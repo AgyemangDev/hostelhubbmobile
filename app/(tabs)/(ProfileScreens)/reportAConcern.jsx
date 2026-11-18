@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Linking, Alert } from "react-native";
-import COLORS from "../../../constants/Colors";
+import { View, Text, TextInput, Linking, Alert } from "react-native";
 import styles from "../../../assets/Styles/ReportAConcernStyles";
+import { Button } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 const ReportAConcern = () => {
   const [concern, setConcern] = useState("");
@@ -54,21 +55,12 @@ const ReportAConcern = () => {
         style={styles.input}
         multiline
         placeholder="Describe your concern here..."
-        placeholderTextColor={COLORS.backgroundColor}
+        placeholderTextColor={colors.background}
         value={concern}
         onChangeText={handleInputChange}
         textAlignVertical="top"
       />
-      <TouchableOpacity
-        style={[
-          styles.button,
-          { backgroundColor: isButtonEnabled ? "#0D9488" : "#B2DEDA" }, // Teal when active, light teal when disabled
-        ]}
-        onPress={handleSubmit}
-        disabled={!isButtonEnabled}
-      >
-        <Text style={styles.buttonText}>Send a Report</Text>
-      </TouchableOpacity>
+      <Button title="Send a Report" onPress={handleSubmit} disabled={!isButtonEnabled} style={styles.button} />
     </View>
   );
 };

@@ -5,12 +5,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserContext } from "../context/UserContext";
-import LocationSelector from "../components/storage/LocationSelector";
-import DateSelector from "../components/storage/DateSelector";
-import BottomButton from "../components/ui/buttons/BottomButton";
-import COLORS from "../constants/Colors";
+import LocationSelector from "../components/forms/storage/LocationSelector";
+import DateSelector from "../components/forms/storage/DateSelector";
 import API_BASE_URL from "../utils/api/api";
 import { useBookingsContext } from "../context/BookingsContext";
+import { Button, PriceBar, SectionHeader } from "../components/ui";
+import { colors } from "../constants/theme";
 
 // items/pickup_info/delivery_info come straight out of the DB row and may
 // already be objects (from context) or JSON strings (passed through params).
@@ -236,14 +236,6 @@ const StorageEdit = () => {
 
   const bookingRef = String(parsedBooking.bookingReference ?? parsedBooking.id ?? "").slice(0, 13);
 
-  const SectionHeader = ({ icon, title }) => (
-    <View style={styles.sectionHeader}>
-      <View style={styles.sectionIcon}>
-        <Ionicons name={icon} size={18} color={COLORS.background} />
-      </View>
-      <Text style={styles.sectionTitle}>{title}</Text>
-    </View>
-  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -259,7 +251,7 @@ const StorageEdit = () => {
 
         {isDelivered ? (
           <View style={styles.noticeCard}>
-            <Ionicons name="checkmark-circle" size={22} color={COLORS.success} />
+            <Ionicons name="checkmark-circle" size={22} color={colors.success} />
             <Text style={styles.noticeText}>
               This order has already been delivered, so it can no longer be changed.
             </Text>
@@ -269,7 +261,7 @@ const StorageEdit = () => {
             {firstDeliveryDate && lastDeliveryDate ? (
               <View style={styles.disclaimer}>
                 <View style={styles.disclaimerHeader}>
-                  <Ionicons name="information-circle" size={20} color={COLORS.background} />
+                  <Ionicons name="information-circle" size={20} color={colors.brand} />
                   <Text style={styles.disclaimerTitle}>Free delivery window</Text>
                 </View>
                 <Text style={styles.disclaimerText}>
@@ -295,7 +287,7 @@ const StorageEdit = () => {
                   Your delivery day has started, so the date can no longer be changed.
                 </Text>
               ) : pointsLoading ? (
-                <ActivityIndicator color={COLORS.background} />
+                <ActivityIndicator color={colors.brand} />
               ) : canPickDate ? (
                 <>
                   <Text style={styles.helperText}>
@@ -326,7 +318,7 @@ const StorageEdit = () => {
                   changed.
                 </Text>
               ) : pointsLoading ? (
-                <ActivityIndicator color={COLORS.background} />
+                <ActivityIndicator color={colors.brand} />
               ) : pointsError ? (
                 <Text style={styles.helperText}>{pointsError}</Text>
               ) : (
@@ -345,11 +337,11 @@ const StorageEdit = () => {
 
       {!isDelivered && !dateLocked && !pointsLoading && (
         <View style={styles.footer}>
-          <BottomButton
-            buttonText={saving ? "Saving…" : "Save changes"}
-            onPressFunction={handleSave}
+          <PriceBar action={<Button
+            title={saving ? "Saving…" : "Save changes"}
+            onPress={handleSave}
             disabled={saving || nothingToSave}
-          />
+          />} />
         </View>
       )}
     </SafeAreaView>
@@ -357,10 +349,10 @@ const StorageEdit = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F4F8F7" },
+  safeArea: { flex: 1, backgroundColor: colors.brandSoft },
   container: { padding: 20, paddingBottom: 120, gap: 16 },
   hero: {
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.brand,
     borderRadius: 16,
     padding: 20,
   },
@@ -372,27 +364,27 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 6,
   },
-  title: { fontSize: 22, fontWeight: "700", color: COLORS.white, marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: "700", color: colors.textInverse, marginBottom: 4 },
   subtitle: { fontSize: 13, color: "rgba(255,255,255,0.85)", fontFamily: "monospace" },
   disclaimer: {
-    backgroundColor: "#E8F4F1",
+    backgroundColor: colors.brandSoft,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#BFE0D8",
+    borderColor: colors.brandSoft,
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.background,
+    borderLeftColor: colors.brand,
   },
   disclaimerHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  disclaimerTitle: { fontSize: 15, fontWeight: "700", color: COLORS.darkest },
-  disclaimerText: { fontSize: 13.5, color: COLORS.textDark, lineHeight: 20 },
-  disclaimerBold: { fontWeight: "700", color: COLORS.darkest },
+  disclaimerTitle: { fontSize: 15, fontWeight: "700", color: colors.brandPressed },
+  disclaimerText: { fontSize: 13.5, color: colors.text, lineHeight: 20 },
+  disclaimerBold: { fontWeight: "700", color: colors.brandPressed },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E1ECE9",
+    borderColor: colors.border,
     gap: 12,
   },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
@@ -400,37 +392,37 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#E8F4F1",
+    backgroundColor: colors.brandSoft,
     alignItems: "center",
     justifyContent: "center",
   },
-  sectionTitle: { fontSize: 16, fontWeight: "700", color: COLORS.textDark },
-  currentDate: { fontSize: 14, color: COLORS.textMuted },
-  helperText: { fontSize: 13.5, color: COLORS.textMuted, lineHeight: 20 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.text },
+  currentDate: { fontSize: 14, color: colors.textSecondary },
+  helperText: { fontSize: 13.5, color: colors.textSecondary, lineHeight: 20 },
   noticeCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E1ECE9",
+    borderColor: colors.border,
   },
-  noticeText: { flex: 1, fontSize: 14, color: COLORS.textMuted, lineHeight: 20 },
+  noticeText: { flex: 1, fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
   footer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#E1ECE9",
+    borderTopColor: colors.border,
     padding: 4,
   },
   errorContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 40 },
-  errorText: { fontSize: 20, fontWeight: "600", color: "#dc3545", textAlign: "center", marginBottom: 8 },
-  errorSubtext: { fontSize: 16, color: "#666", textAlign: "center", lineHeight: 24 },
+  errorText: { fontSize: 20, fontWeight: "600", color: colors.danger, textAlign: "center", marginBottom: 8 },
+  errorSubtext: { fontSize: 16, color: colors.textSecondary, textAlign: "center", lineHeight: 24 },
 });
 
 export default StorageEdit;

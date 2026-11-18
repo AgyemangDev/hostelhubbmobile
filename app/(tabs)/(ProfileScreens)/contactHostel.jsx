@@ -3,18 +3,17 @@ import {
   Text,
   StyleSheet,
   Image,
-  ScrollView,
   TouchableOpacity,
   Animated,
   Linking,
   Dimensions,
-  StatusBar,
 } from "react-native";
 import React, { useRef } from "react";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { ExternalLink } from "@/components/ui/links/ExternalLink";
 import { BlurView } from "expo-blur";
+import { colors } from "../../../constants/theme";
 
 const { width, height } = Dimensions.get("window");
 
@@ -145,7 +144,7 @@ const ContactHostel = () => {
           {features.map((feature, index) => (
             <View key={index} style={styles.featureCard}>
               <View style={styles.featureIconContainer}>
-                <Ionicons name={feature.icon} size={24} color="#c62828" />
+                <Ionicons name={feature.icon} size={24} color={colors.danger} />
               </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
@@ -191,7 +190,7 @@ const ContactHostel = () => {
               <View style={styles.infoContainer}>
                 <Text style={styles.nameText}>{contact.name}</Text>
                 <View style={styles.roleContainer}>
-                  <FontAwesome5 name="laptop-code" size={14} color="#555" />
+                  <FontAwesome5 name="laptop-code" size={14} color={colors.textSecondary} />
                   <Text style={styles.roleText}>{contact.role}</Text>
                 </View>
                 <Text style={styles.subText}>
@@ -240,7 +239,7 @@ const ContactHostel = () => {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <MaterialIcons name="support-agent" size={24} color="#fff" />
+              <MaterialIcons name="support-agent" size={24} color={colors.textInverse} />
               <Text style={styles.supportButtonText}>
                 Connect with Customer Support
               </Text>
@@ -256,15 +255,15 @@ const ContactHostel = () => {
           </Text>
           <View style={styles.contactMethodsContainer}>
             <View style={styles.contactMethod}>
-              <Ionicons name="mail" size={20} color="#c62828" />
+              <Ionicons name="mail" size={20} color={colors.danger} />
               <Text style={styles.contactMethodText}>hostelhubbofficial@gmail.com</Text>
             </View>
             <View style={styles.contactMethod}>
-              <Ionicons name="time" size={20} color="#c62828" />
+              <Ionicons name="time" size={20} color={colors.danger} />
               <Text style={styles.contactMethodText}>24/7 Customer Support</Text>
             </View>
             <View style={styles.contactMethod}>
-              <Ionicons name="location" size={20} color="#c62828" />
+              <Ionicons name="location" size={20} color={colors.danger} />
               <Text style={styles.contactMethodText}>Kumasi, Ghana</Text>
             </View>
           </View>
@@ -279,7 +278,7 @@ export default ContactHostel;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.fill,
   },
   container: {
     flexGrow: 1,
@@ -300,13 +299,13 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 32,
     fontWeight: "800",
-    color: "#fff",
+    color: colors.textInverse,
     marginBottom: 8,
     textAlign: "center",
   },
   heroSubtitle: {
     fontSize: 16,
-    color: "#fff",
+    color: colors.textInverse,
     opacity: 0.9,
     textAlign: "center",
     fontWeight: "500",
@@ -314,7 +313,7 @@ const styles = StyleSheet.create({
   section: {
     marginHorizontal: 20,
     marginBottom: 30,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 25,
     shadowColor: "#000",
@@ -326,19 +325,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#333",
+    color: colors.text,
     marginBottom: 15,
   },
   pageTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#333",
+    color: colors.text,
     marginBottom: 25,
     marginTop: 10,
   },
   infoText: {
     fontSize: 16,
-    color: "#555",
+    color: colors.textSecondary,
     lineHeight: 24,
     marginBottom: 15,
     textAlign: "justify",
@@ -348,14 +347,14 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 20,
     padding: 15,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.fill,
     borderRadius: 12,
   },
   featureIconContainer: {
     width: 45,
     height: 45,
     borderRadius: 22,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
@@ -371,18 +370,18 @@ const styles = StyleSheet.create({
   featureTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: colors.text,
     marginBottom: 5,
   },
   featureDescription: {
     fontSize: 15,
-    color: "#666",
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   supportSection: {
     marginHorizontal: 20,
     marginBottom: 20,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 25,
     shadowColor: "#000",
@@ -394,7 +393,7 @@ const styles = StyleSheet.create({
   supportTitle: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#333",
+    color: colors.text,
     marginBottom: 15,
   },
   supportButton: {
@@ -411,14 +410,14 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   supportButtonText: {
-    color: "#fff",
+    color: colors.textInverse,
     fontSize: 16,
     marginLeft: 10,
     fontWeight: "600",
   },
   contactInfoSection: {
     marginHorizontal: 20,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 25,
     shadowColor: "#000",
@@ -438,7 +437,7 @@ const styles = StyleSheet.create({
   },
   contactMethodText: {
     fontSize: 16,
-    color: "#555",
+    color: colors.textSecondary,
     marginLeft: 12,
     fontWeight: "500",
   },
@@ -446,7 +445,7 @@ const styles = StyleSheet.create({
   /*
   cardContainer: {
     marginBottom: 20,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -477,7 +476,7 @@ const styles = StyleSheet.create({
     bottom: -5,
     borderRadius: 45,
     borderWidth: 2,
-    borderColor: "#c62828",
+    borderColor: colors.danger,
     opacity: 0.5,
   },
   infoContainer: {
@@ -486,7 +485,7 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#333",
+    color: colors.text,
     marginBottom: 5,
   },
   roleContainer: {
@@ -496,13 +495,13 @@ const styles = StyleSheet.create({
   },
   roleText: {
     fontSize: 15,
-    color: "#555",
+    color: colors.textSecondary,
     marginLeft: 6,
     fontWeight: "500",
   },
   subText: {
     fontSize: 14,
-    color: "#888",
+    color: colors.textMuted,
     fontStyle: "italic",
   },
   callButton: {

@@ -2,11 +2,11 @@ import React, { useState, useRef, useContext, useCallback, useEffect, useMemo } 
 import { useLocalSearchParams } from "expo-router";
 import { useHubclippsById } from "../../../hooks/hubclippsContext/useHubclippsById";
 import { FlatList, Dimensions, StatusBar } from "react-native";
-import HubClip from "../../../components/hubclipps/HubClip";
-import FilterOverlay from "../../../components/hubclipps/FilterOverlay";
-import EmptyFeedState from "../../../components/hubclipps/EmptyFeedState";
+import HubClip from "../../../components/media/hubclipps/HubClip";
+import FilterOverlay from "../../../components/headers/hubclipps/FilterOverlay";
+import EmptyFeedState from "../../../components/feedback/hubclipps/EmptyFeedState";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
-import HubClipSkeleton from "../../../components/hubclipps/HubClipSkeleton";
+import HubClipSkeleton from "../../../components/skeletons/hubclipps/HubClipSkeleton";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -95,7 +95,7 @@ export default function HubClippsFeed() {
 }
 
   // ─── Empty State ──────────────────────────────────────────────────────────────
-  if (!loading && feed.length === 0) {
+  if (!loading && feed.length == 0) {
     return (
       <>
         <StatusBar hidden />

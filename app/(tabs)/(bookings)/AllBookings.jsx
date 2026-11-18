@@ -1,12 +1,11 @@
 import React, { useMemo } from "react";
 import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
-import Colors from "../../../constants/Colors";
-import BookingList from "../../../components/bookings/BookingList";
-import EmptyState from "../../../components/bookings/EmptyState";
+import BookingList from "../../../components/lists/bookings/BookingList";
 import { useBookingsContext } from "../../../context/BookingsContext";
-import BookingsSkeleton from "../../../components/bookings/BookingsSkeleton";
+import BookingsSkeleton from "../../../components/skeletons/bookings/BookingsSkeleton";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
-import ErrorMessage from "../../../components/ui/feedback/ErrorMessage";
+import { EmptyState } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   const { bookings, storageBookings, transportBookings, loading, error, refetchTransport } =
@@ -52,9 +51,9 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
   if (error) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ErrorMessage
+        <EmptyState illustration="error"
           title="Couldn't load your bookings"
-          message={`We're currently having trouble fetching your bookings. If it persists, kindly contact customer care.`}
+          body={`We're currently having trouble fetching your bookings. If it persists, kindly contact customer care.`}
         />
       </View>
     );
@@ -67,7 +66,7 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#e74c3c"]} />}
         style={styles.container}
       >
-        <EmptyState message="No Bookings Found." />
+        <EmptyState illustration="empty" title="No Bookings Found." />
       </ScrollView>
     );
   }
@@ -86,7 +85,7 @@ const AllBookings = ({ navigation, refreshing, onRefresh }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1, backgroundColor: colors.surface },
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
 

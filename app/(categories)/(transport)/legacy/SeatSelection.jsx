@@ -2,11 +2,11 @@ import React, { useState, useCallback } from "react";
 import { StyleSheet, ScrollView, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import COLORS from "../../../../constants/Colors";
-import BusHeader from "../../../../components/transport/BusHeader";
-import SeatLegend from "../../../../components/transport/Seatlegend";
-import BusLayout from "../../../../components/transport/BusLayout";
-import BookingFooter from "../../../../components/transport/BookingFooter";
+import BusHeader from "../../../../components/headers/transport/BusHeader";
+import SeatLegend from "../../../../components/seats/transport/SeatLegend";
+import BusLayout from "../../../../components/seats/transport/BusLayout";
+import BookingFooter from "../../../../components/bars/transport/BookingFooter";
+import { colors } from "../../../../constants/theme";
 
 const SeatSelection = () => {
   const { bus: busParam } = useLocalSearchParams();
@@ -40,7 +40,7 @@ const SeatSelection = () => {
     // edges="top" so SafeAreaView only pads the status bar.
     // BookingFooter handles its own bottom inset via useSafeAreaInsets.
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
 
       <BusHeader bus={bus} />
       <SeatLegend />
@@ -70,7 +70,7 @@ export default SeatSelection;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
   },
   body: {
     alignItems: "center",

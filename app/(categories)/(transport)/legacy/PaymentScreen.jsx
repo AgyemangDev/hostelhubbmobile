@@ -5,13 +5,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import COLORS from "../../../../constants/Colors";
 import { UserContext } from "../../../../context/UserContext";
-import TripInfoCard from "../../../../components/transport/cards/TripInfoCard";
-import PassengerInfoCard from "../../../../components/transport/cards/PassengerInfoCard";
-import PriceBreakdownCard from "../../../../components/transport/cards/PriceBreakdownCard";
-import FunctionalButton from "../../../../components/ui/buttons/FunctionalButton";
+import TripInfoCard from "../../../../components/cards/transport/TripInfoCard";
+import PassengerInfoCard from "../../../../components/cards/transport/PassengerInfoCard";
+import PriceBreakdownCard from "../../../../components/cards/transport/PriceBreakdownCard";
 import API_BASE_URL from "../../../../utils/api/api";
+import { Button } from "../../../../components/ui";
+import { colors } from "../../../../constants/theme";
 
 const PaymentScreen = () => {
   const {
@@ -160,7 +160,7 @@ const PaymentScreen = () => {
         {/* Balance Warning */}
         {!hasSufficientBalance && (
           <View style={styles.warningCard}>
-            <Ionicons name="alert-circle" size={20} color={COLORS.error} />
+            <Ionicons name="alert-circle" size={20} color={colors.dange}r />
             <View style={styles.warningContent}>
               <Text style={styles.warningTitle}>Insufficient Balance</Text>
               <Text style={styles.warningText}>
@@ -193,17 +193,17 @@ const PaymentScreen = () => {
           { paddingBottom: insets.bottom || (Platform.OS === "android" ? 16 : 12) },
         ]}
       >
-        <FunctionalButton
-          text={hasSufficientBalance ? `Pay GH₵${grandTotal.toFixed(2)}` : "Insufficient Balance"}
+        <Button
+          title={hasSufficientBalance ? `Pay GH₵${grandTotal.toFixed(2)}` : "Insufficient Balance"}
           onPress={handlePayment}
           icon={hasSufficientBalance ? "lock-closed" : "alert-circle"}
-          disabled={false}
           loading={loading}
+        iconPosition="right"
         />
         
         {hasSufficientBalance && (
           <Text style={styles.secureNote}>
-            <Ionicons name="shield-checkmark-outline" size={12} color="#9CA3AF" /> Your payment is secure
+            <Ionicons name="shield-checkmark-outline" size={12} color={colors.textMuted} /> Your payment is secure
           </Text>
         )}
       </View>
@@ -214,7 +214,7 @@ const PaymentScreen = () => {
 export default PaymentScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFF" },
+  container: { flex: 1, backgroundColor: colors.surfaceSunken },
   scroll: {
     paddingHorizontal: 16,
     paddingTop: 20,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   warningCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#FFF5F5",
+    backgroundColor: colors.dangerBg,
     borderRadius: 12,
     padding: 16,
     gap: 12,
@@ -237,26 +237,26 @@ const styles = StyleSheet.create({
   warningTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#C53030",
+    color: colors.danger,
     marginBottom: 4,
   },
   warningText: {
     fontSize: 13,
-    color: "#742A2A",
+    color: colors.danger,
     lineHeight: 18,
   },
   footer: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
+    borderTopColor: colors.border,
     gap: 8,
   },
   secureNote: {
     textAlign: "center",
     fontSize: 11,
-    color: "#9CA3AF",
+    color: colors.textMuted,
     marginBottom: 2,
   },
 });

@@ -1,45 +1,20 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Video } from "expo-av";
-import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
-import { Button, Notice, PressableScale, PriceBar, StatusPill, StepHeader } from "../../../components/ui/ds";
+import { Button, Notice, PickerTile, PriceBar, Section, StatusPill, StepHeader } from "../../../components/ui";
 import { colors, radius, space, type } from "../../../constants/theme";
 
 const MAX_VIDEO_MS = 90000; // 1 min 30 s
 
-function Section({ title, hint, children }) {
-  return (
-    <View style={{ gap: space.xs }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: space.sm }}>
-        <Text style={type.heading}>{title}</Text>
-        {hint ? <Text style={[type.caption, { color: colors.textSecondary }]}>{hint}</Text> : null}
-      </View>
-      {children}
-    </View>
-  );
-}
 
-function EmptyPicker({ icon, title, subtitle, onPress, loading }) {
-  return (
-    <PressableScale onPress={onPress} disabled={loading} accessibilityRole="button" accessibilityLabel={title} style={styles.drop}>
-      {loading ? (
-        <ActivityIndicator color={colors.text} />
-      ) : (
-        <>
-          <View style={styles.dropIcon}>
-            <Ionicons name={icon} size={24} color={colors.text} />
-          </View>
-          <Text style={type.bodyStrong}>{title}</Text>
-          <Text style={[type.caption, { color: colors.textSecondary }]}>{subtitle}</Text>
-        </>
-      )}
-    </PressableScale>
-  );
-}
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function MediaScreen() {
   const isFocused = useIsFocused();
@@ -107,12 +82,12 @@ export default function MediaScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={3} total={4} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={type.display} accessibilityRole="header">Show students the room</Text>
 
-        <Section title="Cover photo" hint="Shown before the video plays">
+        <Section gap={space.xs} title="Cover photo" hint="Shown before the video plays">
           {draft.front_image_url ? (
             <View>
               <Image source={{ uri: draft.front_image_url }} style={styles.photo} accessibilityLabel="Cover photo" />
@@ -122,11 +97,11 @@ export default function MediaScreen() {
               </View>
             </View>
           ) : (
-            <EmptyPicker icon="image-outline" title="Add a cover photo" subtitle="The front of the building works best" onPress={pickImage} />
+            <PickerTile icon="image-outline" title="Add a cover photo" subtitle="The front of the building works best" onPress={pickImage} />
           )}
         </Section>
 
-        <Section title="Room tour video" hint="Up to 1 min 30 s">
+        <Section gap={space.xs} title="Room tour video" hint="Up to 1 min 30 s">
           {draft.video_url ? (
             <View>
               <Video
@@ -142,7 +117,7 @@ export default function MediaScreen() {
               </View>
             </View>
           ) : (
-            <EmptyPicker
+            <PickerTile
               icon="videocam-outline"
               title="Add a room tour video"
               subtitle="From your gallery, 1 min 30 s or less"
@@ -169,7 +144,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "#A8A29E",
+    borderColor: colors.borderStrong,
     backgroundColor: colors.surfaceSunken,
     alignItems: "center",
     justifyContent: "center",

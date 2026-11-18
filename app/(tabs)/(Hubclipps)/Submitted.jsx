@@ -1,9 +1,14 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Animated, Easing, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, FadeIn, Notice, PriceBar, Timeline, useReducedMotion } from "../../../components/ui/ds";
+import { Button, FadeIn, Notice, PriceBar, Timeline } from "../../../components/ui";
+import useReducedMotion from "../../../hooks/useReducedMotion";
 import { colors, space, type } from "../../../constants/theme";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 /** After a clip is submitted: it isn't public until an admin accepts it. */
 export default function Submitted() {
@@ -17,7 +22,7 @@ export default function Submitted() {
   }, [scale, reduced]);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
           <Animated.View style={[styles.check, { transform: [{ scale }] }]}>

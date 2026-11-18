@@ -1,11 +1,13 @@
 
 
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { Button, Eyebrow, Notice, PriceBar, ScreenHeader, money } from "../../../../components/ui/ds";
+import { Button, Notice, PriceBar, ScreenHeader, Eyebrow } from "../../../../components/ui";
+import { money } from "../../../../utils/formatMoney";
 import { colors, radius, space, type } from "../../../../constants/theme";
 import { UserContext } from "../../../../context/UserContext";
 
@@ -176,7 +178,7 @@ const PaymentScreen = () => {
   const route = bus?.route || {};
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScreenHeader title="Pay to confirm" subtitle={route.from ? `${route.from} → ${route.to}` : undefined} />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {error ? <Notice tone="danger" title="Something went wrong">{error}</Notice> : null}
@@ -253,6 +255,9 @@ const PaymentScreen = () => {
 };
 
 export default PaymentScreen;
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },

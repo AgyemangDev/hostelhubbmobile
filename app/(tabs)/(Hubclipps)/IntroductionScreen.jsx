@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Button, Eyebrow, FadeIn, IconButton, PriceBar } from "../../../components/ui/ds";
+import { Button, CheckboxRow, Eyebrow, FadeIn, IconButton, PriceBar } from "../../../components/ui";
 import { colors, radius, space, type } from "../../../constants/theme";
 
 const TERMS_URL = "https://hostelhubb.com/terms/hubclipps";
@@ -13,12 +14,15 @@ const REASONS = [
   { icon: "swap-horizontal-outline", title: "We guide the handover", body: "From the first request to keys changing hands." },
 ];
 
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
+
 export default function IntroductionScreen() {
   const router = useRouter();
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <View style={styles.top}>
         <IconButton icon="close" accessibilityLabel="Close" onPress={() => router.back()} />
       </View>
@@ -48,23 +52,19 @@ export default function IntroductionScreen() {
 
       <PriceBar>
         <View style={{ flex: 1, gap: space.sm }}>
-          <Pressable
-            onPress={() => setAgreed((v) => !v)}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: agreed }}
-            style={styles.agree}
-          >
-            <View style={[styles.box, agreed && styles.boxOn]}>
-              {agreed ? <Ionicons name="checkmark" size={14} color={colors.textInverse} /> : null}
-            </View>
-            <Text style={[type.caption, { flex: 1, color: colors.text }]}>
-              I have the right to offer this room and agree to the{" "}
-              <Text style={{ fontWeight: "700", textDecorationLine: "underline" }} onPress={() => Linking.openURL(TERMS_URL)}>
-                Hubclips listing terms
+          <CheckboxRow
+            checked={agreed}
+            onChange={setAgreed}
+            label={
+              <Text style={[type.caption, { color: colors.text }]}>
+                I have the right to offer this room and agree to the{" "}
+                <Text style={{ fontWeight: "700", textDecorationLine: "underline" }} onPress={() => Linking.openURL(TERMS_URL)}>
+                  Hubclips listing terms
+                </Text>
+                .
               </Text>
-              .
-            </Text>
-          </Pressable>
+            }
+          />
           <Button title="Get started" disabled={!agreed} onPress={() => router.push("/AccommodationInfoScreen")} />
         </View>
       </PriceBar>
@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
   reason: { flexDirection: "row", gap: space.sm + 2, alignItems: "flex-start" },
   reasonIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
   agree: { flexDirection: "row", gap: space.sm, alignItems: "flex-start", minHeight: 44 },
-  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: "#A8A29E", alignItems: "center", justifyContent: "center", marginTop: 1 },
+  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.borderStrong, alignItems: "center", justifyContent: "center", marginTop: 1 },
   boxOn: { backgroundColor: colors.text, borderColor: colors.text },
 });

@@ -153,7 +153,7 @@ export const UserProvider = ({ children }) => {
   // ─── Push updates ──────────────────────────────────────────────────────────
   // Replaces the old useFocusEffect(refreshUserInfo(true)) calls scattered
   // across screens — the backend now pushes profile changes (balance,
-  // noofbooking, paymentstatus, etc.) down this connection instead of the
+  // name, phone, date of birth, etc.) down this connection instead of the
   // client re-polling on every screen focus. `refreshUserInfo` itself is kept
   // as a manual fallback.
   useAuthedEventSource("/api/students/me/stream", (payload) => {
@@ -166,8 +166,10 @@ export const UserProvider = ({ children }) => {
 
 const isProfileIncomplete = useMemo(() => {
   if (!userInfo) return false; // not loaded yet, don't redirect prematurely
-  const { first_name, surname, phone_number } = userInfo;
-  return !first_name?.trim() || !surname?.trim() || !phone_number;
+  const { first_name, surname, phone_number, date_of_birth } = userInfo;
+  // date_of_birth: existing students without one are sent to ProfileUpdate
+  // once to add it (everything else there is prefilled).
+  return !first_name?.trim() || !surname?.trim() || !phone_number || !date_of_birth;
 }, [userInfo]);
 
 const value = useMemo(() => ({

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Image, Modal, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import { Image, Modal, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "../../lib/firebase/FirebaseConfig";
 import ClientLogIn from "../(Client)/ClientLogIn";
-import BookingsClosedModal from "../../components/storage/BookingsClosedModal";
-import { Button, Eyebrow, FadeIn, PriceBar, ScreenHeader } from "../../components/ui/ds";
+import BookingsClosedModal from "../../components/sheets/storage/BookingsClosedModal";
+import { Button, FadeIn, PriceBar, ScreenHeader, Eyebrow } from "../../components/ui";
 import { colors, radius, space, type } from "../../constants/theme";
 
 const HERO_IMAGE =
@@ -26,6 +27,9 @@ const GUARANTEES = [
 // Set to true between storage cycles to show the "bookings closed" sheet.
 const BOOKINGS_CLOSED = false;
 
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
+
 export default function StorageHome() {
   const router = useRouter();
   const [showAuth, setShowAuth] = useState(false);
@@ -38,7 +42,7 @@ export default function StorageHome() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StatusBar barStyle="dark-content" />
       <ScreenHeader />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

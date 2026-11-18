@@ -2,11 +2,12 @@ import React from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCart } from '../../../context/CartContext';
-import CheckoutHeader from '../../../components/shop/checkout/CheckoutHeader';
-import CheckoutItem from '../../../components/shop/checkout/CheckoutItem';
-import EmptyCart from '../../../components/shop/checkout/EmptyCart';
-import CheckoutButton from '../../../components/shop/checkout/CheckoutButton';
+import CheckoutHeader from '../../../components/headers/shop/CheckoutHeader';
+import CheckoutItem from '../../../components/cards/shop/CheckoutItem';
+import EmptyCart from '../../../components/feedback/shop/EmptyCart';
+import CheckoutButton from '../../../components/buttons/shop/CheckoutButton';
 import { useRouter } from 'expo-router';
+import { colors } from "../../../constants/theme";
 
 const CheckoutScreen = () => {
   const { cartItems } = useCart();
@@ -55,6 +56,6 @@ export default CheckoutScreen;
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
 });

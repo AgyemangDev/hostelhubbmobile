@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
+import { colors } from "../../../../constants/theme";
 
-// Every UniGo screen draws its own header from components/ui/ds.
+// Every UniGo screen draws its own header from components/ui.
 export default function UnigoLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#FFFFFF" } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="BusSelection" />
       <Stack.Screen name="SeatSelection" />

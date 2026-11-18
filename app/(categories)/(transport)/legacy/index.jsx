@@ -8,12 +8,12 @@ import {
   Dimensions,
   Modal
 } from 'react-native';
-import COLORS from "../../../../constants/Colors"
-import Button from "../../../../components/ui/buttons/ButtonComponent";
 import { useRouter } from 'expo-router';
 import { UserContext } from '../../../../context/UserContext';
 import { auth } from '../../../../lib/firebase/FirebaseConfig';
 import ClientLogIn from "../../../(Client)/ClientLogIn";
+import { Button } from "../../../../components/ui";
+import { colors } from "../../../../constants/theme";
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,9 +71,8 @@ const TransportLanding = () => {
           {/* CTA Button */}
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
  <Button
-  buttonText="Book A Bus Now"
-  onPressFunction={handleBookBus}
-  variant="default"
+  title="Book A Bus Now"
+  onPress={handleBookBus}
 />
           </Animated.View>
         </View>
@@ -124,7 +123,7 @@ const TransportLanding = () => {
 export default TransportLanding;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white },
+  container: { flex: 1, backgroundColor: colors.surface },
   scrollContent: { paddingBottom: 40 },
 
   // Hero
@@ -134,33 +133,33 @@ const styles = StyleSheet.create({
     paddingTop: 30,
   },
   heroContent: { zIndex: 2 },
-  heroTitle: { fontSize: 44, fontWeight: '800', color: COLORS.textDark, marginBottom: 12, lineHeight: 52 }, // reduced mb
-  heroTitleAccent: { color: COLORS.button },
-  heroSubtitle: { fontSize: 17, color: COLORS.textMuted, lineHeight: 26, marginBottom: 16 }, // reduced mb
+  heroTitle: { fontSize: 44, fontWeight: '800', color: colors.text, marginBottom: 12, lineHeight: 52 }, // reduced mb
+  heroTitleAccent: { color: colors.brand },
+  heroSubtitle: { fontSize: 17, color: colors.textSecondary, lineHeight: 26, marginBottom: 16 }, // reduced mb
 
   // Decorative Circles
-  decorCircle1: { position: 'absolute', top: 100, right: -50, width: 200, height: 200, borderRadius: 100, backgroundColor: COLORS.placeholder, opacity: 0.1 },
-  decorCircle2: { position: 'absolute', bottom: 50, left: -80, width: 250, height: 250, borderRadius: 125, backgroundColor: COLORS.primary, opacity: 0.05 },
+  decorCircle1: { position: 'absolute', top: 100, right: -50, width: 200, height: 200, borderRadius: 100, backgroundColor: colors.textMuted, opacity: 0.1 },
+  decorCircle2: { position: 'absolute', bottom: 50, left: -80, width: 250, height: 250, borderRadius: 125, backgroundColor: colors.brand, opacity: 0.05 },
 
   // Features Section
   featuresSection: { paddingHorizontal: 24,marginTop:-250},
-  sectionTitle: { fontSize: 32, fontWeight: '800', color: COLORS.textDark, marginBottom: 6, textAlign: 'center' }, // reduced mb
+  sectionTitle: { fontSize: 32, fontWeight: '800', color: colors.text, marginBottom: 6, textAlign: 'center' }, // reduced mb
   sectionSubtitle: { fontSize: 16, textAlign: 'center', marginBottom: 24 }, // reduced mb
   featuresGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   featureCard: {
     width: (width - 50) / 2,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 4,
     marginBottom: 16,
-    shadowColor: COLORS.shadow,
+    shadowColor: colors.border,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
   },
-  featureIconContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: '#FFF5F5', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  featureIconContainer: { width: 56, height: 56, borderRadius: 16, backgroundColor: colors.dangerBg, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   featureIcon: { fontSize: 28 },
-  featureTitle: { fontSize: 17, fontWeight: '700', color: COLORS.textDark, marginBottom: 8 },
-  featureDesc: { fontSize: 14, color: COLORS.textMuted, lineHeight: 20 },
+  featureTitle: { fontSize: 17, fontWeight: '700', color: colors.text, marginBottom: 8 },
+  featureDesc: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
 });

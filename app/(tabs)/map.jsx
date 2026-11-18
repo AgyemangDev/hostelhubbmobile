@@ -6,10 +6,13 @@ import { AccommodationContext } from "../../context/AccommodationContext";
 import { UserContext } from "../../context/UserContext";
 import ClientLogIn from "../(Client)/ClientLogIn";
 
-import HostelMarkers from "../../components/map/HostelMarkers";
-import UserLocationMarker from "../../components/map/UserLocationMarker";
-import HostelModal from "../../components/map/HostelModal";
-import CategoryTabs from "../../components/map/CategoryTabs";
+import HostelMarkers from "../../components/markers/map/HostelMarkers";
+import UserLocationMarker from "../../components/markers/map/UserLocationMarker";
+import HostelModal from "../../components/sheets/map/HostelModal";
+import { Tabs } from "../../components/ui";
+import { colors } from "../../constants/theme";
+
+const CATEGORY_OPTIONS = ['All', 'Hostel', 'Homestel', 'Hotel', 'Guest House'].map((c) => ({ value: c, label: c }));
 
 const GHANA_REGION = {
   latitude: 7.9465,
@@ -123,9 +126,13 @@ const MapScreen = () => {
       </MapView>
 
       <View style={styles.tabsOverlay}>
-        <CategoryTabs
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
+        <Tabs
+          variant="pill"
+          scroll
+          options={CATEGORY_OPTIONS}
+          value={activeCategory}
+          onChange={handleCategoryChange}
+          contentStyle={{ paddingHorizontal: 16 }}
         />
       </View>
 
@@ -148,7 +155,7 @@ const MapScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
   },
   map: {
     width: Dimensions.get("window").width,

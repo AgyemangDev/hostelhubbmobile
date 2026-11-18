@@ -1,7 +1,7 @@
 import React from "react";
 import { Stack } from "expo-router";
 import { useRouter } from "expo-router";
-import { CustomHeader } from "../(bookings)/_layout";
+import { StackHeader } from "../../../components/ui";
 
 const ProfileLayout = () => {
   const router = useRouter();
@@ -18,49 +18,49 @@ const ProfileLayout = () => {
         <Stack.Screen name="howHostelHubbWorks"
          options={{
             headerShown: true,
-            header: () => <CustomHeader title="How Hostelhubb Works" showBack />,
+            header: () => <StackHeader title="How Hostelhubb Works" showBack />,
           }} />
 
         <Stack.Screen
           name="personalInfo"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="Personal Info" showBack />,
+            header: () => <StackHeader title="Personal Info" showBack />,
           }}
         />
         <Stack.Screen
           name="reportAConcern"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="Report Concern" showBack />,
+            header: () => <StackHeader title="Report Concern" showBack />,
           }}
         />
         <Stack.Screen
           name="reviews"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="Reviews" showBack />,
+            header: () => <StackHeader title="Reviews" showBack />,
           }}
         />
         <Stack.Screen
           name="transactions"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="Transactions" showBack />,
+            header: () => <StackHeader title="Transactions" showBack />,
           }}
         />
         <Stack.Screen
           name="referralInfo"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="Referral Program" showBack />,
+            header: () => <StackHeader title="Referral Program" showBack />,
           }}
         />
         <Stack.Screen
           name="contactHostel"
           options={{
             headerShown: true,
-            header: () => <CustomHeader title="About Us" showBack />,
+            header: () => <StackHeader title="About Us" showBack />,
           }}
         />
       </Stack>

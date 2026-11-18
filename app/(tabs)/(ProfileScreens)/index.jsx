@@ -1,28 +1,52 @@
 import React, { useContext } from "react";
-import {
-  SafeAreaView,
-  Text,
-  View,
-  Image,
-  ScrollView,
-  Modal,
-  Share,
-  Pressable,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { UserContext } from "../../../context/UserContext";
-import { useNavigation } from "expo-router";
-import LogoutButton from "../../../components/profile/LogoutButton";
-import DeleteAccountButton from "../../../components/profile/DeleteButton";
-import styles from "../../../assets/Styles/ProfileStyles";
-import ProfileLinkItem from "../../../components/profile/ProfileLinkItem";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation, useRouter } from "expo-router";
 import * as Updates from "expo-updates";
 import Constants from "expo-constants";
-import NoAccountPrompt from "../../../components/auth/NoAccountPrompt";
+import { UserContext } from "../../../context/UserContext";
+import { WalletContext } from "../../../context/WalletContext";
+import LogoutButton from "../../../components/buttons/profile/LogoutButton";
+import DeleteAccountButton from "../../../components/buttons/profile/DeleteAccountButton";
+import ProfileLinkItem from "../../../components/lists/profile/ProfileLinkItem";
+import ReferralShareCard from "../../../components/cards/referral/ReferralShareCard";
+import NoAccountPrompt from "../../../components/feedback/auth/NoAccountPrompt";
+import { Button, Card, Icon, PressableScale, Text } from "../../../components/ui";
+import { money } from "../../../utils/formatMoney";
+import { colors, radius, space } from "../../../constants/theme";
+
+const ACCOUNT_LINKS = [
+  { icon: "person-circle-outline", label: "Personal info", route: "personalInfo" },
+  { icon: "cash-outline", label: "Transactions & rewards", route: "transactions" },
+];
+
+const LEARN_LINKS = [
+  { icon: "people-outline", label: "Our referral program", route: "referralInfo" },
+  { icon: "briefcase-outline", label: "How HostelHubb works", route: "howHostelHubbWorks" },
+  { icon: "help-circle-outline", label: "About us", link: "https://hostelhubb.com" },
+];
+
+const initials = (first, last) =>
+  [first, last].map((s) => s?.trim()?.[0]).filter(Boolean).join("").toUpperCase() || "?";
+
+function LinkGroup({ title, items, onNavigate }) {
+  return (
+    <View style={{ gap: space.xs }}>
+      <Text variant="caption" tone="secondary" style={styles.groupTitle}>{title}</Text>
+      <Card style={styles.group}>
+        {items.map((item, i) => (
+          <ProfileLinkItem key={item.label} {...item} last={i === items.length - 1} onNavigate={onNavigate} />
+        ))}
+      </Card>
+    </View>
+  );
+}
 
 const Profile = () => {
   const { userInfo } = useContext(UserContext);
+  const { balance } = useContext(WalletContext) || {};
   const navigation = useNavigation();
+  const router = useRouter();
 
   if (!userInfo) {
     return (
@@ -32,114 +56,63 @@ const Profile = () => {
     );
   }
 
-  const formattedTimestamp = userInfo?.created_at
-    ? `Joined Hostelhubb on ${new Date(userInfo.created_at).toLocaleDateString("en-US", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })}`
-    : "Loading timestamp...";
-
-  const myReferralCode = userInfo?.referral_code || "—";
-
-  const handleShareReferral = async () => {
-    try {
-      const referralUrl = `https://hostelhubb.com/refer/${encodeURIComponent(myReferralCode)}`;
-
-      await Share.share({
-        message: `Use my referral code ${myReferralCode} to book for storage on hostelhubb, and share yours with someone to earn.`,
-        url: referralUrl,
-      });
-    } catch (e) {
-      console.warn("Failed to open share sheet:", e);
-    }
-  };
+  const name = `${userInfo.first_name ?? ""} ${userInfo.surname ?? ""}`.trim() || "Your profile";
+  const joined = userInfo.created_at
+    ? new Date(userInfo.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : null;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.gridContainer}>
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
-            <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={[styles.profileName, { flex: 1 }]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {userInfo
-                    ? `${userInfo.first_name ?? ""} ${userInfo.surname ?? ""}`.trim()
-                    : "Loading..."}
-                </Text>
+    // Bottom edge is left to the tab bar.
+    <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.screenTitle} accessibilityRole="header">Profile</Text>
 
-              </View>
-
-              <Text style={styles.profileSub}>{userInfo?.email ?? "Loading..."}</Text>
-
-              {/* Text link below name/email */}
-              <Pressable onPress={handleShareReferral} hitSlop={8} style={{ marginTop: 8 }}>
-                <Text style={{ color: "#0F7A5C", fontSize: 13, fontWeight: "600" }}>
-                  Click to share your referral code to earn 
-                </Text>
-              </Pressable>
-            </View>
+        {/* Who you are */}
+        <PressableScale
+          onPress={() => navigation.navigate("personalInfo")}
+          accessibilityRole="button"
+          accessibilityLabel={`${name}, edit personal info`}
+          style={styles.identity}
+        >
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials(userInfo.first_name, userInfo.surname)}</Text>
           </View>
-
-          {/* Advertisement Section */}
-          <View style={styles.adContainer}>
-            <View style={styles.adContent}>
-              <Image
-                source={require("../../../assets/images/Shopping.gif")}
-                style={styles.adImage}
-                resizeMode="cover"
-              />
-              <View style={styles.adTextContainer}>
-                <Text style={styles.adTitle}>HostelHubb Your Stay</Text>
-                <Text style={styles.adDescription}>
-                  Accommodation, storage and transport reservation made easy, right on your campus.
-                </Text>
-              </View>
-            </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text variant="heading" numberOfLines={1}>{name}</Text>
+            {userInfo.email ? <Text variant="caption" tone="secondary" numberOfLines={1}>{userInfo.email}</Text> : null}
+            {joined ? <Text variant="caption" tone="secondary">Member since {joined}</Text> : null}
           </View>
+          <Icon name="chevron-forward" size={18} tone="secondary" />
+        </PressableScale>
 
-          {/* Links Section */}
-          <View style={styles.linksContainer}>
-            {[
-              { icon: "account-circle", label: "Personal Info", route: "personalInfo" },
-              { icon: "money", label: "Transactions & Rewards", route: "transactions" },
-              { icon: "work", label: "How Hostelhubb Works", route: "howHostelHubbWorks" },
-              { icon: "diversity-1", label: "Our Referral Program", route: "referralInfo" },
-              // { icon: "report", label: "Report A Concern", route: "reportAConcern" },
-              { icon: "contact-support", label: "About Us", link: "https://hostelhubb.com" },
-            ].map((item, index) => (
-              <ProfileLinkItem
-                key={index}
-                {...item}
-                style={styles.linkItem}
-                onNavigate={navigation.navigate}
-              />
-            ))}
+        {/* Invite friends */}
+        <ReferralShareCard code={userInfo.referral_code} onLearnMore={() => navigation.navigate("referralInfo")} />
 
-            <Text style={styles.time}>{formattedTimestamp}</Text>
-
-            {/* Version Info */}
-            <Text style={{ textAlign: "center", color: "#aaa", fontSize: 11, marginTop: 4 }}>
-              App v{Constants.expoConfig?.version ?? "—"}
-              {" · "}
-              {Updates.isEmbeddedLaunch
-                ? "Built-in bundle"
-                : `OTA ${Updates.updateId?.slice(0, 8) ?? "unknown"}`}
-            </Text>
-            <Text style={{ textAlign: "center", color: "#ccc", fontSize: 10, marginBottom: 8 }}>
-              {/* Runtime: {Updates.runtimeVersion ?? "—"} · Channel: {channel} */}
-            </Text>
-
-            <View style={styles.buttonRow}>
-              <LogoutButton />
-              {userInfo && <DeleteAccountButton userId={userInfo.id} />}
-            </View>
+        {/* Earnings */}
+        <Card style={styles.wallet}>
+          <View style={styles.walletIcon}>
+            <Icon name="wallet-outline" size={20} tone="brand" />
           </View>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text variant="caption" tone="secondary">Referral earnings</Text>
+            <Text style={styles.walletAmount}>{money(Number(balance) || 0)}</Text>
+          </View>
+          <Button title="Withdraw" variant="secondary" size="sm" onPress={() => router.push("/wallet")} />
+        </Card>
+
+        <LinkGroup title="ACCOUNT" items={ACCOUNT_LINKS} onNavigate={navigation.navigate} />
+        <LinkGroup title="LEARN MORE" items={LEARN_LINKS} onNavigate={navigation.navigate} />
+
+        <View style={styles.footer}>
+          <View style={styles.footerButtons}>
+            <LogoutButton />
+            <DeleteAccountButton userId={userInfo.id} />
+          </View>
+          <Text variant="caption" tone="secondary" style={styles.version}>
+            App v{Constants.expoConfig?.version ?? "—"}
+            {" · "}
+            {Updates.isEmbeddedLaunch ? "Built-in bundle" : `OTA ${Updates.updateId?.slice(0, 8) ?? "unknown"}`}
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -147,3 +120,20 @@ const Profile = () => {
 };
 
 export default Profile;
+
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { paddingHorizontal: space.lg, paddingTop: space.xs, paddingBottom: space.xxxl, gap: space.lg },
+  screenTitle: { fontSize: 28, lineHeight: 34, fontWeight: "800", letterSpacing: -0.3, color: colors.text },
+  identity: { flexDirection: "row", alignItems: "center", gap: space.md },
+  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontSize: 22, fontWeight: "800", color: colors.brand },
+  wallet: { flexDirection: "row", alignItems: "center", gap: space.md },
+  walletIcon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center" },
+  walletAmount: { fontSize: 20, lineHeight: 26, fontWeight: "800", color: colors.text },
+  groupTitle: { fontWeight: "700", letterSpacing: 1, paddingHorizontal: 2 },
+  group: { paddingVertical: 0 },
+  footer: { gap: space.sm, paddingTop: space.sm },
+  footerButtons: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  version: { textAlign: "center", fontSize: 11, marginTop: space.xs },
+});

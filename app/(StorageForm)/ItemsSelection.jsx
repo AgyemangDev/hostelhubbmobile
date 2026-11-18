@@ -1,15 +1,21 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import ItemCard from "../../components/storage/ItemCard";
-import { Button, EmptyState, FadeIn, PriceBar, StepHeader, money } from "../../components/ui/ds";
+import StorageItemsSkeleton from "../../components/skeletons/storage/StorageItemsSkeleton";
+import ItemCard from "../../components/cards/storage/ItemCard";
+import { Button, EmptyState, FadeIn, PriceBar, StepHeader } from "../../components/ui";
+import { money } from "../../utils/formatMoney";
 import { colors, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 
 import { fetchStorageItems } from "../../utils/storageItems";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function ItemsSelection() {
   const router = useRouter();
@@ -82,7 +88,7 @@ export default function ItemsSelection() {
   const count = reservation.items.reduce((n, i) => n + i.quantity, 0);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("ItemsSelection")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ gap: space.xs }}>
@@ -91,7 +97,7 @@ export default function ItemsSelection() {
         </View>
 
         {loading ? (
-          <ActivityIndicator color={colors.brand} style={{ marginTop: space.xl }} />
+          <StorageItemsSkeleton />
         ) : storageItems.length === 0 ? (
           <EmptyState icon="cube-outline" title="No items to show" body="We couldn't load storage items. Pull down or try again shortly." />
         ) : (

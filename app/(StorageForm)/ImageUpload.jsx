@@ -1,14 +1,19 @@
 import React, { useState } from "react";
-import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
-import { Button, FadeIn, ListRow, PressableScale, PriceBar, Sheet, StepHeader, money } from "../../components/ui/ds";
+import { Button, FadeIn, ListRow, Notice, PressableScale, PriceBar, Sheet, StepHeader } from "../../components/ui";
+import { money } from "../../utils/formatMoney";
 import { colors, radius, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 
 const TIPS = ["Good light", "Every item in the shot", "In focus"];
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function ImageUpload() {
   const router = useRouter();
@@ -54,7 +59,7 @@ export default function ImageUpload() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("ImageUpload")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ gap: space.xs }}>
@@ -63,6 +68,11 @@ export default function ImageUpload() {
             We match it at pickup and delivery, so nothing gets mixed up.
           </Text>
         </View>
+
+        <Notice tone="warning" icon="cube-outline" title="Make sure every item is in the photo">
+          Kindly ensure all your items are included before submitting your order. If an item isn't fully packed yet,
+          book the fully packed ones now and make a separate reservation for the rest once you're done packing.
+        </Notice>
 
         {photo ? (
           <FadeIn style={{ gap: space.sm }}>
@@ -122,7 +132,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "#A8A29E",
+    borderColor: colors.borderStrong,
     alignItems: "center",
     justifyContent: "center",
     gap: 4,

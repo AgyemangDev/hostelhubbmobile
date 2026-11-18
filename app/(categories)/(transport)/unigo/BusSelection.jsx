@@ -2,11 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Modal, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import BusCard, { BusCardSkeleton, BusEmptyState } from "../../../../components/transport/cards/Buscard";
+import BusCard from "../../../../components/cards/transport/BusCard";
+import BusCardSkeleton from "../../../../components/skeletons/transport/BusCardSkeleton";
+import BusEmptyState from "../../../../components/feedback/transport/BusEmptyState";
 import { getLocations, searchTrips } from "../../../../utils/api/transportUnigo";
 import { auth } from "../../../../lib/firebase/FirebaseConfig";
 import ClientLogIn from "../../../(Client)/ClientLogIn";
-import { Button, Chip, FadeIn, IconButton, Notice, ScreenHeader, SelectField } from "../../../../components/ui/ds";
+import { Button, Chip, FadeIn, IconButton, Notice, ScreenHeader, SelectField } from "../../../../components/ui";
 import { colors, radius, space, type } from "../../../../constants/theme";
 
 const isoDay = (d) => d.toISOString().split("T")[0];

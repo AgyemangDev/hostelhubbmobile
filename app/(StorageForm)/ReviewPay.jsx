@@ -1,4 +1,5 @@
-import { Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import { useContext, useState } from "react";
@@ -6,7 +7,8 @@ import { UserContext } from "../../context/UserContext";
 import * as FileSystem from "expo-file-system/legacy";
 
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Divider, Eyebrow, FadeIn, PriceBar, StepHeader, money } from "../../components/ui/ds";
+import { Button, DetailRow, Divider, FadeIn, PriceBar, StepHeader } from "../../components/ui";
+import { money } from "../../utils/formatMoney";
 import { colors, radius, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 
@@ -24,6 +26,9 @@ const day = (value) => {
 
 import { initiatePayment } from "../../services/paymentService";
 import { usePaymentConfirmation } from "../../hooks/usePaymentConfirmation";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function ReviewPay() {
   const router = useRouter();
@@ -121,26 +126,17 @@ export default function ReviewPay() {
     ? `You'll choose the spot later${deliveryInfo?.date ? ` · ${day(deliveryInfo.date)}` : ""}`
     : [day(deliveryInfo?.date), place(deliveryInfo)].filter(Boolean).join(" · ");
 
-  const Row = ({ label, value, onEdit }) => (
-    <View style={styles.row}>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Eyebrow>{label}</Eyebrow>
-        <Text style={type.bodyStrong}>{value || "Not set"}</Text>
-      </View>
-      {onEdit ? <Button title="Edit" variant="ghost" size="sm" onPress={onEdit} /> : null}
-    </View>
-  );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("ReviewPay")} total={STORAGE_TOTAL_STEPS} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={type.display} accessibilityRole="header">Review and pay</Text>
 
         <FadeIn style={{ gap: space.md }}>
-          <Row label="SCHOOL" value={reservation.school?.name} />
-          <Row label="PICKUP" value={[day(pickupInfo?.date), place(pickupInfo)].filter(Boolean).join(" · ")} onEdit={() => router.navigate("PickupDeliveryInfo")} />
-          <Row label="DELIVERY" value={deliveryLine} onEdit={() => router.navigate("PickupDeliveryInfo")} />
+          <DetailRow variant="stacked" placeholder="Not set" label="SCHOOL" value={reservation.school?.name} />
+          <DetailRow variant="stacked" placeholder="Not set" label="PICKUP" value={[day(pickupInfo?.date), place(pickupInfo)].filter(Boolean).join(" · ")} onEdit={() => router.navigate("PickupDeliveryInfo")} />
+          <DetailRow variant="stacked" placeholder="Not set" label="DELIVERY" value={deliveryLine} onEdit={() => router.navigate("PickupDeliveryInfo")} />
         </FadeIn>
 
         <Divider />

@@ -1,111 +1,154 @@
-import React, { useState, useContext, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { UserContext } from "../../../context/UserContext";
-import FloatingLabelInput from "../../../components/ui/inputs/FormInput";
-import COLORS from "../../../constants/Colors";
+import DateOfBirthField from "../../../components/forms/profile/DateOfBirthField";
+import { Button, Card, Icon, Notice, SelectField, Text, TextField } from "../../../components/ui";
+import { colors, radius, space } from "../../../constants/theme";
 
-const PersonalInfo = () => {
-  const { userInfo } = useContext(UserContext);
-  const [editable, setEditable] = useState(false);
-  const [editedInfo, setEditedInfo] = useState({ ...userInfo });
-  const [loading, setLoading] = useState(false);
+const GENDER_OPTIONS = ["Male", "Female"];
+
+const pick = (u) => ({
+  first_name: u?.first_name ?? "",
+  surname: u?.surname ?? "",
+  phone_number: u?.phone_number ?? "",
+  gender: u?.gender ?? "",
+});
+
+function ReadOnlyRow({ icon, label, value, note }) {
+  return (
+    <View style={styles.readRow} accessible accessibilityLabel={`${label}: ${value || "not set"}${note ? `. ${note}` : ""}`}>
+      <View style={styles.readIcon}>
+        <Icon name={icon} size={18} tone="secondary" />
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text variant="caption" tone="secondary">{label}</Text>
+        <Text variant="bodyStrong" numberOfLines={1}>{value || "Not set"}</Text>
+        {note ? <Text variant="caption" tone="secondary">{note}</Text> : null}
+      </View>
+    </View>
+  );
+}
+
+export default function PersonalInfo() {
+  const { userInfo, patchUserData } = useContext(UserContext);
+  const [form, setForm] = useState(() => pick(userInfo));
+  const [dob, setDob] = useState(userInfo?.date_of_birth || null);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const dobLocked = Boolean(userInfo?.date_of_birth);
+  // Gender can be added if it was skipped at sign-up, but not changed after.
+  const genderLocked = Boolean(userInfo?.gender);
+
+  // Keep the form in step with server pushes until the student starts typing.
+  const original = useMemo(() => pick(userInfo), [userInfo]);
+  const dirty =
+    Object.keys(original).some((k) => (form[k] || "").trim() !== (original[k] || "").trim()) ||
+    (!dobLocked && Boolean(dob));
 
   useEffect(() => {
-    // Sync editedInfo when userInfo changes
-    setEditedInfo({ ...userInfo });
+    if (!dirty) setForm(pick(userInfo));
+    if (userInfo?.date_of_birth) setDob(userInfo.date_of_birth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userInfo]);
 
-  const toggleEdit = () => setEditable(!editable);
+  const set = (key) => (value) => {
+    setForm((f) => ({ ...f, [key]: value }));
+    setErrors((e) => ({ ...e, [key]: null, submit: null }));
+    setSaved(false);
+  };
 
-  const handleChange = (key, value) => setEditedInfo({ ...editedInfo, [key]: value });
+  const validate = () => {
+    const e = {};
+    if (!form.first_name.trim()) e.first_name = "First name is required.";
+    if (!form.surname.trim()) e.surname = "Surname is required.";
+    if (!form.phone_number.trim()) e.phone_number = "Phone number is required.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
-  const saveChanges = async () => {
-    setLoading(true);
+  const save = async () => {
+    setSaving(true);
     try {
-      console.log("Saving changes:", editedInfo);
-      setEditable(false);
+      await patchUserData({
+        first_name: form.first_name.trim(),
+        surname: form.surname.trim(),
+        phone_number: form.phone_number.trim(),
+        ...(!genderLocked && form.gender ? { gender: form.gender } : {}),
+        ...(!dobLocked && dob ? { date_of_birth: dob } : {}),
+      });
+      setSaved(true);
     } catch (err) {
-      console.error("Error saving changes:", err);
+      setErrors({ submit: err.message || "Couldn't save your changes. Please try again." });
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
+  const handleSave = () => {
+    if (!validate()) return;
+    if (!dobLocked && dob) {
+      Alert.alert("Save your date of birth?", "You won't be able to change it after this.", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Save", onPress: save },
+      ]);
+      return;
+    }
+    save();
+  };
+
+  const name = `${form.first_name} ${form.surname}`.trim();
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={100}
-    >
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Personal Info</Text>
-          <TouchableOpacity onPress={toggleEdit}>
-            <Ionicons name="pencil" size={24} color="#0D9488" />
-          </TouchableOpacity>
-        </View>
+    <View style={styles.screen}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={100}>
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <View style={{ gap: 4 }}>
+            <Text variant="display" accessibilityRole="header">Personal info</Text>
+            <Text tone="secondary">
+              {name ? `This is how hostels and drivers see you, ${form.first_name}.` : "This is how hostels and drivers see you."}
+            </Text>
+          </View>
 
-        <View style={styles.textContainer}>
-          <FloatingLabelInput
-            placeholder="First Name"
-            value={editedInfo.first_name}
-            onChangeText={(value) => handleChange("first_name", value)}
-            disabled={!editable}
-          />
+          <Card style={styles.card}>
+            <Text variant="heading">Your details</Text>
+            <TextField label="First name" value={form.first_name} onChangeText={set("first_name")} autoCapitalize="words" textContentType="givenName" error={errors.first_name} />
+            <TextField label="Surname" value={form.surname} onChangeText={set("surname")} autoCapitalize="words" textContentType="familyName" error={errors.surname} />
+            <TextField label="Phone number" value={form.phone_number} onChangeText={set("phone_number")} keyboardType="phone-pad" textContentType="telephoneNumber" error={errors.phone_number} />
+            {genderLocked ? null : (
+              <SelectField label="Gender (optional)" options={GENDER_OPTIONS} value={form.gender} onChange={set("gender")} placeholder="Select gender" />
+            )}
+          </Card>
 
-          <FloatingLabelInput
-            placeholder="Surname"
-            value={editedInfo.surname}
-            onChangeText={(value) => handleChange("surname", value)}
-            disabled={!editable}
-          />
+          <Card style={styles.card}>
+            <Text variant="heading">Account</Text>
+            <ReadOnlyRow icon="mail-outline" label="Email" value={userInfo?.email} note="Used to sign in" />
+            {genderLocked ? <ReadOnlyRow icon="person-outline" label="Gender" value={userInfo?.gender} /> : null}
+            <DateOfBirthField
+              value={dob}
+              locked={dobLocked}
+              onChange={(v) => { setDob(v); setSaved(false); }}
+              hint={dobLocked ? "Can't be changed. Contact support if it's wrong." : "Add it once — it can't be changed later."}
+            />
+          </Card>
 
-          <FloatingLabelInput
-            placeholder="Email"
-            value={editedInfo.email}
-            disabled={true}
-          />
+          {errors.submit ? <Notice tone="danger">{errors.submit}</Notice> : null}
+          {saved && !dirty ? <Notice tone="success" icon="checkmark-circle-outline">Your details are saved.</Notice> : null}
 
-          <FloatingLabelInput
-            placeholder="Gender"
-            value={editedInfo.gender}
-            disabled={true}
-          />
-
-          <FloatingLabelInput
-            placeholder="Phone Number"
-            value={editedInfo.phone_number}
-            onChangeText={(value) => handleChange("phone_number", value)}
-            disabled={!editable}
-          />
-
-          {editable && (
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={saveChanges}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Text style={styles.saveButtonText}>Save Changes</Text>
-              )}
-            </TouchableOpacity>
-          )}
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {/* Inline, not a bottom bar: the tab bar is still showing on this screen. */}
+          <Button title={saving ? "Saving…" : "Save changes"} onPress={handleSave} loading={saving} disabled={!dirty || saving} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
-};
-
-export default PersonalInfo;
+}
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9f9f9", paddingHorizontal: 20, paddingTop: 30 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  sectionTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.background },
-  textContainer: { marginBottom: 30 },
-  saveButton: { backgroundColor: "#0D9488", paddingVertical: 15, borderRadius: 10, marginTop: 20, alignItems: "center" },
-  saveButtonText: { color: "white", fontSize: 18, fontWeight: "bold" },
+  screen: { flex: 1, backgroundColor: colors.surfaceSunken },
+  // Extra bottom room so the floating WhatsApp button never covers Save.
+  content: { padding: space.lg, gap: space.lg, paddingBottom: 120 },
+  card: { gap: space.md },
+  readRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  readIcon: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center" },
 });

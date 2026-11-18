@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import { View, StyleSheet, SafeAreaView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import AnimatedLoader from "../../components/ui/animation/AnimatedLoader";
-import AnimatedText from "../../components/ui/animation/AnimatedText";
-import BackgroundIcons from "../../components/ui/animation/BackgroundIcons";
+import AnimatedLoader from "../../components/animations/splash/AnimatedLoader";
+import AnimatedText from "../../components/animations/splash/AnimatedText";
+import BackgroundIcons from "../../components/animations/splash/BackgroundIcons";
 import { UserContext } from "../../context/UserContext";
 import { useNavigation, useRouter } from "expo-router";
 

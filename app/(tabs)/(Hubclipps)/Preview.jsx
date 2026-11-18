@@ -1,10 +1,14 @@
 import React, { useContext, useState } from "react";
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
-import PreviewHubClip from "../../../components/hubclipps/PreviewHubClip";
-import { Button, ListRow, PriceBar, StepHeader } from "../../../components/ui/ds";
+import PreviewHubClip from "../../../components/media/hubclipps/PreviewHubClip";
+import { Button, ListRow, PriceBar, StepHeader } from "../../../components/ui";
 import { colors, space, type } from "../../../constants/theme";
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function Preview() {
   const router = useRouter();
@@ -35,7 +39,7 @@ export default function Preview() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={4} total={4} />
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={type.title} accessibilityRole="header">This is what students will see</Text>

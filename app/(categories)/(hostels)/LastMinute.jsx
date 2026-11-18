@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import React, { useMemo } from 'react';
-import CardListScreen from '../../../components/accommodation/cards/CardListScreen';
+import CardListScreen from '../../../components/lists/accommodation/CardListScreen';
 import { shuffleArray } from '../../../utils/arrayUtils';
 
 const LastMinute = ({ hostels }) => {

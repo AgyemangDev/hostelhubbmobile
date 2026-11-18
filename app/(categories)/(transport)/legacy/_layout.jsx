@@ -1,35 +1,25 @@
 import React from "react";
 import { Stack } from "expo-router";
-import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { IconButton } from "../../../../components/ui";
+import { colors } from "../../../../constants/theme";
 
 const _layout = () => {
   const router = useRouter();
 
-  // Custom back button component
-  const CustomBackButton = () => (
-    <TouchableOpacity
-      onPress={() => router.back()}
-      style={{ marginLeft: 8, padding: 4 }}
-      activeOpacity={0.7}
-    >
-      <Ionicons name="arrow-back" size={24} color="#fff" />
-    </TouchableOpacity>
-  );
 
   return (
     <Stack
       initialRouteName="index"
       screenOptions={{
-        headerStyle: { backgroundColor: "#610b0c" },
-        headerTintColor: "#fff",
-        headerTitleStyle: { fontWeight: "600", fontSize: 18, color: "#fff" },
+        headerStyle: { backgroundColor: colors.brand },
+        headerTintColor: colors.textInverse,
+        headerTitleStyle: { fontWeight: "600", fontSize: 18, color: colors.textInverse },
         headerShadowVisible: false,
         headerBackTitleVisible: false,
         headerTitleAlign: "center",
         gestureEnabled: false,
-        headerLeft: () => <CustomBackButton />, // ✅ Custom back button for all screens
+        headerLeft: () => <IconButton icon="arrow-back" color={colors.textInverse} accessibilityLabel="Go back" onPress={() => router.back()} />,
       }}
     >
       <Stack.Screen

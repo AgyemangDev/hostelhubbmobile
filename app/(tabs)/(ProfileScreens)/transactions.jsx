@@ -1,8 +1,8 @@
 import React from "react";
 import { View } from "react-native";
-import ReusableTabs from "../../../components/ui/tabs/ReusableTabs";
-import TransactionsMade from "../../../components/profile/TransactionsMade";
-import RewardsTab from "../../../components/profile/RewardsTab";
+import TransactionsMade from "../../../components/sections/profile/TransactionsMade";
+import RewardsTab from "../../../components/sections/profile/RewardsTab";
+import { TabPanels } from "../../../components/ui";
 
 const TransactionsPage = () => {
   const tabs = [
@@ -12,7 +12,7 @@ const TransactionsPage = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ReusableTabs tabs={tabs} initialTab="transactions" />
+      <TabPanels tabs={tabs} initialTab="transactions" />
     </View>
   );
 };

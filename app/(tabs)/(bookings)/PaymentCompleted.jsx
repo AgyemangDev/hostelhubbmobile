@@ -2,9 +2,9 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import LottieView from "lottie-react-native";
 import { Ionicons } from "@expo/vector-icons";
-import COLORS from "../../../constants/Colors";
-import Button from "../../../components/ui/buttons/ButtonComponent";
 import { useRouter } from "expo-router";
+import { Button } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 const WHAT_NEXT = [
   {
@@ -81,7 +81,7 @@ const PaymentCompleted = () => {
             <View style={styles.nextContent}>
               <View style={styles.nextIconRow}>
                 <View style={styles.nextIconWrap}>
-                  <Ionicons name={step.icon} size={16} color={COLORS.primary} />
+                  <Ionicons name={step.icon} size={16} color={colors.bran}d />
                 </View>
                 <Text style={styles.nextTitle}>{step.title}</Text>
               </View>
@@ -97,8 +97,8 @@ const PaymentCompleted = () => {
 
         {/* Transport Row */}
         <View style={styles.serviceRow}>
-          <View style={[styles.serviceIconWrap, { backgroundColor: COLORS.primaryLight || "#E1F5EE" }]}>
-            <Ionicons name="bus-outline" size={20} color={COLORS.primary} />
+          <View style={[styles.serviceIconWrap, { backgroundColor: colors.brandSoft || colors.brandSoft }]}>
+            <Ionicons name="bus-outline" size={20} color={colors.bran}d />
           </View>
           <View style={styles.serviceText}>
             <Text style={styles.serviceTitle}>Transport service</Text>
@@ -113,8 +113,8 @@ const PaymentCompleted = () => {
 
         {/* Support Row */}
         <View style={[styles.serviceRow, { marginBottom: 0 }]}>
-          <View style={[styles.serviceIconWrap, { backgroundColor: "#FEF3E2" }]}>
-            <Ionicons name="headset-outline" size={20} color="#854F0B" />
+          <View style={[styles.serviceIconWrap, { backgroundColor: colors.warningBg }]}>
+            <Ionicons name="headset-outline" size={20} color={colors.warningText} />
           </View>
           <View style={styles.serviceText}>
             <Text style={styles.serviceTitle}>24/7 Support</Text>
@@ -130,9 +130,9 @@ const PaymentCompleted = () => {
 
       {/* Action Button */}
       <Button
-        buttonText="Go home"
-        onPressFunction={() => router.replace("(tabs)/(index)")}
-        customStyle={styles.doneButton}
+        title="Go home"
+        onPress={() => router.replace("(tabs)/(index)")}
+        style={styles.doneButton}
       />
     </ScrollView>
   );
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingVertical: 32,
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     alignItems: "center",
   },
   animation: {
@@ -162,13 +162,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "500",
-    color: "#111",
+    color: colors.text,
     textAlign: "center",
     marginBottom: 6,
   },
   subtitle: {
     fontSize: 14,
-    color: "#888",
+    color: colors.textMuted,
     textAlign: "center",
     lineHeight: 21,
   },
@@ -176,16 +176,16 @@ const styles = StyleSheet.create({
   // Next Steps Card
   nextCard: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: "#E0E0E0",
+    borderColor: colors.border,
     padding: 16,
     marginBottom: 14,
   },
   sectionLabel: {
     fontSize: 11,
-    color: "#999",
+    color: colors.textMuted,
     letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 16,
@@ -206,13 +206,13 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.brand,
     marginTop: 4,
   },
   stepConnector: {
     width: 1.5,
     flex: 1,
-    backgroundColor: "#E1F5EE",
+    backgroundColor: colors.brandSoft,
     marginVertical: 4,
     minHeight: 28,
   },
@@ -231,28 +231,28 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 7,
-    backgroundColor: "#E1F5EE",
+    backgroundColor: colors.brandSoft,
     justifyContent: "center",
     alignItems: "center",
   },
   nextTitle: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#222",
+    color: colors.text,
   },
   nextDesc: {
     fontSize: 13,
-    color: "#999",
+    color: colors.textMuted,
     lineHeight: 19,
   },
 
   // Services Card
   servicesCard: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: colors.surface,
     borderRadius: 12,
     borderWidth: 0.5,
-    borderColor: "#E0E0E0",
+    borderColor: colors.border,
     padding: 16,
     marginBottom: 28,
   },
@@ -275,21 +275,21 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#222",
+    color: colors.text,
     marginBottom: 2,
   },
   serviceDesc: {
     fontSize: 12,
-    color: "#999",
+    color: colors.textMuted,
   },
   pillPopular: {
-    backgroundColor: "#E1F5EE",
+    backgroundColor: colors.brandSoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
   },
   pillTrusted: {
-    backgroundColor: "#EAF3DE",
+    backgroundColor: colors.brandSoft,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
@@ -297,12 +297,12 @@ const styles = StyleSheet.create({
   pillTextPrimary: {
     fontSize: 10,
     fontWeight: "500",
-    color: COLORS.primary,
+    color: colors.brand,
   },
   pillTextTrusted: {
     fontSize: 10,
     fontWeight: "500",
-    color: "#3B6D11",
+    color: colors.success,
   },
 
   // Button

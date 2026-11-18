@@ -7,6 +7,7 @@ import { AccommodationProvider } from "../context/AccommodationContext";
 import { BookingsProvider } from "../context/BookingsContext";
 import { ReviewsProvider } from "../context/ReviewsContext";
 import { FavoritesProvider } from "../context/FavoritesContext";
+import DesignSystemProvider from "../components/ui/provider/DesignSystemProvider";
 
 
 
@@ -23,6 +24,7 @@ import { FavoritesProvider } from "../context/FavoritesContext";
 export const setupProviders = () => {
   // Creates a component that applies all providers in the correct nesting order
   const ProvidersWrapper = ({ children }) => (
+    <DesignSystemProvider>
     <UserProvider>
       <WalletProvider>
         <TransactionProvider>
@@ -40,6 +42,7 @@ export const setupProviders = () => {
         </TransactionProvider>
       </WalletProvider>
     </UserProvider>
+    </DesignSystemProvider>
   );
 
   return ProvidersWrapper;

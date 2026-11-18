@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import { Button, EmptyState, Eyebrow, FadeIn, Notice, PriceBar, ScreenHeader, money } from "../../../../components/ui/ds";
+import { Button, DetailRow, EmptyState, Eyebrow, FadeIn, Notice, PriceBar, ScreenHeader } from "../../../../components/ui";
+import { money } from "../../../../utils/formatMoney";
 import { colors, elevation, radius, space, type } from "../../../../constants/theme";
 import { shareUrl } from "../../../../utils/links";
 import { getBooking } from "../../../../utils/api/transportUnigo";
@@ -27,12 +29,6 @@ import { useResumePayment } from "../../../../hooks/transport/useResumePayment";
  * is left untouched and still works exactly as before.
  */
 
-const Detail = ({ label, value, align }) => (
-  <View style={{ flex: 1, gap: 2, alignItems: align === "end" ? "flex-end" : "flex-start" }}>
-    <Eyebrow>{label}</Eyebrow>
-    <Text style={[type.bodyStrong, { fontWeight: "800" }]} numberOfLines={2}>{value || "—"}</Text>
-  </View>
-);
 
 const Ticket = () => {
   const { groupRef, justPaid } = useLocalSearchParams();
@@ -126,7 +122,7 @@ const Ticket = () => {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScreenHeader title="Your ticket" hideBack right={<Button title="Done" variant="ghost" size="sm" onPress={done} />} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {!isPaid ? (
@@ -160,9 +156,9 @@ const Ticket = () => {
               </View>
             </View>
             <View style={styles.details}>
-              <Detail label="DEPARTS" value={booking.departureTime} />
-              <Detail label={booking.seatCount > 1 ? "SEATS" : "SEAT"} value={isPaid ? seatLabel : "—"} />
-              <Detail label={isPaid ? "PAID" : "DUE"} value={money(booking.total)} align="end" />
+              <DetailRow variant="stacked" label="DEPARTS" value={booking.departureTime} />
+              <DetailRow variant="stacked" label={booking.seatCount > 1 ? "SEATS" : "SEAT"} value={isPaid ? seatLabel : "—"} />
+              <DetailRow variant="stacked" label={isPaid ? "PAID" : "DUE"} value={money(booking.total)} align="end" />
             </View>
             {isPaid && booking.passenger?.name ? (
               <Text style={[type.caption, { color: colors.textSecondary }]}>Passenger: {booking.passenger.name}</Text>
@@ -224,6 +220,9 @@ const Ticket = () => {
 };
 
 export default Ticket;
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.fill },

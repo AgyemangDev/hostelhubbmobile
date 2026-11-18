@@ -1,16 +1,20 @@
 import React, { useContext, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Keyboard, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import MapView from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
 import { validateManager } from "../../../utils/ValidationUtils/hubbclipsValidation";
-import { Button, PressableScale, PriceBar, StepHeader, TextField } from "../../../components/ui/ds";
+import { Button, PressableScale, PriceBar, StepHeader, TextField } from "../../../components/ui";
 import { colors, elevation, radius, space, type } from "../../../constants/theme";
 
 // Map opens on KNUST until the poster shares their location or moves the map.
 const DEFAULT_REGION = { latitude: 6.6745, longitude: -1.5716, latitudeDelta: 0.012, longitudeDelta: 0.012 };
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function ManagerInfoScreen() {
   const router = useRouter();
@@ -106,7 +110,7 @@ export default function ManagerInfoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={2} total={4} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={{ gap: space.xs }}>

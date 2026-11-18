@@ -2,12 +2,12 @@
 import React, { useContext, useMemo, useState } from "react";
 import { Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import SavedClipsList from "../components/accommodation/shortlist/SavedClipsList";
-import ShortListCardList from "../components/accommodation/shortlist/ShortListCardList";
-import { FadeIn, IconButton, PillTabs } from "../components/ui/ds";
+import SavedClipsList from "../components/lists/shortlist/SavedClipsList";
+import ShortListCardList from "../components/lists/shortlist/ShortListCardList";
+import { FadeIn, Tabs } from "../components/ui";
 import { useFavorites } from "../context/FavoritesContext";
 import { UserContext } from "../context/UserContext";
-import NoAccountPrompt from "../components/auth/NoAccountPrompt";
+import NoAccountPrompt from "../components/feedback/auth/NoAccountPrompt";
 import { colors, space, type } from "../constants/theme";
 
 export default function Shortlist() {
@@ -42,7 +42,7 @@ export default function Shortlist() {
         </Text>
       </View>
 
-      <PillTabs
+      <Tabs variant="pill"
         value={tab}
         onChange={setTab}
         options={[

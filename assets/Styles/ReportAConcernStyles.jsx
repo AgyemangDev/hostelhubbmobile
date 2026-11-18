@@ -1,26 +1,27 @@
 import { StyleSheet } from "react-native";
+import { colors } from "../../constants/theme";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: colors.fill,
   },
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#333",
+    color: colors.text,
     marginBottom: 20,
   },
   instruction: {
     fontSize: 16,
-    color: "#555",
+    color: colors.textSecondary,
     marginBottom: 15,
     lineHeight: 24,
   },
   input: {
     height: 150,
-    borderColor: "#ccc",
+    borderColor: colors.borderStrong,
     borderWidth: 1,
     borderRadius: 5,
     padding: 10,
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#0D9488",
+    backgroundColor: colors.brand,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -56,14 +57,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   linkText: {
-    color: "#fff",
+    color: colors.textInverse,
     fontSize: 18,
     marginLeft: 8,
     fontWeight: "500",
   },
   infoText: {
     fontSize: 16,
-    color: "#333",
+    color: colors.text,
     textAlign: "center",
     marginHorizontal: 10,
     marginVertical: 10,

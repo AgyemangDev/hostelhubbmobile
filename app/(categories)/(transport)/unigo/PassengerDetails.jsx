@@ -1,9 +1,11 @@
 import React, { useContext, useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { UserContext } from "../../../../context/UserContext";
-import { Button, Notice, PriceBar, ScreenHeader, TextField, money } from "../../../../components/ui/ds";
+import { Button, Notice, PriceBar, ScreenHeader, TextField } from "../../../../components/ui";
+import { money } from "../../../../utils/formatMoney";
 import { colors, space, type } from "../../../../constants/theme";
 
 /**
@@ -77,7 +79,7 @@ const PassengerDetails = () => {
   const route = bus?.route || {};
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScreenHeader title="Who's travelling?" subtitle={route.from ? `${route.from} → ${route.to}` : undefined} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={[type.body, { color: colors.textSecondary }]}>
@@ -117,6 +119,9 @@ const PassengerDetails = () => {
 };
 
 export default PassengerDetails;
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },

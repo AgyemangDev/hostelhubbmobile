@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   ScrollView,
 } from "react-native";
@@ -12,7 +11,6 @@ import { UserContext } from "../../../context/UserContext";
 import { useBookingsContext } from "../../../context/BookingsContext";
 import { initiatePayment } from "../../../services/paymentService";
 import { usePaymentConfirmation } from "../../../hooks/usePaymentConfirmation";
-import COLORS from "../../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import API_BASE_URL from "../../../utils/api/api";
 import { PLATFORM_MARKUP_RATE } from "../../../constants/bookingConstants";
@@ -21,12 +19,13 @@ import {
   getPendingReferral,
 } from "../../../utils/referralStorage";
 
-import {
-  PropertyCard,
-  BookingDetails,
-  AmountSection,
-  ReferralSection,
-} from "../../../components/bookings/payNowComponent";
+import PropertyCard from "../../../components/cards/bookings/PropertyCard";
+import BookingDetails from "../../../components/sections/bookings/BookingDetails";
+import AmountSection from "../../../components/sections/bookings/AmountSection";
+import ReferralCodeField from "../../../components/forms/referral/ReferralCodeField";
+import { money } from "../../../utils/formatMoney";
+import { Button, Card } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 /* ─── Main screen ─────────────────────────────────────────────────────────── */
 const PayNow = () => {
@@ -114,7 +113,7 @@ const PayNow = () => {
   if (!bookingData || !userInfo) {
     return (
       <View style={s.centered}>
-        <ActivityIndicator size="large" color={COLORS.teal} />
+        <ActivityIndicator size="large" color={colors.brand} />
       </View>
     );
   }
@@ -275,7 +274,11 @@ const PayNow = () => {
 
         <AmountSection amount={amount} />
 
-        <ReferralSection
+        <Card>
+        <ReferralCodeField
+          label="Referral code (optional)"
+          placeholder="Enter referral code"
+          matchedBody="They'll earn a reward when you pay. It doesn't change your price."
           code={referralCode}
           onChangeCode={(text) => {
             setReferralCode(text);
@@ -288,25 +291,22 @@ const PayNow = () => {
           onCheck={checkReferralCode}
           onClear={clearReferral}
         />
+        </Card>
 
         {isBusy ? (
           <ActivityIndicator
             size="large"
-            color={COLORS.teal}
+            color={colors.brand}
             style={{
               marginVertical: 20,
             }}
           />
         ) : (
-          <TouchableOpacity
-            style={s.payBtn}
+          <Button
+            title={`Pay ${money(amount)}`}
+            icon="lock-closed"
             onPress={doPayment}
-            activeOpacity={0.85}
-          >
-            <Text style={s.payBtnText}>
-              🔒 Pay GHS {amount.toFixed(2)}
-            </Text>
-          </TouchableOpacity>
+          />
         )}
       </ScrollView>
     </View>
@@ -318,25 +318,25 @@ export default PayNow;
 const s = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: colors.fill,
   },
 
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F3F4F6",
+    backgroundColor: colors.fill,
     padding: 24,
   },
 
   errorText: {
     fontSize: 14,
-    color: "#B91C1C",
+    color: colors.danger,
     textAlign: "center",
   },
 
   headerBg: {
-    backgroundColor: COLORS.teal,
+    backgroundColor: colors.brand,
     paddingBottom: 18,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -345,7 +345,7 @@ const s = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.white,
+    color: colors.textInverse,
     marginTop: 12,
   },
 
@@ -358,7 +358,7 @@ const s = StyleSheet.create({
   },
 
   payBtn: {
-    backgroundColor: COLORS.teal,
+    backgroundColor: colors.brand,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: "center",
@@ -368,6 +368,6 @@ const s = StyleSheet.create({
   payBtnText: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.white,
+    color: colors.textInverse,
   },
 });

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Text, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useCart } from '../../../context/CartContext';
-import ProductImages from '../../../components/shop/product/ProductImages';
-import ProductInfo from '../../../components/shop/product/ProductInfo';
-import ProductReviews from '../../../components/shop/product/ProductReviews';
-import AddToCartButton from '../../../components/shop/product/AddToCartButton';
-import CartHeader from '../../../components/shop/product/CartHeader';
+import ProductImages from '../../../components/media/shop/ProductImages';
+import ProductInfo from '../../../components/sections/shop/ProductInfo';
+import ProductReviews from '../../../components/sections/shop/ProductReviews';
+import AddToCartButton from '../../../components/buttons/shop/AddToCartButton';
+import CartHeader from '../../../components/headers/shop/CartHeader';
+import { colors } from "../../../constants/theme";
 
 const ProductDetails = () => {
   const params = useLocalSearchParams();
@@ -73,12 +74,12 @@ export default ProductDetails;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     position: 'relative',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   scrollContent: {
     paddingBottom: 120,

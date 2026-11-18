@@ -6,13 +6,14 @@ import {
   StyleSheet,
 } from "react-native";
 import axios from "axios";
-import COLORS from "../../../../constants/Colors";
-import Button from "../../../../components/ui/buttons/ButtonComponent";
-import CustomDropdown from "../../../../components/ui/dropdowns/CustomDropdown";
-import BusCard, { BusCardSkeleton, BusEmptyState } from "../../../../components/transport/cards/Buscard";
+import BusCard from "../../../../components/cards/transport/BusCard";
+import BusCardSkeleton from "../../../../components/skeletons/transport/BusCardSkeleton";
+import BusEmptyState from "../../../../components/feedback/transport/BusEmptyState";
 import API_BASE_URL from "../../../../utils/api/api";
 import locations from "../../../../assets/data/transport/location";
 import { useRouter } from "expo-router";
+import { Button, SelectField } from "../../../../components/ui";
+import { colors } from "../../../../constants/theme";
 
 const BusSelectionScreen = () => {
     const router = useRouter();
@@ -68,29 +69,25 @@ const handleSelectBus = (bus) => {
       <Text style={styles.heading}>Select Your Route</Text>
 
       <Text style={styles.label}>Pickup Point</Text>
-      <CustomDropdown
-        data={locations}
-        selectedValue={pickup}
-        onSelect={(val) => setPickup(val)}
+      <SelectField
+        options={locations}
+        value={pickup}
+        onChange={(val) => setPickup(val)}
         placeholder="Select Pickup"
-        visible={pickupVisible}
-        onPress={() => setPickupVisible((prev) => !prev)}
       />
 
       <Text style={styles.label}>Destination Point</Text>
-      <CustomDropdown
-        data={locations}
-        selectedValue={destination}
-        onSelect={(val) => setDestination(val)}
+      <SelectField
+        options={locations}
+        value={destination}
+        onChange={(val) => setDestination(val)}
         placeholder="Select Destination"
-        visible={destinationVisible}
-        onPress={() => setDestinationVisible((prev) => !prev)}
       />
 
       <Button
-        buttonText="Search Available Buses"
-        onPressFunction={fetchBuses}
-        customStyle={{ marginVertical: 16 }}
+        title="Search Available Buses"
+        onPress={fetchBuses}
+        style={{ marginVertical: 16 }}
       />
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -127,24 +124,24 @@ const handleSelectBus = (bus) => {
 export default BusSelectionScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white },
+  container: { flex: 1, backgroundColor: colors.surface },
   heading: {
     fontSize: 28,
     fontWeight: "800",
     marginBottom: 20,
-    color: COLORS.textDark,
+    color: colors.text,
   },
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.textDark,
+    color: colors.text,
     marginBottom: 6,
   },
   subHeading: {
     fontSize: 20,
     fontWeight: "700",
     marginBottom: 14,
-    color: COLORS.textDark,
+    color: colors.text,
   },
   error: { color: "red", marginTop: 4, fontWeight: "600", marginBottom: 8 },
 });

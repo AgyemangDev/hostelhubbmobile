@@ -12,15 +12,17 @@ import LastMinute from './LastMinute';
 import RecentlyViewed from './RecentlyViewed';
 import TopStays from './TopStays';
 import NewHostels from './newHostels';
-import TopTabBar from '../../../components/accommodation/browse/TopTabBar';
+import { Tabs } from "../../../components/ui";
+import { colors } from "../../../constants/theme";
 
 const TABS = [
-  { key: 'all', label: 'All Hostels' },
-  { key: 'justadded', label: 'Just Added' },
-  { key: 'homestel', label: 'Homestels' },
-  { key: 'popular', label: 'Popular' },
-  { key: 'lastminute', label: 'Last Minute' },
+  { key: 'all', label: 'All Hostels', icon: 'home-outline' },
+  { key: 'justadded', label: 'Just Added', icon: 'sparkles-outline' },
+  { key: 'homestel', label: 'Homestels', icon: 'bed-outline' },
+  { key: 'popular', label: 'Popular', icon: 'star-outline' },
+  { key: 'lastminute', label: 'Last Minute', icon: 'time-outline' },
 ];
+const TAB_OPTIONS = TABS.map((t) => ({ value: t.key, label: t.label, icon: t.icon }));
 
 export default function HostelScreen() {
   const { tab } = useLocalSearchParams();
@@ -118,7 +120,7 @@ export default function HostelScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.tabWrapper}>
-        <TopTabBar tabs={TABS} activeTab={activeTab} onTabPress={setActiveTab} />
+        <Tabs variant="pill" scroll options={TAB_OPTIONS} value={activeTab} onChange={setActiveTab} contentStyle={{ paddingHorizontal: 16 }} />
       </View>
       <View style={styles.content}>
         {renderTabContent()}
@@ -130,7 +132,7 @@ export default function HostelScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
   },
   tabWrapper: {
     paddingTop: 4, 

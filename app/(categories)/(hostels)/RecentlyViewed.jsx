@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import CardListScreen from '../../../components/accommodation/cards/CardListScreen';
+import CardListScreen from '../../../components/lists/accommodation/CardListScreen';
 import { getRecentlyViewedHostels } from '../../../utils/recentlyViewedUtils';
 
 const RecentlyViewed = ({ hostels }) => {

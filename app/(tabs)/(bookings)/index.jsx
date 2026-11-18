@@ -1,11 +1,11 @@
 import React, { useContext, useCallback, useState } from "react";
-import { View, SafeAreaView } from "react-native";
-import ReusableTabs from "../../../components/ui/tabs/ReusableTabs";
+import { View } from "react-native";
 import AllBookings from "./AllBookings";
 import PaidBookings from "./PaidBookings";
 import { UserContext } from "../../../context/UserContext";
 import { useBookingsContext } from "../../../context/BookingsContext";
-import NoAccountPrompt from "../../../components/auth/NoAccountPrompt";
+import NoAccountPrompt from "../../../components/feedback/auth/NoAccountPrompt";
+import { TabPanels } from "../../../components/ui";
 
 const Index = ({ navigation }) => {
   const { userInfo } = useContext(UserContext);
@@ -49,7 +49,7 @@ const Index = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ReusableTabs tabs={tabs} initialTab="all" />
+      <TabPanels tabs={tabs} initialTab="all" />
     </View>
   );
 };

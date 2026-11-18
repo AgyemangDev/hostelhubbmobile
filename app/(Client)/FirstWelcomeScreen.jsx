@@ -8,8 +8,8 @@ import {
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
-import COLORS from "../../constants/Colors";
-import Button from "../../components/ui/buttons/ButtonComponent";
+import { Button } from "../../components/ui";
+import { colors } from "../../constants/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -99,8 +99,8 @@ const FirstWelcomeScreen = () => {
       {/* Full-width Button with spacing */}
       <View style={styles.buttonWrapper}>
         <Button
-          buttonText={currentIndex === slides.length - 1 ? "Enjoy Hostelhubb" : "Next"}
-          onPressFunction={handleNext}
+          title={currentIndex === slides.length - 1 ? "Enjoy Hostelhubb" : "Next"}
+          onPress={handleNext}
         />
       </View>
     </View>
@@ -112,7 +112,7 @@ export default FirstWelcomeScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: colors.surface,
   },
   slide: {
     alignItems: "center",
@@ -126,14 +126,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "700",
-    color: COLORS.background,
+    color: colors.brand,
     textAlign: "center",
     marginTop: 20,
   },
   description: {
     fontSize: 16,
     textAlign: "center",
-    color: COLORS.textMuted,
+    color: colors.textSecondary,
     marginTop: 10,
     paddingHorizontal: 16,
   },
@@ -146,12 +146,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: COLORS.placeholder,
+    backgroundColor: colors.textMuted,
     marginHorizontal: 4,
   },
   activeDot: {
     width: 20,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.brand,
   },
   buttonWrapper: {
     paddingHorizontal: 24, 

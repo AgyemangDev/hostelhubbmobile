@@ -1,14 +1,19 @@
 import React, { useContext, useState } from "react";
-import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
 import { ValidateHubclippsInfo } from "../../../utils/ValidationUtils/hubbclipsValidation";
 import { institutions, roomTypes, amenitiesOptions, buildingTypes } from "../../../assets/data/data";
-import { Button, Chip, PriceBar, SelectField, StepHeader, TextField, money } from "../../../components/ui/ds";
+import { Button, Chip, PriceBar, SelectField, StepHeader, TextField } from "../../../components/ui";
+import { money } from "../../../utils/formatMoney";
 import { colors, space, type } from "../../../constants/theme";
 
 const FEE_RATE = 0.05;
 const AMENITIES_SHOWN = 8;
+
+// PriceBar pads the bottom inset itself; padding it here too doubled the gap on iOS.
+const SCREEN_EDGES = ["top", "left", "right"];
 
 export default function AccommodationInfoScreen() {
   const router = useRouter();
@@ -34,7 +39,7 @@ export default function AccommodationInfoScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={1} total={4} />
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={type.display} accessibilityRole="header">Tell us about the room</Text>
