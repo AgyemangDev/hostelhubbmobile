@@ -26,8 +26,7 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "associatedDomains": [
-        "applinks:hostelhubb.com",
-        "applinks:www.hostelhubb.com"
+        "applinks:hostelhubb.com"
       ]
     },
     "android": {
