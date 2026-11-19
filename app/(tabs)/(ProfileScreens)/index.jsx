@@ -18,6 +18,8 @@ import { colors, radius, space } from "../../../constants/theme";
 const ACCOUNT_LINKS = [
   { icon: "person-circle-outline", label: "Personal info", route: "personalInfo" },
   { icon: "cash-outline", label: "Transactions & rewards", route: "transactions" },
+  { icon: "notifications-outline", label: "Notifications", href: "/NotificationScreen" },
+  { icon: "construct-outline", label: "Problems I've reported", href: "/complaints" },
 ];
 
 const LEARN_LINKS = [

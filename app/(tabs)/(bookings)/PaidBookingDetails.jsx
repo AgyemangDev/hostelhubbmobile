@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { UserContext } from "../../../context/UserContext";
 import API_BASE_URL from "../../../utils/api/api";
 import { colors } from "../../../constants/theme";
+import StayActions from "../../../components/sections/booking/StayActions";
 
 const TEAL = "#0D9488";
 
@@ -119,6 +120,10 @@ const PaidBookingDetails = () => {
           </View>
         )}
       </View>
+
+      {booking.type !== "hubclip" && booking.payment_status ? (
+        <StayActions bookingId={booking.id || bookingId} hostelName={name} />
+      ) : null}
     </ScrollView>
   );
 };

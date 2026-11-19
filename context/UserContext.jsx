@@ -10,6 +10,7 @@ import { auth } from "../lib/firebase/FirebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import API_BASE_URL from "../utils/api/api";
 import { useAuthedEventSource } from "../hooks/realtime/useAuthedEventSource";
+import { isValidGhanaPhone } from "../utils/phone";
 
 export const UserContext = createContext();
 
@@ -166,17 +167,27 @@ export const UserProvider = ({ children }) => {
 
 const isProfileIncomplete = useMemo(() => {
   if (!userInfo) return false; // not loaded yet, don't redirect prematurely
-  const { first_name, surname, phone_number, date_of_birth } = userInfo;
-  // date_of_birth: existing students without one are sent to ProfileUpdate
-  // once to add it (everything else there is prefilled).
-  return !first_name?.trim() || !surname?.trim() || !phone_number || !date_of_birth;
+  const { first_name, surname, date_of_birth } = userInfo;
+  // New students and existing students without a date of birth go to
+  // ProfileUpdate, which also asks for the WhatsApp number. Students with
+  // everything except a valid WhatsApp number get the WhatsApp modal instead
+  // (needsWhatsApp below).
+  return !first_name?.trim() || !surname?.trim() || !date_of_birth;
 }, [userInfo]);
+
+// Signed-in students whose WhatsApp number is missing or not 0XXXXXXXXX /
+// +233XXXXXXXXX. ProfilePromptsGate shows a modal they can't skip.
+const needsWhatsApp = useMemo(
+  () => Boolean(userInfo) && !isProfileIncomplete && !isValidGhanaPhone(userInfo.phone_number),
+  [userInfo, isProfileIncomplete]
+);
 
 const value = useMemo(() => ({
   user,
   userInfo,
   isLoading: loading,
-  isProfileIncomplete,          // ← new
+  isProfileIncomplete,
+  needsWhatsApp,
   patchUserData,
   refreshUserInfo,
   setUserFromAuthResponse,
@@ -184,7 +195,7 @@ const value = useMemo(() => ({
     setUserInfo(null);
     await clearCache();
   },
-}), [user, userInfo, loading, isProfileIncomplete, patchUserData, refreshUserInfo, setUserFromAuthResponse]);
+}), [user, userInfo, loading, isProfileIncomplete, needsWhatsApp, patchUserData, refreshUserInfo, setUserFromAuthResponse]);
 
   return (
     <UserContext.Provider value={value}>

@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { AccommodationContext } from "../../../context/AccommodationContext";
 import PriceSlider from "../../forms/accommodation/PriceSlider";
 import { roomTypes, amenitiesOptions, buildingTypes } from "../../../assets/data/data";
-import API_BASE_URL from "../../../utils/api/api";
+import { getSchools } from "../../../utils/api/schools";
 import { Button, ChipGroup, Notice, SelectField, Sheet, ToggleRow } from "../../ui";
 import { space } from "../../../constants/theme";
 
@@ -33,16 +33,9 @@ const FilterSheet = ({ visible, onClose }) => {
     if (!visible || schools.length) return;
     const loadSchools = async () => {
       setSchoolsLoading(true);
-      try {
-        const response = await fetch(`${API_BASE_URL}/storage-schools/public`);
-        if (!response.ok) throw new Error("Unable to load schools");
-        const data = await response.json();
-        setSchools(data.schools || []);
-      } catch (error) {
-        console.error("Accommodation filter schools error:", error);
-      } finally {
-        setSchoolsLoading(false);
-      }
+      // Every school we operate in, not only the ones offering storage.
+      setSchools(await getSchools());
+      setSchoolsLoading(false);
     };
     loadSchools();
   }, [visible, schools.length]);

@@ -4,6 +4,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { UserContext } from "../../context/UserContext";
 import DateOfBirthField, { formatDob } from "../../components/forms/profile/DateOfBirthField";
+import WhatsAppNumberField from "../../components/forms/profile/WhatsAppNumberField";
+import UniversityField from "../../components/forms/profile/UniversityField";
+import { normalizeGhanaPhone, whatsappError } from "../../utils/phone";
 import { Button, Notice, SelectField, TextField } from "../../components/ui";
 import { colors, space, type } from "../../constants/theme";
 
@@ -17,6 +20,7 @@ const ProfileUpdate = () => {
   const [surname, setSurname] = useState(userInfo?.surname || "");
   const [phone, setPhone] = useState(userInfo?.phone_number || "");
   const [gender, setGender] = useState(userInfo?.gender || "");
+  const [university, setUniversity] = useState(userInfo?.institution || "");
   const [dob, setDob] = useState(userInfo?.date_of_birth || null);
   // Existing students who already saved a date of birth can't change it here either.
   const dobLocked = Boolean(userInfo?.date_of_birth);
@@ -32,7 +36,8 @@ const ProfileUpdate = () => {
     const e = {};
     if (!firstName.trim()) e.firstName = "First name is required.";
     if (!surname.trim()) e.surname = "Surname is required.";
-    if (!phone.trim()) e.phone = "Phone number is required.";
+    const phoneProblem = whatsappError(phone);
+    if (phoneProblem) e.phone = phoneProblem;
     if (!dob) e.dob = "Date of birth is required.";
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -46,8 +51,9 @@ const ProfileUpdate = () => {
       await patchUserData({
         first_name: firstName.trim(),
         surname: surname.trim(),
-        phone_number: phone.trim(),
+        phone_number: normalizeGhanaPhone(phone),
         ...(gender ? { gender } : {}),
+        ...(university.trim() ? { institution: university.trim() } : {}),
         ...(!dobLocked && dob ? { date_of_birth: dob } : {}),
       });
       router.replace("/(tabs)");
@@ -104,12 +110,8 @@ const ProfileUpdate = () => {
               error={errors.surname}
               onChangeText={(v) => { setSurname(v); clear("surname"); }}
             />
-            <TextField
-              label="Phone number"
-              placeholder="e.g. 024 123 4567"
+            <WhatsAppNumberField
               value={phone}
-              keyboardType="phone-pad"
-              textContentType="telephoneNumber"
               error={errors.phone}
               onChangeText={(v) => { setPhone(v); clear("phone"); }}
             />
@@ -119,6 +121,12 @@ const ProfileUpdate = () => {
               error={errors.dob}
               hint={dobLocked ? "Already saved. Contact support if it's wrong." : "We'll send you something on your birthday. This can't be changed later."}
               onChange={(v) => { setDob(v); clear("dob"); }}
+            />
+            <UniversityField
+              label="University (optional)"
+              value={university}
+              onChange={setUniversity}
+              hint="Helps us show hostels near your campus."
             />
             <SelectField
               label="Gender (optional)"

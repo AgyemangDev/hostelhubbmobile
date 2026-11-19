@@ -175,7 +175,8 @@
             ]
           }
         }
-      ]
+      ],
+      "./plugins/withOptionalScreenFeatures"
     ],
     "experiments": {
       "typedRoutes": true

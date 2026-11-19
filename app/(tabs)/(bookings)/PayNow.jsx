@@ -25,6 +25,7 @@ import AmountSection from "../../../components/sections/bookings/AmountSection";
 import ReferralCodeField from "../../../components/forms/referral/ReferralCodeField";
 import { money } from "../../../utils/formatMoney";
 import { Button, Card } from "../../../components/ui";
+import TenancyAgreementCard from "../../../components/sections/bookings/TenancyAgreementCard";
 import { colors } from "../../../constants/theme";
 
 /* ─── Main screen ─────────────────────────────────────────────────────────── */
@@ -41,6 +42,8 @@ const PayNow = () => {
   // is exactly why the image only failed to load for accommodation
   // bookings on this screen.
   const { bookingId: routeBookingId } = useLocalSearchParams();
+  // Room bookings need the tenancy agreement accepted before paying.
+  const [agreementOk, setAgreementOk] = useState(true);
   const [bookingData, setBookingData] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -293,6 +296,10 @@ const PayNow = () => {
         />
         </Card>
 
+        {bookingData?.type !== "hubclip" ? (
+          <TenancyAgreementCard bookingId={bookingId} onChange={setAgreementOk} />
+        ) : null}
+
         {isBusy ? (
           <ActivityIndicator
             size="large"
@@ -303,8 +310,9 @@ const PayNow = () => {
           />
         ) : (
           <Button
-            title={`Pay ${money(amount)}`}
+            title={agreementOk ? `Pay ${money(amount)}` : "Accept the agreement to pay"}
             icon="lock-closed"
+            disabled={!agreementOk}
             onPress={doPayment}
           />
         )}

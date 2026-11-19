@@ -33,6 +33,7 @@ export const palette = {
   red50: "#FDECEC",
   red700: "#B42318",
   gold: "#C89116",
+  whatsapp: "#25D366",
 };
 
 export const colors = {
@@ -60,6 +61,7 @@ export const colors = {
   successBg: palette.green50,
   success: palette.green800,
   rating: palette.ink,
+  whatsapp: palette.whatsapp,
 };
 
 export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32, xxxl: 48 };

@@ -12,7 +12,7 @@ import {
 import OpenBook3D from "../../../assets/icons/open_book.png";
 import CloseBook3D from "../../../assets/icons/closed_book.png";
 import ScheduleTile from "../../cards/accommodation/ScheduleTile";
-import { Button } from "../../ui";
+import { Button, Notice } from "../../ui";
 import { colors } from "../../../constants/theme";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -53,6 +53,14 @@ const relativeLabel = (date, verb) => {
   if (diff > 1) return `In ${diff} days`;
   return "Completed";
 };
+
+// Which academic calendar a booking made today is for, from the API's
+// booking_window (backend: services/accommodationBooking/academicCalendar.js).
+//   upcoming           move-in still ahead            -> show the dates
+//   move_in_now        year started, >3 months left   -> "Move in now"
+//   next_calendar      year ending, next year known   -> note + next year's dates
+//   next_calendar_tba  year ending/over, no dates yet -> "next academic year"
+const NEXT_YEAR_NOTE = "Bookings made now are for the next academic year.";
 
 // 2026-10-13 -> 2027-09-03  =>  "11 mo stay"
 const stayLabel = (from, to) => {
@@ -104,6 +112,8 @@ const HostelInfo = ({
   const category = capitalize(hostel?.category) || "Accommodation";
   const location = hostel?.location || "an unknown location";
   const schedule = hostel?.accommodation_schedule;
+  const windowStatus = hostel?.booking_window?.status;
+  const moveInNow = windowStatus === "move_in_now";
 
   const moveIn = parseDate(schedule?.move_in_date);
   const moveOut = parseDate(schedule?.move_out_date);
@@ -130,15 +140,18 @@ const HostelInfo = ({
       <View style={styles.divider} />
 
       {/* Move-in / Move-out */}
+      {windowStatus === "next_calendar" ? (
+        <Notice tone="info" icon="calendar-outline" style={styles.notice}>{NEXT_YEAR_NOTE}</Notice>
+      ) : null}
       {schedule ? (
         <View>
           <View style={styles.tileRow}>
             <ScheduleTile
               image={moveInImage || OpenBook3D}
               title="Move-in"
-              dateLabel={formatDate(moveIn)}
+              dateLabel={moveInNow ? "Move in now" : formatDate(moveIn)}
               empty={!moveIn}
-              hint={relativeLabel(moveIn, "Move in")}
+              hint={moveInNow ? `Started ${formatDate(moveIn)}` : relativeLabel(moveIn, "Move in")}
               anim={inAnim}
             />
             <ScheduleTile
@@ -152,7 +165,7 @@ const HostelInfo = ({
           </View>
 
           {/* Stay length sits below the tiles, joined by a line, so it never covers a date */}
-          {stay && (
+          {stay && !moveInNow && (
             <Animated.View
               style={[
                 styles.stayRow,
@@ -170,6 +183,10 @@ const HostelInfo = ({
             </Animated.View>
           )}
         </View>
+      ) : windowStatus === "next_calendar_tba" ? (
+        <Notice tone="info" icon="calendar-outline" title="Next academic year">
+          Bookings made now are for the next academic year. Move-in dates will be shared as soon as the school announces them.
+        </Notice>
       ) : (
         <Text style={styles.scheduleMissing}>
           Move-in and move-out dates haven't been set for this institution yet.
@@ -235,6 +252,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginHorizontal: 10,
   },
+  notice: { marginBottom: 12 },
   scheduleMissing: {
     fontSize: 13,
     lineHeight: 18,

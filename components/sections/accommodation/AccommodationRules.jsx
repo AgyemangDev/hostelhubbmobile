@@ -1,7 +1,10 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { colors } from "../../../constants/theme";
+import React, { useState } from "react";
+import { StyleSheet, View } from "react-native";
+import { Button, Icon, Section, Text } from "../../ui";
+import { colors, radius, space } from "../../../constants/theme";
+import { defaultHouseRulesFor } from "../../../constants/defaultHouseRules";
 
+// Older listings only have yes/no rules; these turn them into sentences.
 const RULE_LABELS = [
   ["visitors_allowed", "Visitors are allowed"],
   ["cooking_allowed", "Cooking is allowed"],
@@ -17,48 +20,76 @@ const RULE_LABELS = [
   ["smoking_not_allowed", "Smoking is not allowed"],
 ];
 
+const SHOWN = 5;
+
 const normalizeRules = (rules) => {
   if (!rules || typeof rules !== "object") return {};
-
-  const normalized = { ...rules };
-  if (normalized.visitors_allowed === undefined && normalized.overnight_visitors_allowed !== undefined) {
-    normalized.visitors_allowed = normalized.overnight_visitors_allowed;
-  }
-  if (normalized.cooking_allowed === undefined && normalized.cooking_in_rooms_not_allowed !== undefined) {
-    normalized.cooking_allowed = !normalized.cooking_in_rooms_not_allowed;
-  }
-  if (normalized.early_arrival_policy === undefined && normalized.early_arrival_allowed !== undefined) {
-    normalized.early_arrival_policy = normalized.early_arrival_allowed;
-  }
-  if (normalized.late_departure_policy === undefined && normalized.late_departure_allowed !== undefined) {
-    normalized.late_departure_policy = normalized.late_departure_allowed;
-  }
-  return normalized;
+  const n = { ...rules };
+  if (n.visitors_allowed === undefined && n.overnight_visitors_allowed !== undefined) n.visitors_allowed = n.overnight_visitors_allowed;
+  if (n.cooking_allowed === undefined && n.cooking_in_rooms_not_allowed !== undefined) n.cooking_allowed = !n.cooking_in_rooms_not_allowed;
+  if (n.early_arrival_policy === undefined && n.early_arrival_allowed !== undefined) n.early_arrival_policy = n.early_arrival_allowed;
+  if (n.late_departure_policy === undefined && n.late_departure_allowed !== undefined) n.late_departure_policy = n.late_departure_allowed;
+  return n;
 };
 
-export default function AccommodationRules({ rules = {} }) {
-  const normalizedRules = normalizeRules(rules);
-  const available = RULE_LABELS.filter(([key]) => normalizedRules[key] === true);
+/**
+ * The hostel's house rules as numbered points (accommodation_rules.house_rules,
+ * written by the owner), or the older yes/no rules for listings that have
+ * no points yet. Students accept these in their tenancy agreement.
+ */
+export default function AccommodationRules({ rules = {}, category }) {
+  const [expanded, setExpanded] = useState(false);
+  const r = normalizeRules(rules);
+  const own = Array.isArray(r.house_rules) && r.house_rules.length
+    ? r.house_rules.filter(Boolean)
+    : RULE_LABELS.filter(([key]) => r[key] === true).map(([, label]) => label);
+  // No rules from the owner yet: show the standard ones for this kind of place.
+  const isDefault = own.length === 0;
+  const points = isDefault ? defaultHouseRulesFor(category) : own;
+  const visible = expanded ? points : points.slice(0, SHOWN);
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hostel rules</Text>
-      {available.length ? available.map(([key, label]) => (
-        <View key={key} style={styles.row}>
-          <Text style={styles.check}>✓</Text>
-          <Text style={styles.label}>{label}</Text>
+    <Section
+      title="House rules"
+      style={styles.section}
+      subtitle={isDefault ? "Standard HostelHubb rules for this kind of place. The hostel may add its own." : "You agree to these before you pay."}
+    >
+      {points.length ? (
+        <View style={styles.list}>
+          {visible.map((text, i) => (
+            <View key={`${i}-${text}`} style={styles.row}>
+              <View style={styles.num}><Text variant="label" tone="brand">{i + 1}</Text></View>
+              <Text style={styles.text}>{text}</Text>
+            </View>
+          ))}
+          {points.length > SHOWN ? (
+            <Button
+              title={expanded ? "Show fewer" : `Show all ${points.length} rules`}
+              variant="ghost"
+              size="sm"
+              icon={expanded ? "chevron-up" : "chevron-down"}
+              iconPosition="right"
+              onPress={() => setExpanded((v) => !v)}
+              style={styles.more}
+            />
+          ) : null}
         </View>
-      )) : (
-        <Text style={styles.empty}>The manager has not provided hostel rules yet.</Text>
+      ) : (
+        <View style={styles.empty}>
+          <Icon name="document-text-outline" size={20} tone="secondary" />
+          <Text tone="secondary" style={styles.text}>The manager hasn't added house rules yet.</Text>
+        </View>
       )}
-    </View>
+    </Section>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginVertical: 24 },
-  title: { fontSize: 22, fontWeight: "600", marginBottom: 12, color: colors.text },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 10 },
-  check: { color: colors.brand, fontSize: 18, fontWeight: "700", width: 26 },
-  label: { color: colors.text, fontSize: 15 },
-  empty: { color: colors.textSecondary, fontSize: 14, lineHeight: 21 },
+  section: { marginVertical: space.lg },
+  list: { gap: space.sm },
+  row: { flexDirection: "row", alignItems: "flex-start", gap: space.sm },
+  num: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.brandSoft, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  text: { flex: 1 },
+  more: { alignSelf: "flex-start" },
+  empty: { flexDirection: "row", gap: space.sm, alignItems: "center", padding: space.sm, borderRadius: radius.md, backgroundColor: colors.fill },
 });

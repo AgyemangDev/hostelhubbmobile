@@ -16,6 +16,7 @@ import ReserveBar from "../../components/bars/accommodation/ReserveBar";
 import { Notice } from "../../components/ui";
 import { listingFacts } from "../../utils/listingFacts";
 import ReviewsModal from "../../components/sheets/accommodation/ReviewsModal";
+import ReviewsSection from "../../components/sections/accommodation/ReviewsSection";
 import HostelDetailsHeader from "../../components/headers/accommodation/HostelDetailsHeader";
 
 import { updateHostelViewCount } from "../../utils/hostelViewCountUtil";
@@ -130,12 +131,13 @@ const facts = listingFacts(hostel);
             <Notice style={styles.missingData}>Room pricing has not been provided yet.</Notice>
           )}
           <Amenities amenities={hostel?.amenities || []} />
-          <AccommodationRules rules={hostel?.accommodation_rules || {}} />
+          <AccommodationRules rules={hostel?.accommodation_rules || {}} category={hostel?.category} />
+          <ReviewsSection accommodationId={hostel.id} verified={hostel.is_verified} />
         </View>
       </Animated.ScrollView>
 
       <View style={styles.reserveBar}>
-        <ReserveBar fromPrice={facts.fromPrice} roomsLeft={facts.roomsLeft} fullyBooked={fullyBooked} onReserve={handleBookingPress} />
+        <ReserveBar fromPrice={facts.fromPrice} roomsLeft={facts.roomsLeft} fullyBooked={fullyBooked} onReserve={handleBookingPress} accommodationId={hostel.id} />
       </View>
     </View>
   );

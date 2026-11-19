@@ -66,6 +66,8 @@ export default function NotificationItem({ item, onPress }) {
               compact
               onPress={() => {
                 onPress?.(item);
+                // Server notifications navigate in onPress (NotificationScreen.open).
+                if (item.server) return;
                 action.route ? router.push(action.route) : openLink(action.url);
               }}
             />

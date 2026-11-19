@@ -34,4 +34,4 @@ npx expo run:ios
 npx expo run:android
 
 
-FMaP9In5voZuxw28711LfFwjg2n1
+eas build --platform ios --profile production --auto-submit

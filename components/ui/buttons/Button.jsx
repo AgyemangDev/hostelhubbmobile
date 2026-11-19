@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { Button as PaperButton } from "react-native-paper";
 import { colors, radius, type } from "../../../constants/theme";
 
-const WHATSAPP = "#25D366";
+const WHATSAPP = colors.whatsapp;
 
 // Each variant is a Paper button mode plus our colours.
 const variants = {

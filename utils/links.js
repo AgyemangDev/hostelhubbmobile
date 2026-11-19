@@ -21,6 +21,8 @@
 //   /bookings/storage/:id                         -> storage order details
 //   /bookings/transport/:groupRef                 -> bus ticket
 //   /wallet                                       -> wallet & withdrawals
+//   /complaints/:id                               -> a complaint thread
+//   /notifications                                -> notification list
 //   /refer/:code                                  -> home (code saved by _layout)
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -74,6 +76,9 @@ const ROUTES = [
   [/^\/bookings\/storage\/([^/]+)$/, ([id]) => `/(tabs)/(bookings)/StorageBookingDetails?${q({ id })}`],
   [/^\/bookings$/, () => "/(tabs)/(bookings)"],
   [/^\/wallet$/, () => "/wallet"],
+  [/^\/complaints\/([^/]+)$/, ([id]) => `/complaints/${enc(id)}`],
+  [/^\/complaints$/, () => "/complaints"],
+  [/^\/notifications$/, () => "/NotificationScreen"],
   [/^\/refer\/[^/]+$/, () => "/(tabs)/(index)"],
   [/^\/hostels$/, () => "/(categories)/(hostels)"],
   [/^\/$/, () => "/(tabs)/(index)"],
@@ -81,7 +86,7 @@ const ROUTES = [
 
 // Screens that only make sense signed in. If the user isn't, the link is
 // remembered and opened right after they log in (see MainLayout).
-const NEEDS_LOGIN = [/^\/bookings/, /^\/wallet$/, /^\/transport\/tickets\//];
+const NEEDS_LOGIN = [/^\/bookings/, /^\/wallet$/, /^\/transport\/tickets\//, /^\/complaints/, /^\/notifications$/];
 
 /**
  * Maps a link to an app route string, or null if it shouldn't navigate.

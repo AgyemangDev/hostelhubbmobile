@@ -2,6 +2,9 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { UserContext } from "../../../context/UserContext";
 import DateOfBirthField from "../../../components/forms/profile/DateOfBirthField";
+import WhatsAppNumberField from "../../../components/forms/profile/WhatsAppNumberField";
+import UniversityField from "../../../components/forms/profile/UniversityField";
+import { normalizeGhanaPhone, whatsappError } from "../../../utils/phone";
 import { Button, Card, Icon, Notice, SelectField, Text, TextField } from "../../../components/ui";
 import { colors, radius, space } from "../../../constants/theme";
 
@@ -12,6 +15,7 @@ const pick = (u) => ({
   surname: u?.surname ?? "",
   phone_number: u?.phone_number ?? "",
   gender: u?.gender ?? "",
+  institution: u?.institution ?? "",
 });
 
 function ReadOnlyRow({ icon, label, value, note }) {
@@ -63,7 +67,8 @@ export default function PersonalInfo() {
     const e = {};
     if (!form.first_name.trim()) e.first_name = "First name is required.";
     if (!form.surname.trim()) e.surname = "Surname is required.";
-    if (!form.phone_number.trim()) e.phone_number = "Phone number is required.";
+    const phoneProblem = whatsappError(form.phone_number);
+    if (phoneProblem) e.phone_number = phoneProblem;
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -74,7 +79,8 @@ export default function PersonalInfo() {
       await patchUserData({
         first_name: form.first_name.trim(),
         surname: form.surname.trim(),
-        phone_number: form.phone_number.trim(),
+        phone_number: normalizeGhanaPhone(form.phone_number),
+        ...(form.institution.trim() ? { institution: form.institution.trim() } : {}),
         ...(!genderLocked && form.gender ? { gender: form.gender } : {}),
         ...(!dobLocked && dob ? { date_of_birth: dob } : {}),
       });
@@ -115,7 +121,8 @@ export default function PersonalInfo() {
             <Text variant="heading">Your details</Text>
             <TextField label="First name" value={form.first_name} onChangeText={set("first_name")} autoCapitalize="words" textContentType="givenName" error={errors.first_name} />
             <TextField label="Surname" value={form.surname} onChangeText={set("surname")} autoCapitalize="words" textContentType="familyName" error={errors.surname} />
-            <TextField label="Phone number" value={form.phone_number} onChangeText={set("phone_number")} keyboardType="phone-pad" textContentType="telephoneNumber" error={errors.phone_number} />
+            <WhatsAppNumberField value={form.phone_number} onChangeText={set("phone_number")} error={errors.phone_number} />
+            <UniversityField label="University" value={form.institution} onChange={set("institution")} hint="Helps us show hostels near your campus." />
             {genderLocked ? null : (
               <SelectField label="Gender (optional)" options={GENDER_OPTIONS} value={form.gender} onChange={set("gender")} placeholder="Select gender" />
             )}
