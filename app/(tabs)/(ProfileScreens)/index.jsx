@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRouter } from "expo-router";
 import * as Updates from "expo-updates";
-import Constants from "expo-constants";
 import { UserContext } from "../../../context/UserContext";
 import { WalletContext } from "../../../context/WalletContext";
 import LogoutButton from "../../../components/buttons/profile/LogoutButton";
@@ -13,6 +12,7 @@ import ReferralShareCard from "../../../components/cards/referral/ReferralShareC
 import NoAccountPrompt from "../../../components/feedback/auth/NoAccountPrompt";
 import { Button, Card, Icon, PressableScale, Text } from "../../../components/ui";
 import { money } from "../../../utils/formatMoney";
+import { versionLabel } from "../../../utils/appStore";
 import { colors, radius, space } from "../../../constants/theme";
 
 const ACCOUNT_LINKS = [
@@ -109,7 +109,7 @@ const Profile = () => {
             <DeleteAccountButton userId={userInfo.id} />
           </View>
           <Text variant="caption" tone="secondary" style={styles.version}>
-            App v{Constants.expoConfig?.version ?? "—"}
+            App v{versionLabel() ?? "—"}
             {" · "}
             {Updates.isEmbeddedLaunch ? "Built-in bundle" : `OTA ${Updates.updateId?.slice(0, 8) ?? "unknown"}`}
           </Text>

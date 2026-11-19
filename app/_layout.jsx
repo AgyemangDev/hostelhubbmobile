@@ -6,6 +6,7 @@ import { setupProviders } from "../utils/providers";
 import { checkForAppUpdates } from "../utils/update";
 import MainLayout from "../components/layout/MainLayout";
 import ReviewPromptWrapper from "../components/layout/ReviewPromptWrapper";
+import AppUpdateGate from "../components/layout/AppUpdateGate";
 import notificationService from "../lib/firebase/notificationService";
 import { AppState } from "react-native";
 import { extractReferralCode, savePendingReferral } from "../utils/referralStorage";
@@ -76,6 +77,7 @@ export default function RootLayout() {
       <MainLayout />
       <Toast />
       <ReviewPromptWrapper />
+      <AppUpdateGate />
     </ProvidersWrapper>
   );
 }
