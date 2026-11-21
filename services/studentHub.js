@@ -2,6 +2,7 @@
 // reviews, waitlist, tenancy agreements) and the public trust endpoint.
 import { auth } from "../lib/firebase/FirebaseConfig";
 import API_BASE_URL from "../utils/api/api";
+import { DEMO } from "../constants/demo";
 
 export class HubError extends Error {
   constructor(message, status, code) {
@@ -12,6 +13,15 @@ export class HubError extends Error {
 }
 
 async function request(path, { method = "GET", body, query, signedIn = true } = {}) {
+  if (__DEV__ && DEMO) {
+    try {
+      const { demoHub } = require("./demoData");
+      const data = await demoHub(path, { method, body });
+      if (data !== undefined) return data;
+    } catch (e) {
+      throw new HubError(e.message, e.status || 400, e.code);
+    }
+  }
   const headers = {};
   if (signedIn) {
     const user = auth.currentUser;
@@ -51,8 +61,12 @@ export const studentHub = {
   joinWaitlist: (accommodationId, roomType) => request("/api/me/waitlist", { method: "POST", body: { accommodation_id: accommodationId, room_type: roomType || null } }),
   leaveWaitlist: (id) => request(`/api/me/waitlist/${id}`, { method: "DELETE" }),
 
+  /** Push the hostel manager to reply to a pending booking (once every 3 hours). */
+  remindHostel: (bookingId) => request(`/api/me/bookings/${bookingId}/remind-hostel`, { method: "POST", body: {} }),
+
   agreement: (bookingId) => request(`/api/me/bookings/${bookingId}/agreement`),
-  acceptAgreement: (bookingId) => request(`/api/me/bookings/${bookingId}/agreement`, { method: "POST", body: { accept: true } }),
+  /** signature: the full name the student typed to sign. */
+  acceptAgreement: (bookingId, signature) => request(`/api/me/bookings/${bookingId}/agreement`, { method: "POST", body: { accept: true, signature } }),
 
   trust: (accommodationId) => request(`/api/accommodation-trust/${accommodationId}`, { signedIn: false }),
   reviews: (accommodationId, query) => request(`/api/accommodation-trust/${accommodationId}/reviews`, { signedIn: false, query }),

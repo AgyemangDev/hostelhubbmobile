@@ -46,5 +46,6 @@ export default function StayActions({ bookingId, hostelName }) {
 
 const styles = StyleSheet.create({
   wrap: { marginHorizontal: space.md },
-  row: { paddingHorizontal: space.md },
+  // Long-hand: ListRow's own paddingLeft/Right would override paddingHorizontal.
+  row: { paddingLeft: space.md, paddingRight: space.md },
 });

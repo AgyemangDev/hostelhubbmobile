@@ -3,10 +3,11 @@ import { Image, Share, StyleSheet, View } from "react-native";
 import { LabeledIconButton } from "../../ui";
 import { useFavorites } from "../../../context/FavoritesContext";
 import { shareUrl } from "../../../utils/links";
+import { clipShare } from "../../../utils/shareText";
 import { colors } from "../../../constants/theme";
 
 /** The column on the right of a clip: poster, Save, views and Share. */
-export default function RightActions({ frontImage, views, clipId, title }) {
+export default function RightActions({ frontImage, views, clipId, clip }) {
   const { isClipFavorite, toggleClipFavorite } = useFavorites();
   const saved = clipId ? isClipFavorite(clipId) : false;
 
@@ -14,8 +15,8 @@ export default function RightActions({ frontImage, views, clipId, title }) {
     if (!clipId) return;
     const url = shareUrl.clip(clipId);
     try {
-      // `url` is used on iOS; Android only shows `message`, so it carries the link too.
-      await Share.share({ message: `${title ? `${title} on HostelHubb` : "Watch this on HostelHubb"}\n${url}`, url });
+      const { title, message } = clipShare(clip, url);
+      await Share.share({ title, message }, { subject: title, dialogTitle: title });
     } catch {}
   };
 

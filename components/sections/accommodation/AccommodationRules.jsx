@@ -52,7 +52,7 @@ export default function AccommodationRules({ rules = {}, category }) {
     <Section
       title="House rules"
       style={styles.section}
-      subtitle={isDefault ? "Standard HostelHubb rules for this kind of place. The hostel may add its own." : "You agree to these before you pay."}
+      subtitle={isDefault ? "General rules for this kind of place." : "You agree to these before you pay."}
     >
       {points.length ? (
         <View style={styles.list}>

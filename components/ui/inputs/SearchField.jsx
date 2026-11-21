@@ -65,6 +65,7 @@ const styles = StyleSheet.create({
   center: { justifyContent: "center" },
   insetButton: { gap: 6, paddingHorizontal: 10 },
   insetText: { fontSize: 16, lineHeight: 21, fontWeight: "400", flexShrink: 1 },
-  input: { ...type.body, color: colors.text, minHeight: 0 },
+  // No fixed line height or padding, so the text sits centred in the pill on both platforms.
+  input: { ...type.body, lineHeight: undefined, color: colors.text, minHeight: 0, paddingVertical: 0, alignSelf: "center", textAlignVertical: "center", includeFontPadding: false },
   inputFilled: { fontSize: 15 },
 });

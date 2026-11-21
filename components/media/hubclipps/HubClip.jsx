@@ -101,7 +101,7 @@ export default function HubClip({ item, height, isActive }) {
           frontImage={item.front_image_url}
           views={item.views}
           clipId={item.id}
-          title={item.hostel_name}
+          clip={item}
         />
       </View>
 

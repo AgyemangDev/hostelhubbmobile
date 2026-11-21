@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
 import API_BASE_URL from '../../utils/api/api';
 import { UserContext } from '../../context/UserContext';
+import { DEMO } from '../../constants/demo';
 
 export const useFetchStorageBookings = () => {
   const { user, userInfo } = useContext(UserContext);
@@ -16,6 +17,10 @@ const fetchBookings = useCallback(async () => {
   setError(null);
 
   try {
+    if (__DEV__ && DEMO) {
+      setBookings(await require('../../services/demoData').demoBookings.storage());
+      return;
+    }
     const token = await user.getIdToken(false);
 
     const res = await fetch(`${API_BASE_URL}/bookings/storage/fetch`, {

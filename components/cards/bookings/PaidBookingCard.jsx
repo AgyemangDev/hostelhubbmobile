@@ -1,118 +1,107 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Card } from "../../ui";
-import { colors } from "../../../constants/theme";
+import { money } from "../../../utils/formatMoney";
+import roomLabel from "../../../utils/roomLabel";
+import { colors, elevation } from "../../../constants/theme";
 
-const TEAL = "#0D9488";
+const shortDate = (value, withYear = false) =>
+  new Date(value).toLocaleDateString("en-GB", { day: "numeric", month: "short", ...(withYear ? { year: "numeric" } : {}) });
 
+/**
+ * A paid room booking. Same shape as StorageBookingCard so the two sit
+ * evenly in the Paid Bookings list: photo and price on top, a status pill,
+ * then the room and payment lines.
+ */
 const PaidBookingCard = ({ booking, onPress }) => {
-  // Same fallback pattern as BookingCard.jsx — booking.accommodation is null
-  // for a hubclip-type booking (its data lives under booking.hubclip
-  // instead), so reading only the accommodation path left every paid
-  // hubclip booking showing as "Unnamed Hostel" with no image.
-  const hostelName =
-    booking?.accommodation?.accommodation_name ??
-    booking?.hubclip?.accommodation_name ??
-    "Unnamed Hostel";
-
-  const imageUri =
-    booking?.accommodation?.front_image ??
-    booking?.hubclip?.front_image ??
-    null;
-
-  const roomType = booking?.room_type;
+  // booking.accommodation is null for a hubclip booking; its listing is under booking.hubclip.
+  const listing = booking?.accommodation ?? booking?.hubclip ?? {};
+  const hostelName = listing.accommodation_name || "Unnamed hostel";
+  const moveIn = booking?.move_in_date ? new Date(`${String(booking.move_in_date).slice(0, 10)}T00:00:00`) : null;
+  const roomLine = [roomLabel(booking?.room_type), moveIn ? `Moves in ${shortDate(moveIn)}` : null].filter(Boolean).join(" · ");
+  const amount = Number(booking?.payment_option || 0);
 
   return (
-    <Card onPress={onPress} padded={false} style={styles.card}>
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={styles.image} />
-      ) : (
-        <View style={[styles.image, styles.imagePlaceholder]}>
-          <Ionicons name="home-outline" size={28} color="#99D8CE" />
-        </View>
-      )}
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.title} numberOfLines={1}>
-          {hostelName}
-        </Text>
-
-        <Text style={styles.roomType}>Room Type: {roomType || "N/A"}</Text>
-
-        <View style={styles.statusRow}>
-          <View style={styles.paidBadge}>
-            <Ionicons name="checkmark-circle" size={13} color={colors.textInverse} />
-            <Text style={styles.paidBadgeText}>Paid</Text>
+    <Card onPress={onPress} padded={false} style={styles.card} accessibilityLabel={`${hostelName}, paid booking`}>
+      {/* ---------- IMAGE + HEADER ---------- */}
+      <View style={styles.topRow}>
+        {listing.front_image ? (
+          <Image source={{ uri: listing.front_image }} style={styles.image} />
+        ) : (
+          <View style={[styles.image, styles.placeholder]}>
+            <Ionicons name="home-outline" size={26} color={colors.brand} />
           </View>
-
-          {booking.payment_date && (
-            <Text style={styles.paidDate}>
-              on {new Date(booking.payment_date).toDateString()}
-            </Text>
-          )}
+        )}
+        <View style={styles.headerInfo}>
+          <Text style={styles.title} numberOfLines={1}>{hostelName}</Text>
+          {amount ? <Text style={styles.price}>{money(amount)}</Text> : null}
+          {listing.location ? (
+            <View style={styles.place}>
+              <Ionicons name="location-outline" size={13} color={colors.textSecondary} />
+              <Text style={styles.placeText} numberOfLines={1}>{listing.location}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
+
+      {/* ---------- STATUS BADGE ---------- */}
+      <View style={styles.status}>
+        <Ionicons name="checkmark-circle-outline" size={14} color={colors.success} />
+        <Text style={styles.statusText}>Paid</Text>
+      </View>
+
+      {/* ---------- ROOM + PAYMENT ---------- */}
+      {roomLine ? (
+        <View style={styles.line}>
+          <Ionicons name="bed-outline" size={16} color={colors.textSecondary} />
+          <Text style={styles.lineText} numberOfLines={1}>{roomLine}</Text>
+        </View>
+      ) : null}
+      {booking?.payment_date ? (
+        <View style={styles.line}>
+          <Ionicons name="receipt-outline" size={16} color={colors.textSecondary} />
+          <Text style={styles.lineText} numberOfLines={1}>Paid on {shortDate(booking.payment_date, true)}</Text>
+        </View>
+      ) : null}
     </Card>
   );
 };
 
+// Matches StorageBookingCard's card, header and status pill measurements.
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 14,
-    marginHorizontal: 16,
-    marginVertical: 8,
-    borderWidth: 1.5,
-    borderColor: TEAL,
-    overflow: "hidden",
-  },
-  image: {
-    width: "100%",
-    height: 160,
-    backgroundColor: colors.brandSoft,
-  },
-  imagePlaceholder: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  infoContainer: {
     padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...elevation.listCard,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  roomType: {
-    marginTop: 4,
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  statusRow: {
+  topRow: { flexDirection: "row", alignItems: "flex-start", marginBottom: 10 },
+  image: { width: 70, height: 70, borderRadius: 8, backgroundColor: colors.brandSoft },
+  placeholder: { alignItems: "center", justifyContent: "center" },
+  headerInfo: { flex: 1, marginLeft: 12, gap: 2 },
+  title: { fontWeight: "700", fontSize: 18, color: colors.text },
+  place: { flexDirection: "row", alignItems: "center", gap: 3 },
+  placeText: { flex: 1, fontSize: 13, color: colors.textSecondary },
+  price: { fontWeight: "700", color: colors.brand, fontSize: 16 },
+  status: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginTop: 8,
-  },
-  paidBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: TEAL,
-    borderRadius: 20,
+    alignSelf: "flex-start",
     paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.success,
+    backgroundColor: colors.successBg,
+    marginBottom: 8,
   },
-  paidBadgeText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  paidDate: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
+  statusText: { marginLeft: 6, fontSize: 12, fontWeight: "600", color: colors.success },
+  line: { flexDirection: "row", alignItems: "flex-start", marginBottom: 6 },
+  lineText: { flex: 1, fontSize: 13, marginLeft: 6, color: colors.text, lineHeight: 18 },
 });
 
 export default PaidBookingCard;

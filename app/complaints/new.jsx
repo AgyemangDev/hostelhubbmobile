@@ -71,7 +71,7 @@ export default function NewComplaint() {
             </View>
           </View>
           <ToggleRow label="This is urgent" description="Safety, no water or no power. The hostel sees it marked urgent." value={urgent} onValueChange={setUrgent} />
-          <Notice tone="info">The hostel gets a push notification. You'll be notified when they reply or update it.</Notice>
+          <Notice tone="info">The hostel manager is notified instantly when you submit your issue. You'll be notified when they reply or provide an update.</Notice>
         </ScrollView>
         <View style={styles.footer}>
           <Button title="Send to the hostel" loading={sending} disabled={!ok || !bookingId} onPress={submit} />
@@ -89,5 +89,5 @@ const styles = StyleSheet.create({
   photoRow: { flexDirection: "row", gap: space.xs, flexWrap: "wrap" },
   photo: { width: 88, height: 88, borderRadius: radius.md },
   remove: { position: "absolute", top: -10, right: -10 },
-  footer: { padding: space.lg, paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+  footer: { padding: space.sm, paddingTop: space.sm, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
 });

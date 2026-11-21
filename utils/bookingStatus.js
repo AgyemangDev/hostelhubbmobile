@@ -9,7 +9,7 @@ export const getStatusMeta = (pickupStatus, deliveryStatus) => {
       bg: "#ECFDF5",
       border: "#A7F3D0",
       color: "#047857",
-      icon: "check-circle-outline",
+      icon: "checkmark-circle-outline",
     };
   }
 

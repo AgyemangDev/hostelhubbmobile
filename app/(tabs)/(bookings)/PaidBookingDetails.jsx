@@ -6,6 +6,8 @@ import { UserContext } from "../../../context/UserContext";
 import API_BASE_URL from "../../../utils/api/api";
 import { colors } from "../../../constants/theme";
 import StayActions from "../../../components/sections/booking/StayActions";
+import TenancyAgreementCard from "../../../components/sections/bookings/TenancyAgreementCard";
+import { DEMO } from "../../../constants/demo";
 
 const TEAL = "#0D9488";
 
@@ -30,6 +32,12 @@ const PaidBookingDetails = () => {
 
     (async () => {
       try {
+        if (__DEV__ && DEMO) {
+          const { demoBookings } = require("../../../services/demoData");
+          const demo = await demoBookings.room(String(bookingId));
+          if (!cancelled) setBooking(demo);
+          return;
+        }
         const token = await user.getIdToken(false);
         const res = await fetch(`${API_BASE_URL}/bookings/accommodation/fetch/${bookingId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -121,6 +129,12 @@ const PaidBookingDetails = () => {
         )}
       </View>
 
+      {booking.type !== "hubclip" ? (
+        <View style={styles.agreement}>
+          <TenancyAgreementCard bookingId={booking.id || bookingId} />
+        </View>
+      ) : null}
+
       {booking.type !== "hubclip" && booking.payment_status ? (
         <StayActions bookingId={booking.id || bookingId} hostelName={name} />
       ) : null}
@@ -150,6 +164,10 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  agreement: {
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
   card: {
     backgroundColor: colors.surface,

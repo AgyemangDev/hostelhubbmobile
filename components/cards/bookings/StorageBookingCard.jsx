@@ -7,7 +7,8 @@ import { getStatusMeta } from "../../../utils/bookingStatus";
 import { UserContext } from "../../../context/UserContext";
 import API_BASE_URL from "../../../utils/api/api";
 import { Button, Card } from "../../ui";
-import { colors } from "../../../constants/theme";
+import { colors, elevation } from "../../../constants/theme";
+import { DEMO } from "../../../constants/demo";
 
 // Delivery info can be changed until the day before the first delivery date.
 // Update this single value for each new cycle.
@@ -59,6 +60,13 @@ const StorageBookingCard = ({ booking, onPress }) => {
     if (!user || updatingStatus) return;
     setUpdatingStatus(true);
     try {
+      if (__DEV__ && DEMO) {
+        const { demoBookings } = require("../../../services/demoData");
+        const { order } = await demoBookings.updateStorage(booking.id, action);
+        setCurrentPickupStatus(order.pickup_status);
+        setCurrentDeliveryStatus(order.delivery_status);
+        return;
+      }
       const token = await user.getIdToken(false);
       const response = await fetch(`${API_BASE_URL}/bookings/storage/${booking.id}/status`, {
         method: "PATCH",
@@ -94,7 +102,7 @@ const StorageBookingCard = ({ booking, onPress }) => {
   } else if (isDelivered) {
     // Items delivered at location
     statusText = `Items delivered at ${booking.delivery_info?.area || "Unknown"}`;
-    locationIcon = "checkmark-circle-outline";
+    locationIcon = "home-outline";
   } else {
     statusText = "Status unknown";
     locationIcon = "help-circle-outline";
@@ -212,11 +220,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 3,
+    ...elevation.listCard,
   },
   topRow: {
     flexDirection: "row",

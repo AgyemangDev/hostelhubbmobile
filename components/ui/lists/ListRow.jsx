@@ -28,7 +28,7 @@ export default function ListRow({ title, subtitle, icon, leading, onPress, right
 
   const trailing =
     right !== undefined
-      ? () => right
+      ? () => <View style={styles.side}>{right}</View>
       : isRadio
       ? () => (
           <RadioButton.Android
@@ -40,7 +40,7 @@ export default function ListRow({ title, subtitle, icon, leading, onPress, right
           />
         )
       : onPress
-      ? () => <Icon source="chevron-forward" size={18} color={fg} />
+      ? () => <View style={styles.side}><Icon source="chevron-forward" size={18} color={fg} /></View>
       : undefined;
 
   return (
@@ -68,5 +68,7 @@ const styles = StyleSheet.create({
   border: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.borderStrong },
   content: { paddingLeft: space.sm, justifyContent: "center" },
   title: { fontWeight: "600" },
+  // Trailing node (chevron, rating, badge) centred against the text block.
+  side: { alignSelf: "center", justifyContent: "center", marginLeft: space.xs },
   icon: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: colors.fill, alignItems: "center", justifyContent: "center", alignSelf: "center" },
 });

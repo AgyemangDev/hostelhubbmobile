@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { startPayment, getBooking, TRANSPORT_RETURN_SCHEME } from "../../utils/api/transportUnigo";
+import { DEMO } from "../../constants/demo";
 
 /**
  * Reopen Hubtel checkout for a booking that was never paid for.
@@ -32,6 +33,14 @@ export function useResumePayment() {
       setBusy(true);
 
       try {
+        // Demo seat hold: pretend checkout, then show the ticket.
+        if (__DEV__ && DEMO && String(groupRef).startsWith("DEMO-")) {
+          const { demoBookings } = require("../../services/demoData");
+          await demoBookings.payTrip(groupRef);
+          onDone?.("success");
+          router.push({ pathname: "/(categories)/(transport)/unigo/Ticket", params: { groupRef, justPaid: "1" } });
+          return;
+        }
         const payment = await startPayment(groupRef);
         const checkoutUrl = payment.checkoutDirectUrl || payment.checkoutUrl;
         if (!checkoutUrl) throw new Error("The payment provider did not return a checkout page.");

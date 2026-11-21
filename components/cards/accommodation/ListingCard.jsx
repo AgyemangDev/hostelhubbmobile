@@ -10,7 +10,7 @@ import { PressableScale } from "../../ui";
 import ListingPhoto from "../../media/accommodation/ListingPhoto";
 import ListingPhotoCarousel from "../../media/accommodation/ListingPhotoCarousel";
 import ListingSummary from "./ListingSummary";
-import { availabilityTag, listingFacts, listingPlace } from "../../../utils/listingFacts";
+import { availabilityTag, listingFacts, listingInterest, listingPlace } from "../../../utils/listingFacts";
 import { money } from "../../../utils/formatMoney";
 
 export { listingFacts };
@@ -19,13 +19,14 @@ export default function ListingCard({ item, onPress, variant = "full", style }) 
   const facts = useMemo(() => listingFacts(item), [item]);
   const tag = availabilityTag(item, facts);
   const place = listingPlace(item);
+  const interest = listingInterest(item, facts);
   const price = facts.fromPrice ? money(facts.fromPrice, { decimals: 0 }) : null;
   const a11y = [item.accommodation_name, place, tag?.label, price ? `from ${price} a year` : null].filter(Boolean).join(", ");
   const summary = (
     <ListingSummary
       name={item.accommodation_name}
       place={place}
-      institution={item.institution}
+      interest={interest}
       price={price}
       rating={facts.rating}
       reviews={facts.reviews}

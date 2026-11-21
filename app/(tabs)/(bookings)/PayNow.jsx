@@ -26,7 +26,9 @@ import ReferralCodeField from "../../../components/forms/referral/ReferralCodeFi
 import { money } from "../../../utils/formatMoney";
 import { Button, Card } from "../../../components/ui";
 import TenancyAgreementCard from "../../../components/sections/bookings/TenancyAgreementCard";
+import DeadlineTimer from "../../../components/feedback/bookings/DeadlineTimer";
 import { colors } from "../../../constants/theme";
+import { DEMO } from "../../../constants/demo";
 
 /* ─── Main screen ─────────────────────────────────────────────────────────── */
 const PayNow = () => {
@@ -55,6 +57,12 @@ const PayNow = () => {
 
     (async () => {
       try {
+        if (__DEV__ && DEMO) {
+          const { demoBookings } = require("../../../services/demoData");
+          const demo = await demoBookings.room(String(routeBookingId));
+          if (!cancelled) setBookingData(demo);
+          return;
+        }
         const token = await user.getIdToken(false);
         const res = await fetch(`${API_BASE_URL}/bookings/accommodation/fetch/${routeBookingId}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -196,6 +204,15 @@ const PayNow = () => {
     try {
       setLoading(true);
 
+      // Demo booking: no checkout and no money; the booking is marked paid.
+      if (__DEV__ && DEMO) {
+        const { demoBookings } = require("../../../services/demoData");
+        await demoBookings.payRoom(bookingId);
+        await refetchBookings().catch(() => {});
+        router.replace("(bookings)/PaymentCompleted");
+        return;
+      }
+
       const { authorization_url, reference } = await initiatePayment({
         user,
         type: bookingData.type === "hubclip" ? "hubclip" : "accommodation",
@@ -262,6 +279,10 @@ const PayNow = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        {!bookingData.payment_status && bookingData.payment_due_at ? (
+          <DeadlineTimer dueAt={bookingData.payment_due_at} kind="payment" />
+        ) : null}
+
         <PropertyCard
           accommodationInfo={accommodationInfo}
           room_type={room_type}
@@ -310,7 +331,7 @@ const PayNow = () => {
           />
         ) : (
           <Button
-            title={agreementOk ? `Pay ${money(amount)}` : "Accept the agreement to pay"}
+            title={agreementOk ? `Pay ${money(amount)}` : "Sign the agreement to pay"}
             icon="lock-closed"
             disabled={!agreementOk}
             onPress={doPayment}

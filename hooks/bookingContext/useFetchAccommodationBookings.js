@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback,useContext } from 'react';
 import API_BASE_URL from '../../utils/api/api';
-import { UserContext } from '../../context/UserContext'; 
+import { UserContext } from '../../context/UserContext';
+import { DEMO } from '../../constants/demo';
 
 
 export const useFetchAccommodationBookings = () => {
@@ -16,6 +17,10 @@ export const useFetchAccommodationBookings = () => {
     setError(null);
 
     try {
+      if (__DEV__ && DEMO) {
+        setBookings(await require('../../services/demoData').demoBookings.rooms());
+        return;
+      }
       const token = await user.getIdToken(false);
       const res = await fetch(`${API_BASE_URL}/bookings/accommodation/fetch`, {
         headers: {

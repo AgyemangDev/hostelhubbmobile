@@ -83,6 +83,14 @@ export const type = {
 };
 
 export const elevation = {
+  // Booking cards in a list (storage, paid rooms): a light lift on white.
+  listCard: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   card: {
     shadowColor: "#1C1917",
     shadowOpacity: 0.08,

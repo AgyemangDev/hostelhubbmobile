@@ -13,6 +13,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 
 import { shareUrl } from "../../../utils/links";
+import { hostelShare } from "../../../utils/shareText";
 import { IconButton } from "../../ui";
 import { colors } from "../../../constants/theme";
 
@@ -23,10 +24,8 @@ const handleShare = async () => {
   try {
     const link = shareUrl.hostel({ slug: hostel?.slug, id: hostel?.id ?? hostelId });
 
-    await Share.share({
-      message: `${hostel?.accommodation_name} is available on HostelHubb. Reserve your spot now before it goes. No stress 🏠`,
-      url: link,
-    });
+      const { title, message } = hostelShare(hostel, link);
+      await Share.share({ title, message }, { subject: title, dialogTitle: title });
   } catch (error) {
     Alert.alert("Sharing failed", error.message);
   }

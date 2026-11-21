@@ -9,6 +9,8 @@ const Layout = () => {
   // posting screens): it covers the video and the clip's own actions.
   const segments = useSegments();
   const inHubclips = segments.includes('(Hubclipps)');
+  // The map has its own floating controls and preview card in that corner.
+  const onMap = segments.includes('map');
   return (
     <View style={{ flex: 1 }}>
       <Tabs
@@ -81,7 +83,7 @@ const Layout = () => {
         />
       </Tabs>
 
-      {inHubclips ? null : (
+      {inHubclips || onMap ? null : (
         <View style={styles.fab} pointerEvents="box-none">
           <WhatsAppButton size={60} />
         </View>

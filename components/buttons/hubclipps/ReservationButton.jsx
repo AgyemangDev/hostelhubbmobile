@@ -42,7 +42,7 @@ export default function ReservationButton({ onPress, price, onBookingComplete, t
       <View style={styles.bar}>
         <View style={{ flex: 1 }}>
           <Text style={styles.price}>{money(total, { decimals: 0 })}</Text>
-          <Text style={styles.caption}>per year, fees included</Text>
+          <Text style={styles.caption}>per year</Text>
         </View>
         <PressableScale onPress={open} accessibilityRole="button" accessibilityLabel={`Reserve for ${money(total, { decimals: 0 })}`} style={styles.pill}>
           {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.pillText}>Reserve</Text>}

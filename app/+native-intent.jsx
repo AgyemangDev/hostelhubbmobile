@@ -5,6 +5,9 @@ import { toAppRoute, needsLogin, savePendingLink } from "../utils/links";
 import { auth } from "../lib/firebase/FirebaseConfig";
 
 export function redirectSystemPath({ path, initial }) {
+  // Links that arrive while the app is running are pushed by MainLayout's
+  // Linking listener; returning null here stops the router acting on them too.
+  if (!initial) return null;
   try {
     const route = toAppRoute(path);
     if (!route) {

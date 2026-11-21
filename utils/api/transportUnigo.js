@@ -8,6 +8,7 @@
 // origin.
 import API_BASE_URL from "./api";
 import { auth } from "../../lib/firebase/FirebaseConfig";
+import { DEMO } from "../../constants/demo";
 
 const BASE = `${API_BASE_URL}/api/transport-unigo`;
 
@@ -99,8 +100,12 @@ export const startPayment = (groupRef) =>
  * Pass fresh: true on return from checkout — forces UniGo to reconcile with
  * the payment provider instead of waiting on its webhook.
  */
+// Demo tickets (constants/demo.js) start with DEMO- and never reach UniGo.
+
 export const getBooking = (groupRef, { fresh } = {}) =>
-  request(`/bookings/${encodeURIComponent(groupRef)}${fresh ? "?fresh=1" : ""}`, { authed: true });
+  __DEV__ && DEMO && String(groupRef || "").startsWith("DEMO-")
+    ? require("../../services/demoData").demoBookings.trip(groupRef)
+    : request(`/bookings/${encodeURIComponent(groupRef)}${fresh ? "?fresh=1" : ""}`, { authed: true });
 
 /** Frees held seats immediately instead of waiting out the 5-minute timeout. */
 export const cancelBooking = (groupRef) =>

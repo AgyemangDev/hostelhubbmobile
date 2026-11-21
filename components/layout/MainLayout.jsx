@@ -1,10 +1,11 @@
 import { useRouter, Stack } from "expo-router";
 import { useContext, useEffect, useRef } from "react";
 import * as SplashScreen from "expo-splash-screen";
-import { Platform, View, StyleSheet } from "react-native";
+import { Linking, Platform, View, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UserContext } from "../../context/UserContext";
-import { hasPendingLink, takePendingRoute } from "../../utils/links";
+import { hasPendingLink, needsLogin, savePendingLink, takePendingRoute, toAppRoute } from "../../utils/links";
+import { auth } from "../../lib/firebase/FirebaseConfig";
 
 export default function MainLayout() {
   const router = useRouter();
@@ -12,7 +13,24 @@ export default function MainLayout() {
   const insets = useSafeAreaInsets();
   const hadUser = useRef(null);
 
-  // Incoming links are routed by app/+native-intent.jsx. The only thing left
+  // A link tapped while the app is already open (in the background or on
+  // another screen). app/+native-intent.jsx only routes the link that launches
+  // the app; the router didn't navigate for these, so they're pushed here.
+  useEffect(() => {
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const route = toAppRoute(url);
+      if (!route) return;
+      if (needsLogin(url) && !auth.currentUser) {
+        savePendingLink(url);
+        router.replace("/FirstWelcomeScreen");
+        return;
+      }
+      router.push(route);
+    });
+    return () => subscription.remove();
+  }, [router]);
+
+  // The launch link is routed by app/+native-intent.jsx. The other thing
   // here is a link that needed login: when it arrives signed out, it is saved
   // and opened as soon as the user signs in (or immediately, if a restored
   // session shows they already were).

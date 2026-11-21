@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../lib/firebase/FirebaseConfig";
 import { listBookings } from "../../utils/api/transportUnigo";
+import { DEMO } from "../../constants/demo";
 
 /**
  * Bus trips this user booked through HostelHubb.
@@ -28,7 +29,9 @@ export const useFetchTransportBookings = () => {
     setError(null);
 
     try {
-      const data = await listBookings();
+      const data = __DEV__ && DEMO
+        ? await require("../../services/demoData").demoBookings.transport()
+        : await listBookings();
       setBookings((data || []).map((booking) => ({ ...booking, type: "transport" })));
     } catch (err) {
       console.error("Error fetching transport bookings:", err);
