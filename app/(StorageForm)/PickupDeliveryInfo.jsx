@@ -7,7 +7,7 @@ import { useStorageReservation } from "../../context/StorageReservationContext";
 import DateSelector from "../../components/forms/storage/DateSelector";
 import LocationSelector from "../../components/forms/storage/LocationSelector";
 import LocationSummaryCard from "../../components/cards/storage/LocationSummaryCard";
-import { Button, PriceBar, Section, StepHeader, ToggleRow } from "../../components/ui";
+import { Button, PriceBar, Section, StepHeader, ToggleRow, KeyboardView } from "../../components/ui";
 import { money } from "../../utils/formatMoney";
 import { colors, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
@@ -203,6 +203,7 @@ export default function PickupDeliveryInfo() {
   return (
     <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       {header}
+      <KeyboardView>
       <ScrollView ref={scrollRef} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View ref={contentRef} collapsable={false} style={styles.scroll}>
           <Text style={type.display} accessibilityRole="header">When should we come?</Text>
@@ -277,6 +278,7 @@ export default function PickupDeliveryInfo() {
         caption={pickupInfo?.date ? `Pickup ${pickupInfo.date}` : "Choose a pickup day"}
         action={<Button title="Continue" onPress={proceed} style={{ paddingHorizontal: space.xl }} />}
       />
+      </KeyboardView>
     </SafeAreaView>
   );
 }

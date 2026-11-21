@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import { Alert, StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { Alert, StyleSheet, Text, View, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { UserContext } from "../../context/UserContext";
@@ -7,7 +7,7 @@ import DateOfBirthField, { formatDob } from "../../components/forms/profile/Date
 import WhatsAppNumberField from "../../components/forms/profile/WhatsAppNumberField";
 import UniversityField from "../../components/forms/profile/UniversityField";
 import { normalizeGhanaPhone, whatsappError } from "../../utils/phone";
-import { Button, Notice, SelectField, TextField } from "../../components/ui";
+import { Button, Notice, SelectField, TextField, KeyboardView } from "../../components/ui";
 import { colors, space, type } from "../../constants/theme";
 
 const GENDER_OPTIONS = ["Male", "Female"];
@@ -82,7 +82,7 @@ const ProfileUpdate = () => {
 
   return (
     <SafeAreaView style={styles.flex}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardView style={styles.flex}>
         <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <Text style={type.display} accessibilityRole="header">Complete your profile</Text>
@@ -141,7 +141,7 @@ const ProfileUpdate = () => {
             <Button title="Save & continue" onPress={handleSave} loading={loading} style={{ marginTop: space.xs }} />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </SafeAreaView>
   );
 };

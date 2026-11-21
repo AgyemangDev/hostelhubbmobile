@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useStorageReservation } from "../../context/StorageReservationContext";
 import { UserContext } from "../../context/UserContext";
-import { Button, PriceBar, StepHeader } from "../../components/ui";
+import { Button, PriceBar, StepHeader, KeyboardView } from "../../components/ui";
 import { colors, radius, space, type } from "../../constants/theme";
 import { STORAGE_TOTAL_STEPS, stepOf } from "../../constants/storageSteps";
 import API_BASE_URL from "../../utils/api/api";
@@ -119,6 +119,7 @@ export default function ReferralStep() {
   return (
     <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={stepOf("ReferralStep")} total={STORAGE_TOTAL_STEPS} />
+      <KeyboardView>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={{ gap: space.xs }}>
           <Text style={type.display} accessibilityRole="header">Referred by a friend?</Text>
@@ -149,6 +150,7 @@ export default function ReferralStep() {
           <Button title="Continue" onPress={confirmReferrer} disabled={!matched} style={{ flex: 1.4 }} />
         </View>
       </PriceBar>
+      </KeyboardView>
     </SafeAreaView>
   );
 }

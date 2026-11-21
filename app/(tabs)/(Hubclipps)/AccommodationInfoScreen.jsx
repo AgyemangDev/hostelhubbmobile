@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
 import { ValidateHubclippsInfo } from "../../../utils/ValidationUtils/hubbclipsValidation";
 import { institutions, roomTypes, amenitiesOptions, buildingTypes } from "../../../assets/data/data";
-import { Button, Chip, PriceBar, SelectField, StepHeader, TextField } from "../../../components/ui";
+import { Button, Chip, PriceBar, SelectField, StepHeader, TextField, KeyboardView } from "../../../components/ui";
 import { money } from "../../../utils/formatMoney";
 import { colors, space, type } from "../../../constants/theme";
 
@@ -41,6 +41,7 @@ export default function AccommodationInfoScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={1} total={4} />
+      <KeyboardView>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={type.display} accessibilityRole="header">Tell us about the room</Text>
 
@@ -125,6 +126,7 @@ export default function AccommodationInfoScreen() {
         </View>
       </ScrollView>
       <PriceBar action={<Button title="Continue" onPress={handleContinue} />} />
+      </KeyboardView>
     </SafeAreaView>
   );
 }

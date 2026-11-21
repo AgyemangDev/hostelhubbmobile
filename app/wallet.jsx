@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from "re
 import { ActivityIndicator, Linking, RefreshControl, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { UserContext } from "../context/UserContext";
 import { WalletContext } from "../context/WalletContext";
-import { Button, Chip, Eyebrow, Notice, ScreenHeader, Section, Text, TextField } from "../components/ui";
+import { Button, Chip, Eyebrow, Notice, ScreenHeader, Section, Text, TextField, KeyboardView } from "../components/ui";
 import PayoutMethodForm from "../components/forms/wallet/PayoutMethodForm";
 import PayoutAccountCard from "../components/cards/wallet/PayoutAccountCard";
 import WithdrawalRow from "../components/lists/wallet/WithdrawalRow";
@@ -106,6 +106,7 @@ export default function WalletScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScreenHeader title="Wallet" />
+      <KeyboardView>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />}
@@ -201,6 +202,7 @@ export default function WalletScreen() {
           style={{ alignSelf: "flex-start" }}
         />
       </ScrollView>
+      </KeyboardView>
     </SafeAreaView>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Linking, Alert } from "react-native";
+import { ScrollView, Text, TextInput, Linking, Alert } from "react-native";
 import styles from "../../../assets/Styles/ReportAConcernStyles";
-import { Button } from "../../../components/ui";
+import { Button, KeyboardView } from "../../../components/ui";
 import { colors } from "../../../constants/theme";
 
 const ReportAConcern = () => {
@@ -44,7 +44,8 @@ const ReportAConcern = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardView style={{ backgroundColor: styles.container.backgroundColor }}>
+      <ScrollView contentContainerStyle={{ padding: 20 }} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>Report A Concern</Text>
       <Text style={styles.instruction}>
         Please provide detailed information about the concern or problem you are
@@ -61,7 +62,8 @@ const ReportAConcern = () => {
         textAlignVertical="top"
       />
       <Button title="Send a Report" onPress={handleSubmit} disabled={!isButtonEnabled} style={styles.button} />
-    </View>
+      </ScrollView>
+    </KeyboardView>
   );
 };
 

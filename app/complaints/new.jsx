@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Alert, Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, Platform, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as ImageManipulator from "expo-image-manipulator";
-import { Button, ChipGroup, IconButton, Notice, PickerTile, ScreenHeader, Text, TextField, ToggleRow } from "../../components/ui";
+import { Button, ChipGroup, IconButton, Notice, PickerTile, ScreenHeader, Text, TextField, ToggleRow, KeyboardView } from "../../components/ui";
 import studentHub from "../../services/studentHub";
 import { COMPLAINT_CATEGORIES } from "../../constants/complaints";
 import { colors, radius, space } from "../../constants/theme";
@@ -53,7 +53,7 @@ export default function NewComplaint() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScreenHeader title="Report a problem" subtitle={hostel} onBack={() => router.back()} backIcon="close" />
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardView style={styles.flex}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <ChipGroup title="What is it about?" options={COMPLAINT_CATEGORIES} value={category} onChange={setCategory} />
           <TextField label="Short title" value={title} onChangeText={setTitle} maxLength={120} placeholder="E.g. Shower in room 12 is broken" />
@@ -76,7 +76,7 @@ export default function NewComplaint() {
         <View style={styles.footer}>
           <Button title="Send to the hostel" loading={sending} disabled={!ok || !bookingId} onPress={submit} />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </SafeAreaView>
   );
 }

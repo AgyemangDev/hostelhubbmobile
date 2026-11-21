@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, KeyboardAvoidingView, Modal, PanResponder, Platform, Pressable, StyleSheet, View } from "react-native";
+import { Animated, Modal, PanResponder, Pressable, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import IconButton from "../buttons/IconButton";
+import KeyboardView from "../layout/KeyboardView";
 import Text from "../typography/Text";
 import useReducedMotion from "../../../hooks/useReducedMotion";
 import { colors, elevation, motion, radius, space } from "../../../constants/theme";
@@ -51,7 +52,8 @@ export default function Sheet({ visible, onClose, title, children, footer, varia
 
   return (
     <Modal transparent visible statusBarTranslucent animationType="none" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      {/* Sheet sits at the bottom in normal flow, so the keyboard padding lifts it. */}
+      <KeyboardView style={styles.root}>
         <Animated.View style={[StyleSheet.absoluteFill, styles.backdrop, { opacity: backdrop }]}>
           <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityRole="button" accessibilityLabel="Close" />
         </Animated.View>
@@ -73,19 +75,17 @@ export default function Sheet({ visible, onClose, title, children, footer, varia
           <View style={{ flexShrink: 1 }}>{children}</View>
           {footer ? <View style={{ paddingTop: space.md }}>{footer}</View> : null}
         </Animated.View>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: { backgroundColor: "rgba(12,10,9,0.45)" },
+  root: { justifyContent: "flex-end" },
   sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     maxHeight: "88%",
+    flexShrink: 1,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: space.lg,

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Modal, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import WhatsAppNumberField from "../../forms/profile/WhatsAppNumberField";
-import { Button, Icon, Notice, Text } from "../../ui";
+import { Button, Icon, Notice, Text, KeyboardView } from "../../ui";
 import { normalizeGhanaPhone, whatsappError } from "../../../utils/phone";
 import { colors, space } from "../../../constants/theme";
 
@@ -33,7 +33,7 @@ export default function WhatsAppRequiredModal({ visible, currentNumber, onSave }
   return (
     <Modal visible={visible} animationType="slide" statusBarTranslucent onRequestClose={() => {}}>
       <SafeAreaView style={styles.screen}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardView style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
             <View style={styles.badge}>
               <Icon name="logo-whatsapp" size={34} color={colors.whatsapp} />
@@ -52,7 +52,7 @@ export default function WhatsAppRequiredModal({ visible, currentNumber, onSave }
           <View style={styles.footer}>
             <Button title="Save and continue" onPress={save} loading={saving} disabled={saving} />
           </View>
-        </KeyboardAvoidingView>
+        </KeyboardView>
       </SafeAreaView>
     </Modal>
   );

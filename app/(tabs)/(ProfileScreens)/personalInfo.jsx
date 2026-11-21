@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Platform, ScrollView, StyleSheet, View } from "react-native";
 import { UserContext } from "../../../context/UserContext";
 import DateOfBirthField from "../../../components/forms/profile/DateOfBirthField";
 import WhatsAppNumberField from "../../../components/forms/profile/WhatsAppNumberField";
 import UniversityField from "../../../components/forms/profile/UniversityField";
 import { normalizeGhanaPhone, whatsappError } from "../../../utils/phone";
-import { Button, Card, Icon, Notice, SelectField, Text, TextField } from "../../../components/ui";
+import { Button, Card, Icon, Notice, SelectField, Text, TextField, KeyboardView } from "../../../components/ui";
 import { colors, radius, space } from "../../../constants/theme";
 
 const GENDER_OPTIONS = ["Male", "Female"];
@@ -108,7 +108,7 @@ export default function PersonalInfo() {
 
   return (
     <View style={styles.screen}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={100}>
+      <KeyboardView style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={{ gap: 4 }}>
             <Text variant="display" accessibilityRole="header">Personal info</Text>
@@ -146,7 +146,7 @@ export default function PersonalInfo() {
           {/* Inline, not a bottom bar: the tab bar is still showing on this screen. */}
           <Button title={saving ? "Saving…" : "Save changes"} onPress={handleSave} loading={saving} disabled={!dirty || saving} />
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </View>
   );
 }

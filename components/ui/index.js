@@ -78,6 +78,7 @@ export { default as Timeline } from "./progress/Timeline";
 
 export { default as Section } from "./layout/Section";
 export { default as Divider } from "./layout/Divider";
+export { default as KeyboardView } from "./layout/KeyboardView";
 
 export { ExternalLink } from "./links/ExternalLink";
 export { default as TermsLink } from "./links/TermsLink";

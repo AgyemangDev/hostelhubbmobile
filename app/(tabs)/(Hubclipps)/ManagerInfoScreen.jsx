@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { AddHubclippsContext } from "../../../context/AddHubclippsContext";
 import { validateManager } from "../../../utils/ValidationUtils/hubbclipsValidation";
-import { Button, PressableScale, PriceBar, StepHeader, TextField } from "../../../components/ui";
+import { Button, PressableScale, PriceBar, StepHeader, TextField, KeyboardView } from "../../../components/ui";
 import { colors, elevation, radius, space, type } from "../../../constants/theme";
 
 // Map opens on KNUST until the poster shares their location or moves the map.
@@ -112,6 +112,7 @@ export default function ManagerInfoScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <StepHeader step={2} total={4} />
+      <KeyboardView>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={{ gap: space.xs }}>
           <Text style={type.display} accessibilityRole="header">Who shows the room, and where is it?</Text>
@@ -217,6 +218,7 @@ export default function ManagerInfoScreen() {
         </View>
       </ScrollView>
       <PriceBar action={<Button title="Continue" onPress={handleContinue} />} />
+      </KeyboardView>
     </SafeAreaView>
   );
 }

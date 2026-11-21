@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
-import { Alert, Image, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, Platform, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { Button, Card, EmptyState, IconButton, ScreenHeader, Skeleton, StatusPill, Text, TextField } from "../../components/ui";
+import { Button, Card, EmptyState, IconButton, ScreenHeader, Skeleton, StatusPill, Text, TextField, KeyboardView } from "../../components/ui";
 import ComplaintMessage from "../../components/lists/complaints/ComplaintMessage";
 import studentHub from "../../services/studentHub";
 import { COMPLAINT_CATEGORIES, COMPLAINT_STATUS } from "../../constants/complaints";
@@ -64,7 +64,7 @@ export default function ComplaintThread() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScreenHeader title="Complaint" subtitle={c.accommodation_name} onBack={() => router.back()} />
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardView style={styles.flex}>
         <ScrollView ref={scroll} contentContainerStyle={styles.content} onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}>
           <Card style={styles.card}>
             <View style={styles.pills}>
@@ -91,7 +91,7 @@ export default function ComplaintThread() {
           <TextField value={reply} onChangeText={setReply} placeholder={["resolved", "dismissed"].includes(c.status) ? "Still a problem? Reply to reopen" : "Write a message"} multiline maxLength={2000} style={styles.flex} />
           <IconButton icon="send" variant="tonal" onPress={send} disabled={!reply.trim() || sending} accessibilityLabel="Send" />
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </SafeAreaView>
   );
 }

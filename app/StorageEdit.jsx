@@ -9,7 +9,7 @@ import LocationSelector from "../components/forms/storage/LocationSelector";
 import DateSelector from "../components/forms/storage/DateSelector";
 import API_BASE_URL from "../utils/api/api";
 import { useBookingsContext } from "../context/BookingsContext";
-import { Button, PriceBar, SectionHeader } from "../components/ui";
+import { Button, PriceBar, SectionHeader, KeyboardView } from "../components/ui";
 import { colors } from "../constants/theme";
 
 // items/pickup_info/delivery_info come straight out of the DB row and may
@@ -239,6 +239,7 @@ const StorageEdit = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <KeyboardView>
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}
@@ -344,6 +345,7 @@ const StorageEdit = () => {
           />} />
         </View>
       )}
+      </KeyboardView>
     </SafeAreaView>
   );
 };

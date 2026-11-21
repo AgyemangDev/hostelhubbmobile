@@ -6,7 +6,6 @@ import {
   Alert,
   ScrollView,
   Platform,
-  KeyboardAvoidingView,
   StatusBar,
   Linking,
   ActivityIndicator,
@@ -17,7 +16,7 @@ import CheckoutButton from '../../../components/buttons/shop/CheckoutButton';
 import { UserContext } from '../../../context/UserContext';
 import { WalletContext } from '../../../context/WalletContext';
 import axios from 'axios';
-import { IconButton, LoadingOverlay, SelectField, TextField } from "../../../components/ui";
+import { IconButton, LoadingOverlay, SelectField, TextField, KeyboardView } from "../../../components/ui";
 import { colors } from "../../../constants/theme";
 
 const PaymentScreen = () => {
@@ -116,10 +115,7 @@ const PaymentScreen = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.fill }}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.fill} />
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardView style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <IconButton icon="arrow-back" accessibilityLabel="Go back" onPress={() => router.back()} />
@@ -158,7 +154,7 @@ const PaymentScreen = () => {
           )}
         </View>
         <LoadingOverlay visible={loading} message="Payment is processing, please wait..." />
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </SafeAreaView>
   );
 };

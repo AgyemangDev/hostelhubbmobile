@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { UserContext } from "../../../../context/UserContext";
-import { Button, Notice, PriceBar, ScreenHeader, TextField } from "../../../../components/ui";
+import { Button, Notice, PriceBar, ScreenHeader, TextField, KeyboardView } from "../../../../components/ui";
 import { money } from "../../../../utils/formatMoney";
 import { colors, space, type } from "../../../../constants/theme";
 
@@ -81,6 +81,7 @@ const PassengerDetails = () => {
   return (
     <SafeAreaView style={styles.screen} edges={SCREEN_EDGES}>
       <ScreenHeader title="Who's travelling?" subtitle={route.from ? `${route.from} → ${route.to}` : undefined} />
+      <KeyboardView>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={[type.body, { color: colors.textSecondary }]}>
           The ticket and confirmation go to this person. Booking for a friend? Change the details.
@@ -114,6 +115,7 @@ const PassengerDetails = () => {
         caption={`Seat${selectedSeats.length > 1 ? "s" : ""} ${selectedSeats.map((x) => x.number).join(", ")}`}
         action={<Button title="Continue to pay" onPress={handleContinue} />}
       />
+      </KeyboardView>
     </SafeAreaView>
   );
 };

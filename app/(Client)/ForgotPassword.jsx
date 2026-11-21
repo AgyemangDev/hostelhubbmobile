@@ -5,7 +5,6 @@ import {
   View,
   Image,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
@@ -13,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../../lib/firebase/FirebaseConfig';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useNavigation } from 'expo-router';
-import { Button, TextField } from "../../components/ui";
+import { Button, TextField, KeyboardView } from "../../components/ui";
 import { colors } from "../../constants/theme";
 
 const ForgotPassword = () => {
@@ -37,10 +36,7 @@ const ForgotPassword = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+      <KeyboardView style={{ flex: 1 }}>
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -67,7 +63,7 @@ const ForgotPassword = () => {
             <Button title="Reset" onPress={handleResetPassword} />
           </View>
         </ScrollView>
-      </KeyboardAvoidingView>
+      </KeyboardView>
     </SafeAreaView>
   );
 };

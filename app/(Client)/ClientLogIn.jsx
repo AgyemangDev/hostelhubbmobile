@@ -4,7 +4,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
@@ -17,7 +16,7 @@ import { signInWithEmail, loadSavedCredentials } from "../../utils/auth/signInwi
 import { useGoogleAuth } from "../../utils/auth/signInWithGoogle";
 import { signInWithApple } from "../../utils/auth/signInWithApple";
 import TermsLink from "../../components/ui/links/TermsLink";
-import { Button, CheckboxRow, TextField } from "../../components/ui";
+import { Button, CheckboxRow, TextField, KeyboardView } from "../../components/ui";
 import { colors } from "../../constants/theme";
 
 const ClientLogIn = () => {
@@ -69,10 +68,7 @@ const handleAppleSignIn = async () => {
 };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+    <KeyboardView style={styles.container}>
       {/* Drag handle */}
       <View style={styles.handle} />
 
@@ -151,7 +147,7 @@ const handleAppleSignIn = async () => {
 </View>
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardView>
   );
 };
 

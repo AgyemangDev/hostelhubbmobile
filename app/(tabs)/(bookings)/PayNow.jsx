@@ -24,7 +24,7 @@ import BookingDetails from "../../../components/sections/bookings/BookingDetails
 import AmountSection from "../../../components/sections/bookings/AmountSection";
 import ReferralCodeField from "../../../components/forms/referral/ReferralCodeField";
 import { money } from "../../../utils/formatMoney";
-import { Button, Card } from "../../../components/ui";
+import { Button, Card, KeyboardView } from "../../../components/ui";
 import TenancyAgreementCard from "../../../components/sections/bookings/TenancyAgreementCard";
 import DeadlineTimer from "../../../components/feedback/bookings/DeadlineTimer";
 import { colors } from "../../../constants/theme";
@@ -268,6 +268,7 @@ const PayNow = () => {
         </Text>
       </View>
 
+      <KeyboardView>
       <ScrollView
         style={s.scroll}
         contentContainerStyle={[
@@ -338,6 +339,7 @@ const PayNow = () => {
           />
         )}
       </ScrollView>
+      </KeyboardView>
     </View>
   );
 };
